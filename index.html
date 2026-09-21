@@ -560,8 +560,8 @@
                     <button onclick="toggleResetModal(true)" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center shadow-sm">
                         <i class="fa-solid fa-rotate-left mr-2 text-rose-600 text-sm"></i> Reset Data
                     </button>
-                    <button onclick="exportToCSV()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center">
-                        <i class="fa-solid fa-file-csv mr-2 text-emerald-600 text-sm"></i> Ekspor CSV
+                    <button onclick="window.open('https://docs.google.com/spreadsheets/d/1NABssZxdDLqWklkPhFe-KLrxPVJMWA_vNz72PLHY9EQ/edit', '_blank');" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center">
+                        <i class="fa-solid fa-file-csv mr-2 text-emerald-600 text-sm"></i> Spreadsheet
                     </button>
                     <button onclick="window.print()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow flex items-center">
                         <i class="fa-solid fa-print mr-2"></i> Cetak Laporan
@@ -827,6 +827,21 @@
     </div>
 
     <script>
+        //google sheet link
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyM7Z_lvb56gbgwiC9yVJ0nUpDSb32PebUyuhZhyGeZ-1UniEHYqr45FyTg8dbhaN4/exec";
+
+        function sendToGoogleSheets(payload) {
+            // Cek hanya jika URL kosong atau masih berbentuk placeholder
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.trim() === "" || GOOGLE_SCRIPT_URL.includes("URL_APPS_SCRIPT_ANDA")) return;
+            
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(payload)
+            }).catch(err => console.error("Error kirim ke Google Sheets:", err));
+        }
+
         // LIST NAMA ANGGOTA (18 NAMA)
         const MASTER_MEMBERS = [
             "Ahmad Rafi Al Hadad",
@@ -1432,7 +1447,7 @@
             if (totalElem) totalElem.innerText = formatRupiah(total);
         }
 
-        // SAVE KAS FORM HANDLER
+        // SAVE KAS FORM HANDLER (updated untuk spreadsheet)
         function handleSaveKas(e) {
             e.preventDefault();
             if (!appState.isAdminLoggedIn) {
@@ -1460,15 +1475,29 @@
                 catatan: catatan || `Bayar ${jumlahBulan} Bulan Kas`
             };
 
-            database.ref('kas').push().set(newEntry)
+            // SIMPAN KAS DENGAN SINKRONISASI SHEETS (FIXED)
+            const newKasRef = database.ref('kas').push();
+            const newKasId = newKasRef.key; // Ambil ID/Key sebelum dipush
+
+            newKasRef.set(newEntry)
                 .then(() => {
+                    // Kirim data ke Google Sheets
+                    sendToGoogleSheets({
+                        action: 'ADD_KAS',
+                        id: newKasId,
+                        ...newEntry
+                    });
+
                     document.getElementById('formInputKas').reset();
                     setDefaultDates();
                     document.getElementById('kasNominalPerBulan').value = appState.iuranPerBulan;
                     calculateTotalKas();
                     showToast(`Uang Kas sebesar ${formatRupiah(newEntry.total)} berhasil disimpan!`, 'success');
                 })
-                .catch(() => showToast('Gagal menyimpan pembayaran kas.', 'error'));
+                .catch((error) => {
+                    console.error('Error simpan kas:', error);
+                    showToast('Gagal menyimpan pembayaran kas.', 'error');
+                });
         }
 
         // SAVE PENGELUARAN FORM HANDLER
@@ -1493,13 +1522,27 @@
                 catatan
             };
 
-            database.ref('pengeluaran').push().set(newEntry)
+            // SIMPAN PENGELUARAN DENGAN SINKRONISASI SHEETS (FIXED)
+            const newPengeluaranRef = database.ref('pengeluaran').push();
+            const newPengeluaranId = newPengeluaranRef.key; // Ambil ID/Key sebelum dipush
+
+            newPengeluaranRef.set(newEntry)
                 .then(() => {
+                    // Kirim data ke Google Sheets
+                    sendToGoogleSheets({
+                        action: 'ADD_PENGELUARAN',
+                        id: newPengeluaranId,
+                        ...newEntry
+                    });
+
                     document.getElementById('formInputPengeluaran').reset();
                     setDefaultDates();
-                    showToast(`Pengeluaran ${formatRupiah(nominal)} berhasil dicatat!`, 'success');
+                    showToast(`Pengeluaran ${formatRupiah(newEntry.nominal)} berhasil dicatat!`, 'success');
                 })
-                .catch(() => showToast('Gagal menyimpan pengeluaran.', 'error'));
+                .catch((error) => {
+                    console.error('Error simpan pengeluaran:', error);
+                    showToast('Gagal menyimpan pengeluaran.', 'error');
+                });
         }
 
         // RENDER KAS HISTORY TABLE
@@ -1652,10 +1695,19 @@
             toggleResetModal(false);
         }
 
+        // HAPUS DATA DENGAN SINKRONISASI SHEETS
         function executeDelete() {
             if (!pendingDeleteType || !pendingDeleteId) return;
 
             const collection = pendingDeleteType === 'kas' ? 'kas' : 'pengeluaran';
+            
+            // Kirim perintah hapus ke Google Sheets
+            sendToGoogleSheets({
+                action: 'DELETE',
+                type: pendingDeleteType,
+                id: pendingDeleteId
+            });
+
             database.ref(`${collection}/${pendingDeleteId}`).remove()
                 .then(() => {
                     closeConfirmModal();
