@@ -112,6 +112,10 @@
                     <i class="fa-solid fa-cart-shopping mr-2"></i> Input Pengeluaran
                     <span id="lockExpBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-emerald-950/60 text-amber-300 border border-amber-500/20"><i class="fa-solid fa-lock text-[9px]"></i></span>
                 </button>
+                <button onclick="switchTab('inventaris')" id="tab-inventaris" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-emerald-100 hover:bg-emerald-800/60">
+                    <i class="fa-solid fa-boxes-stacked mr-2"></i> Inventaris Jembatan Timbang
+                    <span id="lockInvBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-emerald-950/60 text-amber-300 border border-amber-500/20"><i class="fa-solid fa-lock text-[9px]"></i></span>
+                </button>
                 <button onclick="switchTab('laporan')" id="tab-laporan" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-emerald-100 hover:bg-emerald-800/60">
                     <i class="fa-solid fa-file-invoice-dollar mr-2"></i> Laporan Keuangan
                     <span id="lockReportBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-emerald-950/60 text-amber-300 border border-amber-500/20"><i class="fa-solid fa-lock text-[9px]"></i></span>
@@ -219,7 +223,7 @@
 
                 <div class="glass-card rounded-2xl p-5 sm:p-6 border border-white/60">
                     <h2 class="font-bold text-slate-800 text-base mb-1"><i class="fa-solid fa-database text-blue-600 mr-2"></i>Penyimpanan Firebase</h2>
-                    <p class="text-xs text-slate-500 mb-4">Estimasi dari data kas &amp; pengeluaran (batas gratis 1 GB)</p>
+                    <p class="text-xs text-slate-500 mb-4">Estimasi dari data kas, pengeluaran &amp; inventaris (batas gratis 1 GB)</p>
                     <div class="flex items-end justify-between mb-2">
                         <span id="fbUsed" class="text-2xl font-extrabold text-slate-800">0 B</span>
                         <span class="text-xs font-semibold text-slate-500">dari 1 GB</span>
@@ -232,6 +236,59 @@
                         <div class="flex justify-between"><dt>Perkiraan masih muat</dt><dd id="fbLeft" class="font-bold text-slate-800">-</dd></div>
                     </dl>
                     <p class="text-[10px] text-slate-400 mt-4 leading-relaxed">Perkiraan dari sisi aplikasi. Angka resmi ada di Firebase Console &rarr; Realtime Database &rarr; Usage.</p>
+                </div>
+            </div>
+
+            <!-- INVENTARIS JEMBATAN TIMBANG (RINGKASAN) -->
+            <div class="glass-card rounded-2xl p-5 sm:p-6 border border-indigo-200/70 relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-400 via-sky-500 to-teal-500"></div>
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-base"><i class="fa-solid fa-boxes-stacked text-indigo-600 mr-2"></i>Inventaris Jembatan Timbang</h2>
+                        <p class="text-xs text-slate-500">Barang yang masuk dan keluar</p>
+                    </div>
+                    <button onclick="switchTab('inventaris')" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Lihat / Tambah Inventaris &rarr;</button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                    <div class="rounded-xl p-4 bg-emerald-50 border border-emerald-200">
+                        <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wide">Total Barang Masuk</p>
+                        <p id="invQtyMasuk" class="text-xl font-extrabold text-emerald-700 mt-1">0</p>
+                        <p class="text-[11px] text-emerald-700/80"><span id="invCountMasuk">0</span> catatan</p>
+                    </div>
+                    <div class="rounded-xl p-4 bg-rose-50 border border-rose-200">
+                        <p class="text-[11px] font-bold text-rose-700 uppercase tracking-wide">Total Barang Keluar</p>
+                        <p id="invQtyKeluar" class="text-xl font-extrabold text-rose-700 mt-1">0</p>
+                        <p class="text-[11px] text-rose-700/80"><span id="invCountKeluar">0</span> catatan</p>
+                    </div>
+                    <div class="rounded-xl p-4 bg-indigo-50 border border-indigo-200">
+                        <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-wide">Masih Ada (Belum Keluar)</p>
+                        <p id="invQtySisa" class="text-xl font-extrabold text-indigo-700 mt-1">0</p>
+                        <p class="text-[11px] text-indigo-700/80"><span id="invCountSisa">0</span> catatan</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm mb-2 flex items-center"><i class="fa-solid fa-arrow-down text-emerald-600 mr-2"></i>Barang Masuk Terbaru <span class="ml-auto text-xs text-slate-400 font-medium">5 Terakhir</span></h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50 text-slate-500 uppercase font-semibold">
+                                    <tr><th class="p-2.5 rounded-l-lg">Tgl Masuk</th><th class="p-2.5">Nama Barang</th><th class="p-2.5 text-right rounded-r-lg">Qty</th></tr>
+                                </thead>
+                                <tbody id="dashInvIn" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm mb-2 flex items-center"><i class="fa-solid fa-arrow-up text-rose-600 mr-2"></i>Barang Keluar Terbaru <span class="ml-auto text-xs text-slate-400 font-medium">5 Terakhir</span></h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50 text-slate-500 uppercase font-semibold">
+                                    <tr><th class="p-2.5 rounded-l-lg">Tgl Keluar</th><th class="p-2.5">Nama Barang</th><th class="p-2.5 text-right rounded-r-lg">Qty</th></tr>
+                                </thead>
+                                <tbody id="dashInvOut" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -507,6 +564,79 @@
             </div>
         </section>
 
+        <!-- ================= TAB: INVENTARIS JEMBATAN TIMBANG ================= -->
+        <section id="content-inventaris" class="tab-content hidden space-y-6">
+
+            <div id="invAuthNotice" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-800 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-lock text-amber-600 text-xl"></i>
+                    <p class="text-xs sm:text-sm font-medium">Fitur Tambah & Edit Inventaris memerlukan hak akses Admin. Silakan login terlebih dahulu.</p>
+                </div>
+                <button onclick="toggleAuthModal()" class="px-3 py-1.5 bg-amber-600 text-white rounded-xl text-xs font-bold hover:bg-amber-700">Login Admin</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1 glass-card p-6 rounded-2xl border border-white/60">
+                    <div class="flex items-center space-x-2 border-b border-slate-100 pb-3 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold"><i class="fa-solid fa-plus"></i></div>
+                        <h2 class="font-bold text-slate-800 text-base">Input Inventaris Barang</h2>
+                    </div>
+
+                    <form id="formInputInventaris" onsubmit="handleSaveInventaris(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Barang Masuk <span class="text-rose-500">*</span></label>
+                            <input type="date" id="invTglMasuk" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Nama Barang <span class="text-rose-500">*</span></label>
+                            <input type="text" id="invNama" placeholder="Contoh: Kertas HVS" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Quantity Barang <span class="text-rose-500">*</span></label>
+                            <input type="number" id="invQty" placeholder="0" min="1" step="1" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Barang Keluar <span class="text-slate-400 font-medium">(opsional, isi saat barang keluar)</span></label>
+                            <input type="date" id="invTglKeluar" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                        </div>
+                        <button type="submit" id="btnSimpanInventaris" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-md flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-floppy-disk"></i><span>Simpan Inventaris</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 glass-card p-6 rounded-2xl border border-white/60 flex flex-col">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-base">Riwayat Inventaris Jembatan Timbang</h2>
+                            <div class="flex flex-wrap items-center gap-2 mt-2">
+                                <select id="filterInvStatus" onchange="renderInventarisTable()" class="text-xs border border-slate-300 rounded-xl px-2 py-1.5 bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <option value="">Semua Status</option>
+                                    <option value="ada">Masih Ada</option>
+                                    <option value="keluar">Sudah Keluar</option>
+                                </select>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1.5">Total qty ditampilkan: <b id="invFilterTotal" class="text-indigo-600">0</b></p>
+                        </div>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input type="text" id="searchInventaris" onkeyup="renderInventarisTable()" placeholder="Cari nama barang..." class="text-xs pl-8 pr-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none w-full sm:w-48">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto flex-grow">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 text-slate-600 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg">Tgl Masuk</th><th class="p-3">Nama Barang</th><th class="p-3">Qty</th><th class="p-3">Tgl Keluar</th><th class="p-3">Status</th><th class="p-3 text-center rounded-r-lg">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invTableBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- ================= TAB 4: LAPORAN ================= -->
         <section id="content-laporan" class="tab-content hidden space-y-6">
 
@@ -602,7 +732,7 @@
                 </div>
                 <button onclick="toggleAuthModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <p class="text-xs text-slate-500 mb-4">Login diperlukan untuk menginput uang kas, menginput pengeluaran, serta mengelola data keuangan.</p>
+            <p class="text-xs text-slate-500 mb-4">Login diperlukan untuk menginput uang kas, menginput pengeluaran, mengelola inventaris, serta mengelola data keuangan.</p>
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Username</label>
@@ -635,6 +765,30 @@
                 <button type="button" onclick="closeConfirmModal()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">Batal</button>
                 <button type="button" id="btnActionConfirm" class="w-1/2 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition shadow">Hapus</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL TANGGAL BARANG KELUAR -->
+    <div id="invKeluarModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-arrow-up-from-bracket text-base"></i></div>
+                    <h3 class="font-extrabold text-slate-800 text-lg">Catat Barang Keluar</h3>
+                </div>
+                <button onclick="toggleInvKeluarModal(false)" class="text-slate-400 hover:text-slate-600 text-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-600">Barang: <b id="invKeluarNama" class="text-slate-800"></b></p>
+            <form onsubmit="handleSaveInvKeluar(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Barang Keluar</label>
+                    <input type="date" id="invKeluarTanggal" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="flex items-center justify-end space-x-2 pt-2">
+                    <button type="button" onclick="toggleInvKeluarModal(false)" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-200">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 shadow">Simpan</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -675,7 +829,7 @@
                 </div>
                 <button onclick="toggleResetModal(false)" class="text-slate-400 hover:text-slate-600 text-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <p class="text-xs text-slate-600">Pilih tindakan reset data transaksi kas. Tindakan ini tidak dapat dibatalkan.</p>
+            <p class="text-xs text-slate-600">Pilih tindakan reset data transaksi kas. Tindakan ini tidak dapat dibatalkan. Data inventaris tidak ikut terhapus.</p>
             <div class="space-y-3 pt-1">
                 <button onclick="executeResetData('demo')" class="w-full p-3.5 rounded-2xl border border-blue-200 bg-blue-50/50 hover:bg-blue-100/80 text-left transition flex items-start space-x-3 group">
                     <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm"><i class="fa-solid fa-database text-sm"></i></div>
@@ -773,6 +927,7 @@
             saldoAwal: 0,
             kasEntries: [],
             pengeluaranEntries: [],
+            inventarisEntries: [],
             customLogo: null
         };
 
@@ -807,6 +962,8 @@
         function formatRupiah(number) {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number || 0);
         }
+
+        function fmtNum(n) { return (Number(n) || 0).toLocaleString('id-ID'); }
 
         function fmtBytes(b) {
             if (b < 1024) return b + ' B';
@@ -850,7 +1007,7 @@
             if (printDateElem) printDateElem.innerText = new Date().toLocaleDateString('id-ID', { dateStyle: 'full' });
         });
 
-        // ================= FIREBASE LISTENERS (struktur data tidak berubah) =================
+        // ================= FIREBASE LISTENERS (struktur data kas & pengeluaran tidak berubah) =================
         function startRealtimeListeners() {
             database.ref('settings').on('value', snapshot => {
                 const settings = snapshot.val() || {};
@@ -882,6 +1039,18 @@
                 renderPengeluaranTable();
                 renderLaporan();
             });
+
+            // Node baru: 'inventaris' (terpisah, tidak menyentuh data kas/pengeluaran)
+            database.ref('inventaris').on('value', snapshot => {
+                const data = snapshot.val() || {};
+                appState.inventarisEntries = Object.entries(data).map(([id, item]) => ({
+                    id, ...item,
+                    tanggalMasuk: normalizeDateOnly(item.tanggalMasuk),
+                    tanggalKeluar: normalizeDateOnly(item.tanggalKeluar)
+                }));
+                renderDashboard();
+                renderInventarisTable();
+            });
         }
 
         function seedDatabaseIfEmpty() {
@@ -903,7 +1072,8 @@
         // ================= AKUN ADMIN & SAPAAN =================
         const ADMIN_ACCOUNTS = [
             { names: ['pirda ripiani'], display: 'Pirda Ripiani', password: 'Pirda Upst!@#' },
-            { names: ['ahmad rafi', 'ahmad rafi al hadad'], display: 'Ahmad Rafi', password: 'Rafi20' }
+            { names: ['ahmad rafi', 'ahmad rafi al hadad'], display: 'Ahmad Rafi', password: 'Rafi20' },
+            { names: ['kiki zakiyah afriyani', 'kiki zakyah apriyani', 'kiki zakiyah', 'kiki'], display: 'Kiki Zakiyah Afriyani', password: 'Kiki20' }
         ];
 
         function findAdminAccount(username, password) {
@@ -954,6 +1124,7 @@
             if (tabId === 'dashboard') renderDashboard();
             else if (tabId === 'input-kas') renderKasTable();
             else if (tabId === 'input-pengeluaran') renderPengeluaranTable();
+            else if (tabId === 'inventaris') renderInventarisTable();
             else if (tabId === 'laporan') renderLaporan();
         }
 
@@ -998,7 +1169,7 @@
             const authIcon = document.getElementById('authIcon');
             if (authIcon) authIcon.className = on ? 'fa-solid fa-right-from-bracket mr-2 text-rose-300' : 'fa-solid fa-lock mr-2 text-emerald-300';
 
-            ['lockKasBadge', 'lockExpBadge', 'lockReportBadge', 'kasAuthNotice', 'pengeluaranAuthNotice', 'laporanAuthNotice'].forEach(id => {
+            ['lockKasBadge', 'lockExpBadge', 'lockInvBadge', 'lockReportBadge', 'kasAuthNotice', 'pengeluaranAuthNotice', 'invAuthNotice', 'laporanAuthNotice'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.toggle('hidden', on);
             });
@@ -1006,6 +1177,7 @@
             renderDashboard();
             renderKasTable();
             renderPengeluaranTable();
+            renderInventarisTable();
             renderLaporan();
         }
 
@@ -1033,6 +1205,7 @@
 
             renderMonthly();
             renderStorage();
+            renderInventarisDashboard();
             renderUnpaidMembers();
             renderRecentIncome();
             renderRecentExpense();
@@ -1088,10 +1261,11 @@
             const json = JSON.stringify({
                 settings: { iuranPerBulan: appState.iuranPerBulan, saldoAwal: appState.saldoAwal, targetMonth: appState.targetMonth },
                 kas: pack(appState.kasEntries),
-                pengeluaran: pack(appState.pengeluaranEntries)
+                pengeluaran: pack(appState.pengeluaranEntries),
+                inventaris: pack(appState.inventarisEntries)
             });
             const bytes = new TextEncoder().encode(json).length;
-            const n = appState.kasEntries.length + appState.pengeluaranEntries.length;
+            const n = appState.kasEntries.length + appState.pengeluaranEntries.length + appState.inventarisEntries.length;
             const avg = n ? bytes / n : 0;
             const pct = bytes / FB_LIMIT_BYTES * 100;
 
@@ -1106,6 +1280,38 @@
                 bar.style.width = Math.max(pct, 0.5) + '%';
                 bar.className = 'bar-fill ' + (pct >= 90 ? 'bg-rose-500' : pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500');
             }
+        }
+
+        // ================= INVENTARIS: DASHBOARD =================
+        function renderInventarisDashboard() {
+            if (!document.getElementById('dashInvIn')) return;
+            const all = appState.inventarisEntries;
+            const keluar = all.filter(e => e.tanggalKeluar);
+            const sisa = all.filter(e => !e.tanggalKeluar);
+
+            setTxt('invQtyMasuk', fmtNum(sumBy(all, 'qty')));
+            setTxt('invCountMasuk', all.length);
+            setTxt('invQtyKeluar', fmtNum(sumBy(keluar, 'qty')));
+            setTxt('invCountKeluar', keluar.length);
+            setTxt('invQtySisa', fmtNum(sumBy(sisa, 'qty')));
+            setTxt('invCountSisa', sisa.length);
+
+            const recentIn = [...all].sort((a, b) => String(b.tanggalMasuk).localeCompare(String(a.tanggalMasuk))).slice(0, 5);
+            const recentOut = [...keluar].sort((a, b) => String(b.tanggalKeluar).localeCompare(String(a.tanggalKeluar))).slice(0, 5);
+
+            document.getElementById('dashInvIn').innerHTML = recentIn.length ? recentIn.map(item => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-2.5 whitespace-nowrap text-slate-500">${esc(item.tanggalMasuk)}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${esc(item.nama)}</td>
+                    <td class="p-2.5 text-right font-bold text-emerald-600">${fmtNum(item.qty)}</td>
+                </tr>`).join('') : `<tr><td colspan="3" class="text-center py-4 text-slate-400">Belum ada barang masuk</td></tr>`;
+
+            document.getElementById('dashInvOut').innerHTML = recentOut.length ? recentOut.map(item => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-2.5 whitespace-nowrap text-slate-500">${esc(item.tanggalKeluar)}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${esc(item.nama)}</td>
+                    <td class="p-2.5 text-right font-bold text-rose-600">${fmtNum(item.qty)}</td>
+                </tr>`).join('') : `<tr><td colspan="3" class="text-center py-4 text-slate-400">Belum ada barang keluar</td></tr>`;
         }
 
         function openSaldoAwalModal() {
@@ -1151,8 +1357,10 @@
             const today = todayStr();
             const kasTgl = document.getElementById('kasTanggal');
             const expTgl = document.getElementById('expTanggal');
+            const invTgl = document.getElementById('invTglMasuk');
             if (kasTgl) kasTgl.value = today;
             if (expTgl) expTgl.value = today;
+            if (invTgl) invTgl.value = today;
         }
 
         function updateIuranSetting(val) {
@@ -1433,6 +1641,63 @@
                 });
         }
 
+        // ================= FORM INVENTARIS =================
+        function handleSaveInventaris(e) {
+            e.preventDefault();
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
+
+            const tanggalMasuk = document.getElementById('invTglMasuk').value;
+            const tanggalKeluar = document.getElementById('invTglKeluar').value || '';
+            const nama = document.getElementById('invNama').value.trim();
+            const qty = parseInt(document.getElementById('invQty').value);
+
+            if (!nama || !qty || qty < 1) { showToast('Nama barang dan quantity wajib diisi dengan benar!', 'error'); return; }
+            if (tanggalKeluar && tanggalKeluar < tanggalMasuk) { showToast('Tanggal keluar tidak boleh sebelum tanggal masuk!', 'error'); return; }
+
+            database.ref('inventaris').push().set({ tanggalMasuk, nama, qty, tanggalKeluar })
+                .then(() => {
+                    document.getElementById('formInputInventaris').reset();
+                    setDefaultDates();
+                    showToast(`Barang "${nama}" (${fmtNum(qty)}) berhasil dicatat!`, 'success');
+                })
+                .catch(error => {
+                    console.error('Error simpan inventaris:', error);
+                    showToast('Gagal menyimpan inventaris.', 'error');
+                });
+        }
+
+        let pendingKeluarId = null;
+
+        function openInvKeluarModal(id) {
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
+            const item = appState.inventarisEntries.find(x => x.id === id);
+            if (!item) return;
+            pendingKeluarId = id;
+            setTxt('invKeluarNama', `${item.nama} (${fmtNum(item.qty)})`);
+            document.getElementById('invKeluarTanggal').value = item.tanggalKeluar || todayStr();
+            toggleInvKeluarModal(true);
+        }
+
+        function toggleInvKeluarModal(show = true) {
+            const modal = document.getElementById('invKeluarModal');
+            if (modal) modal.classList.toggle('hidden', !show);
+            if (!show) pendingKeluarId = null;
+        }
+
+        function handleSaveInvKeluar(e) {
+            e.preventDefault();
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
+            const item = appState.inventarisEntries.find(x => x.id === pendingKeluarId);
+            if (!item) return;
+            const tgl = document.getElementById('invKeluarTanggal').value;
+            if (tgl < item.tanggalMasuk) { showToast('Tanggal keluar tidak boleh sebelum tanggal masuk!', 'error'); return; }
+
+            database.ref(`inventaris/${pendingKeluarId}/tanggalKeluar`).set(tgl)
+                .then(() => showToast('Tanggal barang keluar berhasil disimpan!', 'success'))
+                .catch(() => showToast('Gagal menyimpan tanggal keluar.', 'error'));
+            toggleInvKeluarModal(false);
+        }
+
         // ================= TABEL RIWAYAT =================
         function deleteButton(type, id) {
             if (!appState.isAdminLoggedIn) return `<span class="text-slate-300">-</span>`;
@@ -1497,6 +1762,41 @@
                 </tr>`).join('');
         }
 
+        function renderInventarisTable() {
+            const tbody = document.getElementById('invTableBody');
+            if (!tbody) return;
+
+            const q = (document.getElementById('searchInventaris')?.value || '').toLowerCase();
+            const st = document.getElementById('filterInvStatus')?.value || '';
+
+            const filtered = appState.inventarisEntries.filter(item =>
+                (item.nama || '').toLowerCase().includes(q) &&
+                (!st || (st === 'keluar' ? !!item.tanggalKeluar : !item.tanggalKeluar))
+            ).sort((a, b) => String(b.tanggalMasuk).localeCompare(String(a.tanggalMasuk)));
+
+            setTxt('invFilterTotal', fmtNum(sumBy(filtered, 'qty')));
+
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">Belum ada data inventaris.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = filtered.map(item => {
+                const keluar = !!item.tanggalKeluar;
+                const aksi = appState.isAdminLoggedIn
+                    ? `${keluar ? '' : `<button onclick="openInvKeluarModal('${String(item.id).replace(/'/g, "\\'")}')" title="Catat barang keluar" class="text-indigo-600 hover:text-indigo-800 font-bold px-2 py-1 rounded hover:bg-indigo-50"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>`}${deleteButton('inventaris', item.id)}`
+                    : `<span class="text-slate-300">-</span>`;
+                return `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${esc(item.tanggalMasuk)}</td>
+                    <td class="p-3 font-bold text-slate-800">${esc(item.nama)}</td>
+                    <td class="p-3 font-bold text-indigo-600">${fmtNum(item.qty)}</td>
+                    <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${keluar ? esc(item.tanggalKeluar) : '-'}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded-md font-bold text-[10px] ${keluar ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">${keluar ? 'Sudah Keluar' : 'Masih Ada'}</span></td>
+                    <td class="p-3 text-center whitespace-nowrap">${aksi}</td>
+                </tr>`;
+            }).join('');
+        }
+
         // ================= HAPUS =================
         let pendingDeleteType = null;
         let pendingDeleteId = null;
@@ -1504,8 +1804,11 @@
         function promptDeleteTransaction(type, id) {
             pendingDeleteType = type;
             pendingDeleteId = id;
-            setTxt('confirmTitle', `Hapus Data ${type === 'kas' ? 'Pemasukan Kas' : 'Pengeluaran'}?`);
-            setTxt('confirmMessage', 'Data ini akan terhapus dari sistem dan saldo akhir akan disesuaikan.');
+            const label = type === 'kas' ? 'Pemasukan Kas' : type === 'inventaris' ? 'Inventaris' : 'Pengeluaran';
+            setTxt('confirmTitle', `Hapus Data ${label}?`);
+            setTxt('confirmMessage', type === 'inventaris'
+                ? 'Catatan inventaris ini akan dihapus dari sistem.'
+                : 'Data ini akan terhapus dari sistem dan saldo akhir akan disesuaikan.');
             document.getElementById('confirmModal').classList.remove('hidden');
             document.getElementById('btnActionConfirm').onclick = executeDelete;
         }
@@ -1520,9 +1823,10 @@
             if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
             if (!pendingDeleteType || !pendingDeleteId) return;
 
-            const collection = pendingDeleteType === 'kas' ? 'kas' : 'pengeluaran';
+            const collection = pendingDeleteType === 'kas' ? 'kas' : pendingDeleteType === 'inventaris' ? 'inventaris' : 'pengeluaran';
 
-            sendToGoogleSheets({ action: 'DELETE', type: pendingDeleteType, id: pendingDeleteId });
+            // Inventaris tidak disinkronkan ke Google Sheets (hanya kas & pengeluaran)
+            if (pendingDeleteType !== 'inventaris') sendToGoogleSheets({ action: 'DELETE', type: pendingDeleteType, id: pendingDeleteId });
 
             database.ref(`${collection}/${pendingDeleteId}`).remove()
                 .then(() => { closeConfirmModal(); showToast('Data berhasil dihapus', 'success'); })
