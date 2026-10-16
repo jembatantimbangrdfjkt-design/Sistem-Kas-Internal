@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JEMBATAN TIMBANG - Sistem Pengelolaan inventaris Jembatan Timbang</title>
+    <title>JEMBATAN TIMBANG - Sistem Pengelolaan Inventaris & Cuti Jembatan Timbang</title>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -78,14 +78,14 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div onclick="triggerLogoChange()" title="Klik untuk ubah logo (Mode Admin)" class="relative group cursor-pointer w-11 h-11 rounded-2xl bg-gradient-to-tr from-orange-400 to-blue-500 flex items-center justify-center text-white shadow-lg overflow-hidden border border-blue-300/30">
-                        <img id="customLogoImg" src="" alt="Logo  Internal" class="w-full h-full object-cover hidden">
+                        <img id="customLogoImg" src="" alt="Logo Internal" class="w-full h-full object-cover hidden">
                         <i id="defaultLogoIcon" class="fa-solid fa-building-columns text-xl"></i>
                         <input type="file" id="logoFileInput" accept="image/*" onchange="handleLogoUpload(event)" class="hidden">
                         <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[9px] text-white font-bold transition">Ubah</div>
                     </div>
                     <div>
                         <h1 class="font-extrabold text-xl sm:text-2xl tracking-tight leading-tight">Jembatan Timbang</h1>
-                        <p class="text-xs text-blue-200 font-medium hidden sm:block"> Pengelolaan Inventaris JT</p>
+                        <p class="text-xs text-blue-200 font-medium hidden sm:block">Pengelolaan Inventaris JT & Sistem Cuti</p>
                     </div>
                 </div>
 
@@ -96,7 +96,7 @@
                     </div>
                     <button id="authBtn" onclick="toggleAuthModal()" class="px-4 py-2 rounded-xl text-sm font-semibold transition duration-200 bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center shadow-sm hover:shadow active:scale-95">
                         <i id="authIcon" class="fa-solid fa-lock mr-2 text-blue-300"></i>
-                        <span id="authBtnText">Login Admin</span>
+                        <span id="authBtnText">Login Admin / SPV</span>
                     </button>
                 </div>
             </div>
@@ -116,8 +116,13 @@
                     <span id="lockExpBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-blue-950/60 text-orange-300 border border-orange-500/20"><i class="fa-solid fa-lock text-[9px]"></i></span>
                 </button>
                 <button onclick="switchTab('inventaris')" id="tab-inventaris" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-white/80 hover:bg-white/10">
-                    <i class="fa-solid fa-boxes-stacked mr-2"></i> Inventaris Jembatan Timbang
+                    <i class="fa-solid fa-boxes-stacked mr-2"></i> Inventaris JT
                     <span id="lockInvBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-blue-950/60 text-orange-300 border border-orange-500/20"><i class="fa-solid fa-lock text-[9px]"></i></span>
+                </button>
+                <!-- TAB BARU: PENGAJUAN CUTI -->
+                <button onclick="switchTab('cuti')" id="tab-cuti" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-white/80 hover:bg-white/10">
+                    <i class="fa-solid fa-user-clock mr-2"></i> Pengajuan Cuti
+                    <span id="pendingCutiBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500 text-white font-extrabold hidden">0</span>
                 </button>
                 <button onclick="switchTab('laporan')" id="tab-laporan" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-white/80 hover:bg-white/10">
                     <i class="fa-solid fa-file-invoice-dollar mr-2"></i> Laporan Keuangan
@@ -683,13 +688,113 @@
             </div>
         </section>
 
+        <!-- ================= TAB BARU: PENGAJUAN CUTI ================= -->
+        <section id="content-cuti" class="tab-content hidden space-y-6">
+
+            <!-- Banner Info untuk User/SPV -->
+            <div class="glass-card rounded-2xl p-5 border border-white/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-11 h-11 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid fa-user-clock"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-extrabold text-slate-800 text-base">Form Pengajuan Cuti Anggota</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Pengajuan cuti dari anggota JT yang memerlukan persetujuan (ACC) SPV: <b>Mida Ru'yati Laila</b></p>
+                    </div>
+                </div>
+                <div id="cutiRoleStatus" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                    <i class="fa-solid fa-user mr-1 text-slate-500"></i> <span id="cutiRoleText">Akses Tamu (Dapat Mengajukan Cuti)</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- FORM PENGAJUAN CUTI -->
+                <div class="lg:col-span-1 glass-card p-6 rounded-2xl border border-white/60">
+                    <div class="flex items-center space-x-2 border-b border-slate-100 pb-3 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-file-pen"></i>
+                        </div>
+                        <h2 class="font-bold text-slate-800 text-base">Pengajuan Cuti Baru</h2>
+                    </div>
+
+                    <form id="formPengajuanCuti" onsubmit="handleSaveCuti(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Nama Anggota <span class="text-orange-500">*</span></label>
+                            <select id="cutiNamaAnggota" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-orange-500 outline-none bg-white">
+                                <option value="">-- Pilih Nama Anggota --</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Mulai Cuti <span class="text-orange-500">*</span></label>
+                                <input type="date" id="cutiTglMulai" required onchange="calculateDurasiCuti()" class="w-full text-sm border border-slate-300 rounded-xl px-2.5 py-2 focus:ring-2 focus:ring-orange-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Selesai Cuti <span class="text-orange-500">*</span></label>
+                                <input type="date" id="cutiTglSelesai" required onchange="calculateDurasiCuti()" class="w-full text-sm border border-slate-300 rounded-xl px-2.5 py-2 focus:ring-2 focus:ring-orange-500 outline-none">
+                            </div>
+                        </div>
+                        <div class="bg-orange-50 p-3 rounded-xl border border-orange-200/80 flex items-center justify-between">
+                            <span class="text-xs text-orange-900 font-semibold">Lama Cuti:</span>
+                            <span id="cutiDurasiDisplay" class="text-sm font-extrabold text-orange-700">1 Hari</span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Alasan Cuti <span class="text-orange-500">*</span></label>
+                            <textarea id="cutiAlasan" rows="3" required placeholder="Jelaskan alasan pengajuan cuti secara singkat..." class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-orange-500 outline-none"></textarea>
+                        </div>
+                        <button type="submit" id="btnSubmitCuti" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-md flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i><span>Kirim Pengajuan Cuti</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- TABEL RIWAYAT PENGAJUAN CUTI & ACC SPV -->
+                <div class="lg:col-span-2 glass-card p-6 rounded-2xl border border-white/60 flex flex-col">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-base">Daftar Pengajuan Cuti Anggota</h2>
+                            <div class="flex flex-wrap items-center gap-2 mt-2">
+                                <select id="filterCutiStatus" onchange="renderCutiTable()" class="text-xs border border-slate-300 rounded-xl px-2 py-1.5 bg-white focus:ring-2 focus:ring-orange-500 outline-none">
+                                    <option value="">Semua Status Pengajuan</option>
+                                    <option value="PENDING">Menunggu ACC SPV</option>
+                                    <option value="APPROVED">Disetujui (ACC)</option>
+                                    <option value="REJECTED">Ditolak</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input type="text" id="searchCuti" onkeyup="renderCutiTable()" placeholder="Cari nama / alasan..." class="text-xs pl-8 pr-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none w-full sm:w-48">
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto flex-grow">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 text-slate-600 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg">Tgl Pengajuan</th>
+                                    <th class="p-3">Nama Anggota</th>
+                                    <th class="p-3">Periode Cuti</th>
+                                    <th class="p-3">Durasi</th>
+                                    <th class="p-3">Alasan</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-center rounded-r-lg">Aksi / ACC</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cutiTableBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- ================= TAB 4: LAPORAN ================= -->
         <section id="content-laporan" class="tab-content hidden space-y-6">
 
             <div id="laporanAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <i class="fa-solid fa-lock text-orange-600 text-xl"></i>
-                    <p class="text-xs sm:text-sm font-medium">Laporan lengkap dapat diakses secara penuh setelah Anda login sebagai Admin.</p>
+                    <p class="text-xs sm:text-sm font-medium">Laporan lengkap dapat diakses secara penuh setelah Anda login sebagai Admin / SPV.</p>
                 </div>
                 <button onclick="toggleAuthModal()" class="px-3 py-1.5 bg-orange-600 text-white rounded-xl text-xs font-bold hover:bg-orange-700">Login Admin</button>
             </div>
@@ -717,7 +822,7 @@
 
             <div class="hidden print-only mb-6 text-center border-b pb-4">
                 <h1 class="text-2xl font-bold uppercase">Laporan Kas Anggota (Mulai Agustus)</h1>
-                <p class="text-sm">Sistem Pengelolaan inventaris JT</p>
+                <p class="text-sm">Sistem Pengelolaan Inventaris JT</p>
                 <p class="text-xs text-slate-500 mt-1">Tanggal Cetak: <span id="printDate"></span></p>
             </div>
 
@@ -768,34 +873,34 @@
         </section>
     </main>
 
-    <!-- MODAL LOGIN ADMIN -->
+    <!-- MODAL LOGIN ADMIN & SPV -->
     <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
             <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
                 <div class="flex items-center space-x-2">
                     <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center"><i class="fa-solid fa-user-shield text-base"></i></div>
-                    <h3 class="font-extrabold text-slate-800 text-lg">Login Administrator</h3>
+                    <h3 class="font-extrabold text-slate-800 text-lg">Login Admin / SPV</h3>
                 </div>
                 <button onclick="toggleAuthModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <p class="text-xs text-slate-500 mb-4">Login diperlukan untuk menginput uang kas, menginput pengeluaran, mengelola inventaris, serta mengelola data keuangan.</p>
+            <p class="text-xs text-slate-500 mb-4">Login sebagai Admin untuk mengelola Kas & Inventaris, atau sebagai <b>SPV (Mida Ru'yati Laila)</b> untuk menyetujui (ACC) Pengajuan Cuti.</p>
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Username</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Username / Nama</label>
                     <div class="relative">
                         <i class="fa-solid fa-user absolute left-3 top-3 text-slate-400 text-xs"></i>
-                        <input type="text" id="loginUsername" required autocomplete="username" class="w-full text-sm pl-9 pr-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="text" id="loginUsername" required autocomplete="username" placeholder="cth: Mida Ru'yati Laila / Pirda Ripiani" class="w-full text-sm pl-9 pr-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
                     <div class="relative">
                         <i class="fa-solid fa-key absolute left-3 top-3 text-slate-400 text-xs"></i>
-                        <input type="password" id="loginPassword" required autocomplete="current-password" class="w-full text-sm pl-9 pr-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••" class="w-full text-sm pl-9 pr-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                 </div>
                 <div class="pt-2 flex justify-center">
-                    <button type="submit" class="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow-md">Masuk Admin</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow-md">Masuk System</button>
                 </div>
             </form>
         </div>
@@ -937,7 +1042,7 @@
     </div>
 
     <script>
-        // ================= GOOGLE SHEETS (tidak diubah) =================
+        // ================= GOOGLE SHEETS =================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyM7Z_lvb56gbgwiC9yVJ0nUpDSb32PebUyuhZhyGeZ-1UniEHYqr45FyTg8dbhaN4/exec";
 
         function sendToGoogleSheets(payload) {
@@ -972,6 +1077,7 @@
         let appState = {
             isAdminLoggedIn: false,
             adminName: null,
+            role: 'GUEST', // 'GUEST', 'ADMIN', 'SPV'
             activeTab: 'dashboard',
             iuranPerBulan: 10000,
             targetMonth: 8,
@@ -979,6 +1085,7 @@
             kasEntries: [],
             pengeluaranEntries: [],
             inventarisEntries: [],
+            cutiEntries: [],
             customLogo: null
         };
 
@@ -1002,7 +1109,7 @@
         const mk = t => String(t || '').slice(0, 7); // 'YYYY-MM'
         const sumBy = (arr, key) => arr.reduce((s, e) => s + (Number(e[key]) || 0), 0);
         const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
-        const byDateDesc = (a, b) => String(b.tanggal).localeCompare(String(a.tanggal));
+        const byDateDesc = (a, b) => String(b.tanggal || b.tglPengajuan).localeCompare(String(a.tanggal || a.tglPengajuan));
 
         function todayStr() {
             const n = new Date();
@@ -1058,7 +1165,7 @@
             if (printDateElem) printDateElem.innerText = new Date().toLocaleDateString('id-ID', { dateStyle: 'full' });
         });
 
-        // ================= FIREBASE LISTENERS (struktur data kas & pengeluaran tidak berubah) =================
+        // ================= FIREBASE LISTENERS =================
         function startRealtimeListeners() {
             database.ref('settings').on('value', snapshot => {
                 const settings = snapshot.val() || {};
@@ -1091,12 +1198,24 @@
                 renderLaporan();
             });
 
-            // Node baru: 'inventaris' (terpisah, tidak menyentuh data kas/pengeluaran)
             database.ref('inventaris').on('value', snapshot => {
                 const data = snapshot.val() || {};
                 appState.inventarisEntries = Object.entries(data).map(([id, item]) => normalizeInvItem(id, item));
                 renderDashboard();
                 renderInventarisTable();
+            });
+
+            // Node Baru: 'cuti'
+            database.ref('cuti').on('value', snapshot => {
+                const data = snapshot.val() || {};
+                appState.cutiEntries = Object.entries(data).map(([id, item]) => ({
+                    id, ...item,
+                    tglPengajuan: normalizeDateOnly(item.tglPengajuan),
+                    tglMulai: normalizeDateOnly(item.tglMulai),
+                    tglSelesai: normalizeDateOnly(item.tglSelesai)
+                }));
+                renderCutiTable();
+                updatePendingCutiBadge();
             });
         }
 
@@ -1112,23 +1231,24 @@
         }
 
         function saveLogoToStorage() {
-            try { if (appState.customLogo) localStorage.setItem('kasinternal_logo', appState.customLogo); }
+            try { if (appState.customLogo) localStorage.getItem('kasinternal_logo', appState.customLogo); }
             catch (e) { showToast('Logo terlalu besar untuk disimpan di browser.', 'error'); }
         }
 
-        // ================= AKUN ADMIN & SAPAAN =================
+        // ================= AKUN ADMIN & SPV =================
+        // Menambahkan Mida Ru'yati Laila sebagai SPV
         const ADMIN_ACCOUNTS = [
-            { names: ['pirda ripiani'], display: 'Pirda Ripiani', password: 'Pirda Upst!@#' },
-            { names: ['ahmad rafi', 'ahmad rafi al hadad'], display: 'Ahmad Rafi', password: 'Rafi20' },
-            { names: ['kiki zakiyah afriyani', 'kiki zakyah apriyani', 'kiki zakiyah', 'kiki'], display: 'Kiki Zakiyah Afriyani', password: 'Kiki20' }
+            { names: ['pirda ripiani', 'pirda'], display: 'Pirda Ripiani', password: 'Pirda Upst!@#', role: 'ADMIN' },
+            { names: ['ahmad rafi', 'ahmad rafi al hadad', 'rafi'], display: 'Ahmad Rafi', password: 'Rafi20', role: 'ADMIN' },
+            { names: ['kiki zakiyah afriyani', 'kiki zakyah apriyani', 'kiki zakiyah', 'kiki'], display: 'Kiki Zakiyah Afriyani', password: 'Kiki20', role: 'ADMIN' },
+            { names: ['mida ru\'yati laila', 'mida ruyati laila', 'mida', 'spv mida'], display: 'Mida Ru\'yati Laila (SPV)', password: 'Mida20', role: 'SPV' }
         ];
 
         function findAdminAccount(username, password) {
             const u = String(username).trim().toLowerCase();
-            return ADMIN_ACCOUNTS.find(a => a.names.includes(u) && a.password === password) || null;
+            return ADMIN_ACCOUNTS.find(a => a.names.some(name => u.includes(name) || name === u) && a.password === password) || null;
         }
 
-        // Pagi 04.00-11.59, Siang 12.00-14.59, Sore 15.00-17.59, Malam 18.00-03.59
         function getGreeting() {
             const h = new Date().getHours();
             if (h >= 4 && h < 12) return { text: 'Selamat Pagi', icon: 'fa-sun' };
@@ -1148,9 +1268,9 @@
             if (icon) icon.className = `fa-solid ${g.icon}`;
             banner.classList.remove('hidden');
         }
-        setInterval(renderGreeting, 60000); // ikut berganti otomatis saat jam berubah
+        setInterval(renderGreeting, 60000);
 
-        // ================= TAB =================
+        // ================= TAB SWITCHING =================
         function switchTab(tabId) {
             appState.activeTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -1172,6 +1292,7 @@
             else if (tabId === 'input-kas') renderKasTable();
             else if (tabId === 'input-pengeluaran') renderPengeluaranTable();
             else if (tabId === 'inventaris') renderInventarisTable();
+            else if (tabId === 'cuti') renderCutiTable();
             else if (tabId === 'laporan') renderLaporan();
         }
 
@@ -1182,8 +1303,9 @@
             if (appState.isAdminLoggedIn) {
                 appState.isAdminLoggedIn = false;
                 appState.adminName = null;
+                appState.role = 'GUEST';
                 updateUIState();
-                showToast('Anda telah logout dari mode Admin.', 'info');
+                showToast('Anda telah logout dari mode Admin/SPV.', 'info');
             } else {
                 modal.classList.toggle('hidden');
             }
@@ -1197,10 +1319,11 @@
             const acc = findAdminAccount(u, p);
             if (acc) {
                 appState.adminName = acc.display;
+                appState.role = acc.role;
                 appState.isAdminLoggedIn = true;
                 document.getElementById('authModal').classList.add('hidden');
                 updateUIState();
-                showToast('Login Admin berhasil! Akses penuh dibuka.', 'success');
+                showToast(`Login Berhasil! Selamat datang ${acc.display}`, 'success');
             } else {
                 showToast('Username atau Password salah!', 'error');
             }
@@ -1208,11 +1331,15 @@
 
         function updateUIState() {
             const on = appState.isAdminLoggedIn;
+            const isSpv = appState.role === 'SPV';
             renderGreeting();
+
             const statusDot = document.getElementById('statusDot');
             if (statusDot) statusDot.className = `w-2 h-2 rounded-full ${on ? 'bg-blue-400' : 'bg-orange-400'} mr-2 animate-pulse`;
-            setTxt('statusText', on ? 'Mode Admin (Akses Penuh)' : 'Mode Tamu (Hanya Lihat)');
-            setTxt('authBtnText', on ? 'Logout Admin' : 'Login Admin');
+
+            setTxt('statusText', on ? `Mode ${appState.role} (${appState.adminName})` : 'Mode Tamu (Hanya Lihat)');
+            setTxt('authBtnText', on ? 'Logout' : 'Login Admin / SPV');
+
             const authIcon = document.getElementById('authIcon');
             if (authIcon) authIcon.className = on ? 'fa-solid fa-right-from-bracket mr-2 text-orange-300' : 'fa-solid fa-lock mr-2 text-blue-300';
 
@@ -1221,10 +1348,21 @@
                 if (el) el.classList.toggle('hidden', on);
             });
 
+            // Banner Role di Tab Cuti
+            const cutiRoleText = document.getElementById('cutiRoleText');
+            if (cutiRoleText) {
+                if (isSpv || (on && appState.role === 'ADMIN')) {
+                    cutiRoleText.innerHTML = `<b class="text-orange-600"><i class="fa-solid fa-user-check mr-1"></i> Mode SPV / Admin:</b> Berhak memberikan persetujuan (ACC) / Menolak Cuti.`;
+                } else {
+                    cutiRoleText.innerHTML = `<i class="fa-solid fa-user mr-1 text-slate-500"></i> Mode Anggota: Mengajukan cuti dan menunggu ACC SPV.`;
+                }
+            }
+
             renderDashboard();
             renderKasTable();
             renderPengeluaranTable();
             renderInventarisTable();
+            renderCutiTable();
             renderLaporan();
         }
 
@@ -1257,10 +1395,10 @@
             renderUnpaidMembers();
             renderRecentIncome();
             renderRecentExpense();
+            updatePendingCutiBadge();
         }
 
-
-        // ================= GRAFIK BATANG (Chart.js, dihitung di browser) =================
+        // ================= GRAFIK BATANG =================
         let chartKasInst = null, chartInvInst = null;
 
         function barGradient(ctx, top, bottom) {
@@ -1325,7 +1463,6 @@
             }
         }
 
-        // Ringkasan per bulan (dihitung di browser, tidak menambah data di Firebase)
         function renderMonthly() {
             const sel = document.getElementById('dashMonth');
             if (!sel) return;
@@ -1368,7 +1505,6 @@
             }).join('');
         }
 
-        // Estimasi pemakaian Firebase (ukuran JSON data yang tersimpan)
         function renderStorage() {
             if (!document.getElementById('fbUsed')) return;
             const pack = arr => Object.fromEntries(arr.map(({ id, ...v }) => [id, v]));
@@ -1376,10 +1512,11 @@
                 settings: { iuranPerBulan: appState.iuranPerBulan, saldoAwal: appState.saldoAwal, targetMonth: appState.targetMonth },
                 kas: pack(appState.kasEntries),
                 pengeluaran: pack(appState.pengeluaranEntries),
-                inventaris: Object.fromEntries(appState.inventarisEntries.map(({ id, logs, qtyKeluar, sisa, ...v }) => [id, v]))
+                inventaris: Object.fromEntries(appState.inventarisEntries.map(({ id, logs, qtyKeluar, sisa, ...v }) => [id, v])),
+                cuti: pack(appState.cutiEntries)
             });
             const bytes = new TextEncoder().encode(json).length;
-            const n = appState.kasEntries.length + appState.pengeluaranEntries.length + appState.inventarisEntries.length;
+            const n = appState.kasEntries.length + appState.pengeluaranEntries.length + appState.inventarisEntries.length + appState.cutiEntries.length;
             const avg = n ? bytes / n : 0;
             const pct = bytes / FB_LIMIT_BYTES * 100;
 
@@ -1456,14 +1593,17 @@
         }
 
         function populateMemberDropdown() {
-            const select = document.getElementById('kasNamaAnggota');
-            if (!select) return;
-            select.innerHTML = '<option value="">-- Pilih Anggota --</option>';
-            MASTER_MEMBERS.slice().sort().forEach(member => {
-                const opt = document.createElement('option');
-                opt.value = member;
-                opt.textContent = member;
-                select.appendChild(opt);
+            const selects = ['kasNamaAnggota', 'cutiNamaAnggota'];
+            selects.forEach(id => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                select.innerHTML = `<option value="">-- Pilih Anggota --</option>`;
+                MASTER_MEMBERS.slice().sort().forEach(member => {
+                    const opt = document.createElement('option');
+                    opt.value = member;
+                    opt.textContent = member;
+                    select.appendChild(opt);
+                });
             });
         }
 
@@ -1472,9 +1612,15 @@
             const kasTgl = document.getElementById('kasTanggal');
             const expTgl = document.getElementById('expTanggal');
             const invTgl = document.getElementById('invTglMasuk');
+            const cutiMulai = document.getElementById('cutiTglMulai');
+            const cutiSelesai = document.getElementById('cutiTglSelesai');
+
             if (kasTgl) kasTgl.value = today;
             if (expTgl) expTgl.value = today;
             if (invTgl) invTgl.value = today;
+            if (cutiMulai) cutiMulai.value = today;
+            if (cutiSelesai) cutiSelesai.value = today;
+            calculateDurasiCuti();
         }
 
         function updateIuranSetting(val) {
@@ -1596,8 +1742,6 @@
             if (modal) modal.classList.toggle('hidden', !show);
         }
 
-        // Hanya menulis/menghapus record yang berubah (tidak menimpa seluruh node 'kas'),
-        // dan ikut disinkronkan ke Google Sheets lewat action yang sudah ada.
         function executeResetUnpaid(mode) {
             if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
 
@@ -1611,7 +1755,7 @@
                     const { monthsPaid } = monthsPaidOf(member);
                     if (monthsPaid < requiredMonths) {
                         const neededMonths = requiredMonths - monthsPaid;
-                        const id = database.ref('kas').push().key; // key valid (tanpa titik)
+                        const id = database.ref('kas').push().key;
                         const entry = {
                             tanggal: todayStr(),
                             nama: member,
@@ -1758,7 +1902,6 @@
         // ================= FORM INVENTARIS =================
         const SATUAN_INV = ['pcs', 'pack', 'box'];
 
-        // Hitung turunan: logs (riwayat keluar), qtyKeluar, sisa. Data lama (tanpa satuan / tanggalKeluar penuh) tetap terbaca.
         function normalizeInvItem(id, item) {
             const qty = Number(item.qty) || 0;
             let logs = [];
@@ -1779,7 +1922,6 @@
             };
         }
 
-        // Jumlahkan per satuan -> "12 pcs · 3 box"
         function fmtUnits(arr, field) {
             const m = {};
             arr.forEach(e => { m[e.satuan || 'pcs'] = (m[e.satuan || 'pcs'] || 0) + (Number(e[field]) || 0); });
@@ -1854,7 +1996,7 @@
 
             const logKey = database.ref().push().key;
             let overdraw = false;
-            // Transaction: stok dicek ulang di server supaya tidak minus jika dua admin menyimpan bersamaan
+
             database.ref('inventaris/' + id).transaction(cur => {
                 if (!cur) return cur;
                 const total = Number(cur.qty) || 0;
@@ -1870,6 +2012,156 @@
                 else showToast(overdraw ? 'Jumlah keluar melebihi sisa stok terbaru!' : 'Gagal menyimpan barang keluar.', 'error');
             }).catch(() => showToast('Gagal menyimpan barang keluar.', 'error'));
             toggleInvKeluarModal(false);
+        }
+
+        // ================= PENGAJUAN CUTI & LOGIC ACC SPV =================
+        function calculateDurasiCuti() {
+            const tglMulai = document.getElementById('cutiTglMulai')?.value;
+            const tglSelesai = document.getElementById('cutiTglSelesai')?.value;
+            if (!tglMulai || !tglSelesai) return 1;
+
+            const d1 = new Date(tglMulai);
+            const d2 = new Date(tglSelesai);
+
+            if (d2 < d1) {
+                setTxt('cutiDurasiDisplay', 'Tanggal tidak valid');
+                return 0;
+            }
+
+            const diffTime = Math.abs(d2 - d1);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            setTxt('cutiDurasiDisplay', `${diffDays} Hari`);
+            return diffDays;
+        }
+
+        function handleSaveCuti(e) {
+            e.preventDefault();
+            const nama = document.getElementById('cutiNamaAnggota').value;
+            const tglMulai = document.getElementById('cutiTglMulai').value;
+            const tglSelesai = document.getElementById('cutiTglSelesai').value;
+            const alasan = document.getElementById('cutiAlasan').value.trim();
+            const durasi = calculateDurasiCuti();
+
+            if (!nama) { showToast('Pilih nama anggota terlebih dahulu!', 'error'); return; }
+            if (durasi <= 0) { showToast('Tanggal selesai cuti tidak boleh sebelum tanggal mulai!', 'error'); return; }
+            if (!alasan) { showToast('Mohon isi alasan pengajuan cuti!', 'error'); return; }
+
+            const newCuti = {
+                nama,
+                tglPengajuan: todayStr(),
+                tglMulai,
+                tglSelesai,
+                durasi,
+                alasan,
+                status: 'PENDING', // PENDING, APPROVED, REJECTED
+                disetujuiOleh: ''
+            };
+
+            database.ref('cuti').push().set(newCuti)
+                .then(() => {
+                    document.getElementById('formPengajuanCuti').reset();
+                    setDefaultDates();
+                    showToast(`Pengajuan cuti atas nama ${nama} berhasil dikirim! Menunggu ACC SPV.`, 'success');
+                })
+                .catch(error => {
+                    console.error('Error pengajuan cuti:', error);
+                    showToast('Gagal mengirimkan pengajuan cuti.', 'error');
+                });
+        }
+
+        function updatePendingCutiBadge() {
+            const pendingCount = appState.cutiEntries.filter(c => c.status === 'PENDING').length;
+            const badge = document.getElementById('pendingCutiBadge');
+            if (badge) {
+                if (pendingCount > 0) {
+                    badge.innerText = pendingCount;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+        }
+
+        function updateCutiStatus(id, newStatus) {
+            const canApprove = appState.isAdminLoggedIn && (appState.role === 'SPV' || appState.role === 'ADMIN');
+            if (!canApprove) {
+                showToast('Hanya SPV (Mida Ru\'yati Laila) atau Admin yang berhak menyetujui pengajuan cuti!', 'error');
+                toggleAuthModal();
+                return;
+            }
+
+            const approverName = appState.adminName || "Mida Ru'yati Laila (SPV)";
+            database.ref(`cuti/${id}`).update({
+                status: newStatus,
+                disetujuiOleh: approverName,
+                tglProses: todayStr()
+            }).then(() => {
+                showToast(`Pengajuan cuti berhasil ${newStatus === 'APPROVED' ? 'DISETUJUI (ACC)' : 'DITOLAK'} oleh ${approverName}`, newStatus === 'APPROVED' ? 'success' : 'info');
+            }).catch(() => showToast('Gagal memproses status cuti.', 'error'));
+        }
+
+        function renderCutiTable() {
+            const tbody = document.getElementById('cutiTableBody');
+            if (!tbody) return;
+
+            const q = (document.getElementById('searchCuti')?.value || '').toLowerCase();
+            const st = document.getElementById('filterCutiStatus')?.value || '';
+
+            const filtered = appState.cutiEntries.filter(item =>
+                (!st || item.status === st) &&
+                ((item.nama || '').toLowerCase().includes(q) || (item.alasan || '').toLowerCase().includes(q))
+            ).sort((a, b) => String(b.tglPengajuan || '').localeCompare(String(a.tglPengajuan || '')));
+
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-400">Belum ada data pengajuan cuti.</td></tr>`;
+                return;
+            }
+
+            const isApprover = appState.isAdminLoggedIn && (appState.role === 'SPV' || appState.role === 'ADMIN');
+
+            tbody.innerHTML = filtered.map(item => {
+                let badgeClass = "bg-orange-100 text-orange-800 border-orange-200";
+                let statusText = "<i class='fa-solid fa-clock mr-1'></i> Menunggu ACC SPV";
+
+                if (item.status === 'APPROVED') {
+                    badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
+                    statusText = `<i class='fa-solid fa-circle-check mr-1'></i> Disetujui (${esc(item.disetujuiOleh || 'SPV')})`;
+                } else if (item.status === 'REJECTED') {
+                    badgeClass = "bg-slate-200 text-slate-700 border-slate-300";
+                    statusText = `<i class='fa-solid fa-circle-xmark mr-1'></i> Ditolak (${esc(item.disetujuiOleh || 'SPV')})`;
+                }
+
+                let actionCol = `-`;
+                if (isApprover) {
+                    if (item.status === 'PENDING') {
+                        actionCol = `
+                            <div class="flex items-center justify-center space-x-1.5">
+                                <button onclick="updateCutiStatus('${item.id}', 'APPROVED')" title="ACC / Setujui Cuti" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-[10px] shadow transition">
+                                    <i class="fa-solid fa-check mr-1"></i> ACC
+                                </button>
+                                <button onclick="updateCutiStatus('${item.id}', 'REJECTED')" title="Tolak Cuti" class="px-2 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold rounded-lg text-[10px] transition">
+                                    Tolak
+                                </button>
+                                ${deleteButton('cuti', item.id)}
+                            </div>`;
+                    } else {
+                        actionCol = `<div class="flex items-center justify-center space-x-1">${deleteButton('cuti', item.id)}</div>`;
+                    }
+                } else if (appState.isAdminLoggedIn) {
+                    actionCol = deleteButton('cuti', item.id);
+                }
+
+                return `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${esc(item.tglPengajuan)}</td>
+                    <td class="p-3 font-bold text-slate-800">${esc(item.nama)}</td>
+                    <td class="p-3 font-medium text-slate-600 whitespace-nowrap">${esc(item.tglMulai)} s/d ${esc(item.tglSelesai)}</td>
+                    <td class="p-3 font-bold text-orange-600">${esc(item.durasi)} Hari</td>
+                    <td class="p-3 text-slate-600 max-w-xs truncate" title="${esc(item.alasan)}">${esc(item.alasan)}</td>
+                    <td class="p-3"><span class="px-2.5 py-1 rounded-full border text-[10px] font-bold whitespace-nowrap ${badgeClass}">${statusText}</span></td>
+                    <td class="p-3 text-center whitespace-nowrap">${actionCol}</td>
+                </tr>`;
+            }).join('');
         }
 
         // ================= TABEL RIWAYAT =================
@@ -2001,17 +2293,17 @@
             }).join('');
         }
 
-        // ================= HAPUS =================
+        // ================= HAPUS DATA =================
         let pendingDeleteType = null;
         let pendingDeleteId = null;
 
         function promptDeleteTransaction(type, id) {
             pendingDeleteType = type;
             pendingDeleteId = id;
-            const label = type === 'kas' ? 'Pemasukan Kas' : type === 'inventaris' ? 'Inventaris' : 'Pengeluaran';
+            const label = type === 'kas' ? 'Pemasukan Kas' : type === 'inventaris' ? 'Inventaris' : type === 'cuti' ? 'Pengajuan Cuti' : 'Pengeluaran';
             setTxt('confirmTitle', `Hapus Data ${label}?`);
-            setTxt('confirmMessage', type === 'inventaris'
-                ? 'Catatan inventaris ini akan dihapus dari sistem.'
+            setTxt('confirmMessage', type === 'inventaris' || type === 'cuti'
+                ? `Catatan ${label.toLowerCase()} ini akan dihapus dari sistem.`
                 : 'Data ini akan terhapus dari sistem dan saldo akhir akan disesuaikan.');
             document.getElementById('confirmModal').classList.remove('hidden');
             document.getElementById('btnActionConfirm').onclick = executeDelete;
@@ -2024,13 +2316,14 @@
         }
 
         function executeDelete() {
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login terlebih dahulu.', 'error'); return; }
             if (!pendingDeleteType || !pendingDeleteId) return;
 
-            const collection = pendingDeleteType === 'kas' ? 'kas' : pendingDeleteType === 'inventaris' ? 'inventaris' : 'pengeluaran';
+            const collection = pendingDeleteType === 'kas' ? 'kas' : pendingDeleteType === 'inventaris' ? 'inventaris' : pendingDeleteType === 'cuti' ? 'cuti' : 'pengeluaran';
 
-            // Inventaris tidak disinkronkan ke Google Sheets (hanya kas & pengeluaran)
-            if (pendingDeleteType !== 'inventaris') sendToGoogleSheets({ action: 'DELETE', type: pendingDeleteType, id: pendingDeleteId });
+            if (pendingDeleteType === 'kas' || pendingDeleteType === 'pengeluaran') {
+                sendToGoogleSheets({ action: 'DELETE', type: pendingDeleteType, id: pendingDeleteId });
+            }
 
             database.ref(`${collection}/${pendingDeleteId}`).remove()
                 .then(() => { closeConfirmModal(); showToast('Data berhasil dihapus', 'success'); })
@@ -2132,7 +2425,7 @@
             setTxt('jurnalTotalSaldo', formatRupiah(calculateSummary().saldoAkhir));
         }
 
-        // ================= TOAST =================
+        // ================= TOAST NOTIFICATION =================
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             if (!container) return;
