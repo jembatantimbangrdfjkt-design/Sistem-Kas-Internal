@@ -698,7 +698,7 @@
                         <i class="fa-solid fa-user-clock"></i>
                     </div>
                     <div>
-                        <h2 class="font-extrabold text-slate-800 text-base">Form Pengajuan Cuti Anggota</h2>
+                        <h2 class="font-extrabold text-slate-800 text-base">Sistem Pengajuan Cuti Anggota</h2>
                         <p class="text-xs text-slate-500 mt-0.5">Pengajuan cuti dari anggota JT yang memerlukan persetujuan (ACC) SPV: <b>Mida Ru'yati Laila</b></p>
                     </div>
                 </div>
@@ -707,9 +707,9 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- FORM PENGAJUAN CUTI -->
-                <div class="lg:col-span-1 glass-card p-6 rounded-2xl border border-white/60">
+            <div id="cutiGridContainer" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- FORM PENGAJUAN CUTI (Sembunyi saat login SPV) -->
+                <div id="cutiFormWrapper" class="lg:col-span-1 glass-card p-6 rounded-2xl border border-white/60">
                     <div class="flex items-center space-x-2 border-b border-slate-100 pb-3 mb-4">
                         <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold">
                             <i class="fa-solid fa-file-pen"></i>
@@ -749,7 +749,7 @@
                 </div>
 
                 <!-- TABEL RIWAYAT PENGAJUAN CUTI & ACC SPV -->
-                <div class="lg:col-span-2 glass-card p-6 rounded-2xl border border-white/60 flex flex-col">
+                <div id="cutiTableWrapper" class="lg:col-span-2 glass-card p-6 rounded-2xl border border-white/60 flex flex-col">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
                         <div>
                             <h2 class="font-bold text-slate-800 text-base">Daftar Pengajuan Cuti Anggota</h2>
@@ -1151,6 +1151,677 @@
             }, {});
         }
 
+        function populateMemberDropdown() {
+            const kasSelect = document.getElementById('kasNamaAnggota');
+            const cutiSelect = document.getElementById('cutiNamaAnggota');
+
+            const optionsHtml = '<option value="">-- Pilih Anggota --</option>' + 
+                MASTER_MEMBERS.slice().sort().map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+
+            if (kasSelect) kasSelect.innerHTML = optionsHtml;
+            if (cutiSelect) cutiSelect.innerHTML = optionsHtml;
+        }
+
+        function setDefaultDates() {
+            const t = todayStr();
+            ['kasTanggal', 'expTanggal', 'invTglMasuk', 'cutiTglMulai', 'cutiTglSelesai'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = t;
+            });
+            calculateDurasiCuti();
+        }
+
+        function renderLogo() {
+            const img = document.getElementById('customLogoImg');
+            const icon = document.getElementById('defaultLogoIcon');
+            if (appState.customLogo && img) {
+                img.src = appState.customLogo;
+                img.classList.remove('hidden');
+                if (icon) icon.classList.add('hidden');
+            } else if (img) {
+                img.classList.add('hidden');
+                if (icon) icon.classList.remove('hidden');
+            }
+        }
+
+        function calculateDurasiCuti() {
+            const start = document.getElementById('cutiTglMulai')?.value;
+            const end = document.getElementById('cutiTglSelesai')?.value;
+            const display = document.getElementById('cutiDurasiDisplay');
+            if (!display) return 1;
+
+            if (!start || !end) {
+                display.innerText = "1 Hari";
+                return 1;
+            }
+
+            const d1 = new Date(start);
+            const d2 = new Date(end);
+            const diffTime = d2.getTime() - d1.getTime();
+            let diffDays = Math.ceil(diffTime / (1000 * 3600 * 24)) + 1;
+
+            if (isNaN(diffDays) || diffDays < 1) diffDays = 1;
+
+            display.innerText = `${diffDays} Hari`;
+            return diffDays;
+        }
+
+        function updatePendingCutiBadge() {
+            const badge = document.getElementById('pendingCutiBadge');
+            if (!badge) return;
+            const count = appState.cutiEntries.filter(c => c.status === 'PENDING').length;
+            if (count > 0) {
+                badge.innerText = count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function handleSaveCuti(e) {
+            if (e) e.preventDefault();
+
+            const nama = document.getElementById('cutiNamaAnggota')?.value;
+            const tglMulai = document.getElementById('cutiTglMulai')?.value;
+            const tglSelesai = document.getElementById('cutiTglSelesai')?.value;
+            const alasan = document.getElementById('cutiAlasan')?.value;
+            const durasi = calculateDurasiCuti();
+
+            if (!nama || !tglMulai || !tglSelesai || !alasan) {
+                showToast('Semua field wajib diisi!', 'error');
+                return;
+            }
+
+            const newCuti = {
+                tglPengajuan: todayStr(),
+                nama,
+                tglMulai,
+                tglSelesai,
+                durasi,
+                alasan,
+                status: 'PENDING',
+                disetujuiOleh: ''
+            };
+
+            database.ref('cuti').push(newCuti)
+                .then(() => {
+                    showToast('Pengajuan cuti berhasil dikirim. Menunggu ACC SPV.', 'success');
+                    document.getElementById('formPengajuanCuti')?.reset();
+                    setDefaultDates();
+                })
+                .catch(err => {
+                    console.error('Error pengajuan cuti:', err);
+                    showToast('Gagal mengirim pengajuan cuti.', 'error');
+                });
+        }
+
+        function monthsPaidOf(member) {
+            const totalPaid = appState.kasEntries.filter(e => e.nama === member).reduce((a, c) => a + (Number(c.total) || 0), 0);
+            return { totalPaid, monthsPaid: Math.floor(totalPaid / appState.iuranPerBulan) };
+        }
+
+        function updateIuranSetting(val) {
+            appState.iuranPerBulan = Number(val) || 10000;
+            database.ref('settings/iuranPerBulan').set(appState.iuranPerBulan);
+        }
+
+        function changeTargetMonth(val) {
+            appState.targetMonth = Number(val) || 8;
+            database.ref('settings/targetMonth').set(appState.targetMonth);
+        }
+
+        function calculateTotalKas() {
+            const numMonths = Number(document.getElementById('kasJumlahBulan')?.value) || 1;
+            const perMonth = Number(document.getElementById('kasNominalPerBulan')?.value) || appState.iuranPerBulan;
+            setTxt('kasTotalCalculated', formatRupiah(numMonths * perMonth));
+        }
+
+        function handleSaveKas(e) {
+            if (e) e.preventDefault();
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
+
+            const tanggal = document.getElementById('kasTanggal').value;
+            const nama = document.getElementById('kasNamaAnggota').value;
+            const jumlahBulan = Number(document.getElementById('kasJumlahBulan').value) || 1;
+            const nominalPerBulan = Number(document.getElementById('kasNominalPerBulan').value) || appState.iuranPerBulan;
+            const catatan = document.getElementById('kasCatatan').value;
+
+            if (!nama) { showToast('Pilih nama anggota!', 'error'); return; }
+
+            const newKas = {
+                tanggal, nama, jumlahBulan, nominalPerBulan,
+                total: jumlahBulan * nominalPerBulan,
+                catatan: catatan || `Kas ${jumlahBulan} Bulan`
+            };
+
+            const ref = database.ref('kas').push();
+            ref.set(newKas).then(() => {
+                sendToGoogleSheets({ action: 'ADD_KAS', id: ref.key, ...newKas });
+                showToast('Pembayaran kas berhasil disimpan.', 'success');
+                document.getElementById('formInputKas').reset();
+                setDefaultDates();
+            });
+        }
+
+        function handleSavePengeluaran(e) {
+            if (e) e.preventDefault();
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
+
+            const tanggal = document.getElementById('expTanggal').value;
+            const judul = document.getElementById('expJudul').value;
+            const kategori = document.getElementById('expKategori').value;
+            const nominal = Number(document.getElementById('expNominal').value) || 0;
+            const catatan = document.getElementById('expCatatan').value;
+
+            const newExp = { tanggal, judul, kategori, nominal, catatan };
+
+            const ref = database.ref('pengeluaran').push();
+            ref.set(newExp).then(() => {
+                sendToGoogleSheets({ action: 'ADD_PENGELUARAN', id: ref.key, ...newExp });
+                showToast('Pengeluaran berhasil dicatat.', 'success');
+                document.getElementById('formInputPengeluaran').reset();
+                setDefaultDates();
+            });
+        }
+
+        const SATUAN_INV = ['pcs', 'pack', 'box'];
+
+        function normalizeInvItem(id, item) {
+            const qty = Number(item.qty) || 0;
+            let logs = [];
+            if (item.keluarLog) {
+                logs = Object.entries(item.keluarLog).map(([key, l]) => ({ key, tanggal: normalizeDateOnly(l.tanggal), qty: Number(l.qty) || 0 }));
+            } else if (item.tanggalKeluar) {
+                logs = [{ key: 'legacy', tanggal: normalizeDateOnly(item.tanggalKeluar), qty }];
+            }
+            logs.sort((a, b) => String(a.tanggal).localeCompare(String(b.tanggal)));
+            const qtyKeluar = sumBy(logs, 'qty');
+            return {
+                id, ...item, qty,
+                satuan: item.satuan || 'pcs',
+                tanggalMasuk: normalizeDateOnly(item.tanggalMasuk),
+                tanggalKeluar: logs.length ? logs[logs.length - 1].tanggal : '',
+                logs, qtyKeluar,
+                sisa: Math.max(qty - qtyKeluar, 0)
+            };
+        }
+
+        function fmtUnits(arr, field) {
+            const m = {};
+            arr.forEach(e => { m[e.satuan || 'pcs'] = (m[e.satuan || 'pcs'] || 0) + (Number(e[field]) || 0); });
+            const parts = Object.keys(m).sort((a, b) => SATUAN_INV.indexOf(a) - SATUAN_INV.indexOf(b)).filter(k => m[k] > 0).map(k => `${fmtNum(m[k])} ${k}`);
+            return parts.length ? parts.join(' · ') : '0';
+        }
+
+        function handleSaveInventaris(e) {
+            if (e) e.preventDefault();
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
+
+            const tanggalMasuk = document.getElementById('invTglMasuk').value;
+            const nama = document.getElementById('invNama').value;
+            const qty = Number(document.getElementById('invQty').value) || 0;
+            const satuan = document.getElementById('invSatuan').value;
+            const tanggalKeluar = document.getElementById('invTglKeluar').value || '';
+
+            const item = { tanggalMasuk, nama, qty, satuan, tanggalKeluar: '' };
+            if (tanggalKeluar) item.keluarLog = { [database.ref().push().key]: { tanggal: tanggalKeluar, qty } };
+
+            database.ref('inventaris').push(item).then(() => {
+                showToast('Inventaris berhasil disimpan.', 'success');
+                document.getElementById('formInputInventaris').reset();
+                setDefaultDates();
+            });
+        }
+
+        function calculateSummary() {
+            const totalPemasukan = sumBy(appState.kasEntries, 'total');
+            const totalPengeluaran = sumBy(appState.pengeluaranEntries, 'nominal');
+            const saldoAwal = appState.saldoAwal || 0;
+            return {
+                totalPemasukan, totalPengeluaran, saldoAwal,
+                saldoAkhir: saldoAwal + totalPemasukan - totalPengeluaran,
+                pemasukanCount: appState.kasEntries.length,
+                pengeluaranCount: appState.pengeluaranEntries.length
+            };
+        }
+
+        function renderDashboard() {
+            const s = calculateSummary();
+            setTxt('dashSaldoAwal', formatRupiah(s.saldoAwal));
+            setTxt('dashTotalPemasukan', formatRupiah(s.totalPemasukan));
+            setTxt('dashPemasukanCount', s.pemasukanCount);
+            setTxt('dashTotalPengeluaran', formatRupiah(s.totalPengeluaran));
+            setTxt('dashPengeluaranCount', s.pengeluaranCount);
+            setTxt('dashSaldoAkhir', formatRupiah(s.saldoAkhir));
+
+            renderMonthly();
+            renderCharts();
+            renderStorage();
+            renderInventarisDashboard();
+            renderUnpaidMembers();
+            renderRecentIncome();
+            renderRecentExpense();
+        }
+
+        let chartKasInst = null, chartInvInst = null;
+
+        function barGradient(ctx, top, bottom) {
+            const g = ctx.createLinearGradient(0, 0, 0, 300);
+            g.addColorStop(0, top); g.addColorStop(1, bottom);
+            return g;
+        }
+
+        function buildBarChart(canvasId, labelA, labelB, colorsA, colorsB, fmt) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || typeof Chart === 'undefined') return null;
+            const ctx = canvas.getContext('2d');
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: MONTHS_ID.map(m => m.slice(0, 3)),
+                    datasets: [
+                        { label: labelA, data: [], backgroundColor: barGradient(ctx, colorsA[0], colorsA[1]), borderRadius: 6, borderSkipped: false, maxBarThickness: 22 },
+                        { label: labelB, data: [], backgroundColor: barGradient(ctx, colorsB[0], colorsB[1]), borderRadius: 6, borderSkipped: false, maxBarThickness: 22 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Plus Jakarta Sans', weight: '600' } } },
+                        tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${fmt(c.parsed.y)}` } }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { family: 'Plus Jakarta Sans' } } },
+                        y: { beginAtZero: true, grid: { color: 'rgba(100,116,139,.15)' }, ticks: { font: { family: 'Plus Jakarta Sans' }, callback: v => fmt(v, true) } }
+                    }
+                }
+            });
+        }
+
+        function renderCharts() {
+            if (typeof Chart === 'undefined') return;
+            const ym = document.getElementById('dashMonth')?.value || todayYM();
+            const yr = ym.slice(0, 4);
+            setTxt('chartYearKas', yr);
+            setTxt('chartYearInv', yr);
+            const key = m => yr + '-' + String(m + 1).padStart(2, '0');
+
+            if (!chartKasInst) {
+                chartKasInst = buildBarChart('chartKas', 'Masuk', 'Keluar', ['#60a5fa', '#1d4ed8'], ['#fdba74', '#ea580c'],
+                    (v, short) => short ? (v >= 1e6 ? (v / 1e6) + ' jt' : v >= 1e3 ? (v / 1e3) + ' rb' : v) : formatRupiah(v));
+            }
+            if (!chartInvInst) {
+                chartInvInst = buildBarChart('chartInv', 'Barang Masuk', 'Barang Keluar', ['#94a3b8', '#475569'], ['#fb923c', '#c2410c'],
+                    v => fmtNum(v));
+            }
+            if (chartKasInst) {
+                chartKasInst.data.datasets[0].data = MONTHS_ID.map((_, m) => sumBy(appState.kasEntries.filter(e => mk(e.tanggal) === key(m)), 'total'));
+                chartKasInst.data.datasets[1].data = MONTHS_ID.map((_, m) => sumBy(appState.pengeluaranEntries.filter(e => mk(e.tanggal) === key(m)), 'nominal'));
+                chartKasInst.update();
+            }
+            if (chartInvInst) {
+                chartInvInst.data.datasets[0].data = MONTHS_ID.map((_, m) => sumBy(appState.inventarisEntries.filter(e => mk(e.tanggalMasuk) === key(m)), 'qty'));
+                chartInvInst.data.datasets[1].data = MONTHS_ID.map((_, m) => sumBy(appState.inventarisEntries.flatMap(e => e.logs).filter(l => mk(l.tanggal) === key(m)), 'qty'));
+                chartInvInst.update();
+            }
+        }
+
+        function renderMonthly() {
+            const sel = document.getElementById('dashMonth');
+            if (!sel) return;
+            if (!sel.value) sel.value = todayYM();
+            const ym = sel.value, yr = ym.slice(0, 4);
+            const kas = appState.kasEntries, exp = appState.pengeluaranEntries;
+
+            const inM = kas.filter(e => mk(e.tanggal) === ym);
+            const outM = exp.filter(e => mk(e.tanggal) === ym);
+            const i = sumBy(inM, 'total'), o = sumBy(outM, 'nominal'), net = i - o;
+
+            setTxt('mIn', formatRupiah(i)); setTxt('mInCount', inM.length);
+            setTxt('mOut', formatRupiah(o)); setTxt('mOutCount', outM.length);
+            const netEl = document.getElementById('mNet');
+            if (netEl) {
+                netEl.innerText = (net > 0 ? '+ ' : net < 0 ? '- ' : '') + formatRupiah(Math.abs(net));
+                netEl.className = 'text-xl font-extrabold mt-1 ' + (net >= 0 ? 'text-blue-700' : 'text-orange-700');
+            }
+
+            let max = 1;
+            const rows = MONTHS_ID.map((name, m) => {
+                const k = yr + '-' + String(m + 1).padStart(2, '0');
+                const a = sumBy(kas.filter(e => mk(e.tanggal) === k), 'total');
+                const b = sumBy(exp.filter(e => mk(e.tanggal) === k), 'nominal');
+                max = Math.max(max, a, b);
+                return { k, name, a, b };
+            });
+
+            const body = document.getElementById('monthlyTable');
+            if (!body) return;
+            body.innerHTML = rows.map(r => {
+                const n = r.a - r.b;
+                return `<tr class="${r.k === ym ? 'bg-blue-50 font-semibold' : ''}">
+                    <td class="p-2.5">${r.name} ${yr}</td>
+                    <td class="p-2.5 text-right text-blue-600">${formatRupiah(r.a)}</td>
+                    <td class="p-2.5 text-right text-orange-600">${formatRupiah(r.b)}</td>
+                    <td class="p-2.5 text-right ${n >= 0 ? 'text-slate-700' : 'text-orange-700'}">${formatRupiah(n)}</td>
+                    <td class="p-2.5"><div class="bar-track mb-1"><div class="bar-fill bg-blue-500" style="width:${r.a / max * 100}%"></div></div><div class="bar-track"><div class="bar-fill bg-orange-500" style="width:${r.b / max * 100}%"></div></div></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderStorage() {
+            if (!document.getElementById('fbUsed')) return;
+            const pack = arr => Object.fromEntries(arr.map(({ id, ...v }) => [id, v]));
+            const json = JSON.stringify({
+                settings: { iuranPerBulan: appState.iuranPerBulan, saldoAwal: appState.saldoAwal, targetMonth: appState.targetMonth },
+                kas: pack(appState.kasEntries),
+                pengeluaran: pack(appState.pengeluaranEntries),
+                inventaris: Object.fromEntries(appState.inventarisEntries.map(({ id, logs, qtyKeluar, sisa, ...v }) => [id, v]))
+            });
+            const bytes = new TextEncoder().encode(json).length;
+            const n = appState.kasEntries.length + appState.pengeluaranEntries.length + appState.inventarisEntries.length;
+            const avg = n ? bytes / n : 0;
+            const pct = bytes / FB_LIMIT_BYTES * 100;
+
+            setTxt('fbUsed', fmtBytes(bytes));
+            setTxt('fbPct', (pct < 0.01 ? '< 0,01' : pct.toFixed(2).replace('.', ',')) + '%');
+            setTxt('fbRecords', n.toLocaleString('id-ID'));
+            setTxt('fbAvg', fmtBytes(Math.round(avg)));
+            setTxt('fbLeft', avg ? '± ' + Math.floor((FB_LIMIT_BYTES - bytes) / avg).toLocaleString('id-ID') + ' record' : '-');
+
+            const bar = document.getElementById('fbBar');
+            if (bar) {
+                bar.style.width = Math.max(pct, 0.5) + '%';
+                bar.className = 'bar-fill ' + (pct >= 90 ? 'bg-orange-500' : pct >= 70 ? 'bg-orange-500' : 'bg-blue-500');
+            }
+        }
+
+        function renderInventarisDashboard() {
+            if (!document.getElementById('dashInvIn')) return;
+            const all = appState.inventarisEntries;
+            const logs = all.flatMap(e => e.logs.map(l => ({ ...l, nama: e.nama, satuan: e.satuan })));
+            const sisaList = all.filter(e => e.sisa > 0);
+
+            setTxt('invQtyMasuk', fmtUnits(all, 'qty'));
+            setTxt('invCountMasuk', all.length);
+            setTxt('invQtyKeluar', fmtUnits(logs, 'qty'));
+            setTxt('invCountKeluar', logs.length);
+            setTxt('invQtySisa', fmtUnits(sisaList, 'sisa'));
+            setTxt('invCountSisa', sisaList.length);
+
+            const recentIn = [...all].sort((a, b) => String(b.tanggalMasuk).localeCompare(String(a.tanggalMasuk))).slice(0, 5);
+            const recentOut = [...logs].sort((a, b) => String(b.tanggal).localeCompare(String(a.tanggal))).slice(0, 5);
+
+            document.getElementById('dashInvIn').innerHTML = recentIn.length ? recentIn.map(item => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-2.5 whitespace-nowrap text-slate-500">${esc(item.tanggalMasuk)}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${esc(item.nama)}</td>
+                    <td class="p-2.5 text-right font-bold text-blue-600 whitespace-nowrap">${fmtNum(item.qty)} ${esc(item.satuan)}</td>
+                </tr>`).join('') : `<tr><td colspan="3" class="text-center py-4 text-slate-400">Belum ada barang masuk</td></tr>`;
+
+            document.getElementById('dashInvOut').innerHTML = recentOut.length ? recentOut.map(item => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-2.5 whitespace-nowrap text-slate-500">${esc(item.tanggal)}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${esc(item.nama)}</td>
+                    <td class="p-2.5 text-right font-bold text-orange-600 whitespace-nowrap">${fmtNum(item.qty)} ${esc(item.satuan)}</td>
+                </tr>`).join('') : `<tr><td colspan="3" class="text-center py-4 text-slate-400">Belum ada barang keluar</td></tr>`;
+        }
+
+        function renderUnpaidMembers() {
+            const container = document.getElementById('unpaidMembersGrid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const targetMonth = appState.targetMonth || 8;
+            const selectedMonthName = MONTHS_ID[targetMonth - 1];
+            const requiredMonths = getRequiredMonthsCount(targetMonth);
+
+            setTxt('currentMonthName', `${selectedMonthName} (Bulan Ke-${requiredMonths} dari Ags)`);
+
+            MASTER_MEMBERS.forEach(member => {
+                const { monthsPaid } = monthsPaidOf(member);
+                if (monthsPaid >= requiredMonths) return;
+
+                const tunggakanBulan = requiredMonths - monthsPaid;
+                const nominalTunggakan = tunggakanBulan * appState.iuranPerBulan;
+
+                const card = document.createElement('div');
+                card.className = "bg-orange-50/70 border border-orange-200/90 rounded-xl p-3 flex items-center justify-between shadow-sm hover:shadow-md transition";
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-full bg-orange-200/80 text-orange-800 flex items-center justify-center font-bold text-xs shadow-inner">${esc(member.charAt(0))}</div>
+                        <div>
+                            <h4 class="font-bold text-xs text-slate-800 line-clamp-1">${esc(member)}</h4>
+                            <p class="text-[11px] text-orange-800 font-semibold mt-0.5">
+                                <i class="fa-solid fa-circle-exclamation mr-1 text-orange-600"></i>
+                                Kurang ${tunggakanBulan} Bulan (${formatRupiah(nominalTunggakan)})
+                            </p>
+                        </div>
+                    </div>
+                    ${appState.isAdminLoggedIn ? `
+                        <button onclick="quickPayMember('${esc(member)}', ${tunggakanBulan})" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-bold shadow transition flex items-center whitespace-nowrap">
+                            <i class="fa-solid fa-dollar-sign mr-1"></i> Bayar
+                        </button>` : `<span class="px-2 py-1 bg-orange-100 text-orange-700 rounded text-[10px] font-bold">Belum</span>`}
+                `;
+                container.appendChild(card);
+            });
+
+            if (container.children.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-6 text-center text-blue-700 font-bold bg-blue-50 rounded-xl border border-blue-200">
+                        <i class="fa-solid fa-circle-check text-2xl mb-1 block text-blue-600"></i>
+                        Semua 18 Anggota Sudah Lunas Kas Sampai Bulan ${selectedMonthName}! 🎉
+                    </div>`;
+            }
+        }
+
+        function renderRecentIncome() {
+            const tbody = document.getElementById('dashRecentIncome');
+            if (!tbody) return;
+            const recent = [...appState.kasEntries].sort(byDateDesc).slice(0, 5);
+            if (!recent.length) { tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada transaksi kas</td></tr>`; return; }
+            tbody.innerHTML = recent.map(item => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-2.5 whitespace-nowrap text-slate-500">${esc(item.tanggal)}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${esc(item.nama)}</td>
+                    <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px]">${esc(item.jumlahBulan)} Bulan</span></td>
+                    <td class="p-2.5 text-right font-bold text-blue-600">${formatRupiah(item.total)}</td>
+                </tr>`).join('');
+        }
+
+        function renderRecentExpense() {
+            const tbody = document.getElementById('dashRecentExpense');
+            if (!tbody) return;
+            const recent = [...appState.pengeluaranEntries].sort(byDateDesc).slice(0, 5);
+            if (!recent.length) { tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada pengeluaran</td></tr>`; return; }
+            tbody.innerHTML = recent.map(item => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-2.5 whitespace-nowrap text-slate-500">${esc(item.tanggal)}</td>
+                    <td class="p-2.5 font-semibold text-slate-800">${esc(item.judul)}</td>
+                    <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium text-[10px]">${esc(item.kategori)}</span></td>
+                    <td class="p-2.5 text-right font-bold text-orange-600">${formatRupiah(item.nominal)}</td>
+                </tr>`).join('');
+        }
+
+        function triggerLogoChange() {
+            if (!appState.isAdminLoggedIn) {
+                showToast('Login sebagai Admin untuk mengubah logo!', 'error');
+                toggleAuthModal();
+                return;
+            }
+            document.getElementById('logoFileInput')?.click();
+        }
+
+        function handleLogoUpload(e) {
+            const file = e.target?.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = evt => {
+                appState.customLogo = evt.target.result;
+                saveLogoToStorage();
+                renderLogo();
+                showToast('Logo berhasil diperbarui!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function quickPayMember(memberName, months) {
+            switchTab('input-kas');
+            const selectMember = document.getElementById('kasNamaAnggota');
+            const selectMonths = document.getElementById('kasJumlahBulan');
+            if (selectMember) selectMember.value = memberName;
+            if (selectMonths) selectMonths.value = [1, 2, 3, 4, 5, 6, 12].includes(months) ? months : (months > 6 ? 12 : 1);
+            calculateTotalKas();
+            showToast(`Form diisi untuk pembayaran kas ${memberName}`, 'info');
+        }
+
+        function openSaldoAwalModal() {
+            if (!appState.isAdminLoggedIn) {
+                showToast('Login sebagai Admin terlebih dahulu untuk mengatur saldo awal!', 'error');
+                toggleAuthModal();
+                return;
+            }
+            const input = document.getElementById('inputSaldoAwal');
+            if (input) input.value = appState.saldoAwal || 0;
+            toggleSaldoAwalModal(true);
+        }
+
+        function toggleSaldoAwalModal(show = true) {
+            const modal = document.getElementById('saldoAwalModal');
+            if (modal) modal.classList.toggle('hidden', !show);
+        }
+
+        function handleSaveSaldoAwal(e) {
+            e.preventDefault();
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login sebagai Admin.', 'error'); return; }
+            const val = parseInt(document.getElementById('inputSaldoAwal').value) || 0;
+            appState.saldoAwal = val;
+            database.ref('settings/saldoAwal').set(val)
+                .then(() => showToast(`Saldo awal berhasil diperbarui menjadi ${formatRupiah(val)}`, 'success'))
+                .catch(() => showToast('Gagal menyimpan saldo awal.', 'error'));
+            toggleSaldoAwalModal(false);
+        }
+
+        function openResetUnpaidModal() {
+            if (!appState.isAdminLoggedIn) {
+                showToast('Login sebagai Admin terlebih dahulu untuk mereset tunggakan!', 'error');
+                toggleAuthModal();
+                return;
+            }
+            toggleResetUnpaidModal(true);
+        }
+
+        function toggleResetUnpaidModal(show = true) {
+            const modal = document.getElementById('resetUnpaidModal');
+            if (modal) modal.classList.toggle('hidden', !show);
+        }
+
+        function executeResetUnpaid(mode) {
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
+
+            const targetMonth = appState.targetMonth || 8;
+            const requiredMonths = getRequiredMonthsCount(targetMonth);
+            const updates = {};
+            const sheetOps = [];
+
+            if (mode === 'mark-all-paid') {
+                MASTER_MEMBERS.forEach(member => {
+                    const { monthsPaid } = monthsPaidOf(member);
+                    if (monthsPaid < requiredMonths) {
+                        const neededMonths = requiredMonths - monthsPaid;
+                        const id = database.ref('kas').push().key;
+                        const entry = {
+                            tanggal: todayStr(),
+                            nama: member,
+                            jumlahBulan: neededMonths,
+                            nominalPerBulan: appState.iuranPerBulan,
+                            total: neededMonths * appState.iuranPerBulan,
+                            catatan: `Pelunasan Kas s/d ${MONTHS_ID[targetMonth - 1]} (Reset Auto)`
+                        };
+                        updates[id] = entry;
+                        sheetOps.push({ action: 'ADD_KAS', id, ...entry });
+                    }
+                });
+            } else if (mode === 'clear-month-kas') {
+                appState.kasEntries.forEach(e => {
+                    if (parseInt(String(e.tanggal).slice(5, 7)) === targetMonth) {
+                        updates[e.id] = null;
+                        sheetOps.push({ action: 'DELETE', type: 'kas', id: e.id });
+                    }
+                });
+            }
+
+            toggleResetUnpaidModal(false);
+            if (Object.keys(updates).length === 0) { showToast('Tidak ada data yang perlu diubah.', 'info'); return; }
+
+            database.ref('kas').update(updates)
+                .then(() => {
+                    sheetOps.forEach(sendToGoogleSheets);
+                    showToast('Status tunggakan berhasil diperbarui!', 'success');
+                })
+                .catch(() => showToast('Gagal memperbarui status tunggakan.', 'error'));
+        }
+
+        let pendingKeluarId = null;
+
+        function openInvKeluarModal(id) {
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
+            const item = appState.inventarisEntries.find(x => x.id === id);
+            if (!item) return;
+            if (item.sisa <= 0) { showToast('Stok barang ini sudah habis.', 'info'); return; }
+            pendingKeluarId = id;
+            setTxt('invKeluarNama', item.nama);
+            setTxt('invKeluarInfo', `Masuk ${fmtNum(item.qty)} ${item.satuan} · Sudah keluar ${fmtNum(item.qtyKeluar)} · Sisa stok ${fmtNum(item.sisa)} ${item.satuan}`);
+            setTxt('invKeluarSatuan', `(${item.satuan}, maks. ${fmtNum(item.sisa)})`);
+            const qtyInput = document.getElementById('invKeluarQty');
+            if (qtyInput) {
+                qtyInput.max = item.sisa;
+                qtyInput.value = item.sisa;
+            }
+            const tglInput = document.getElementById('invKeluarTanggal');
+            if (tglInput) tglInput.value = todayStr();
+            toggleInvKeluarModal(true);
+        }
+
+        function toggleInvKeluarModal(show = true) {
+            const modal = document.getElementById('invKeluarModal');
+            if (modal) modal.classList.toggle('hidden', !show);
+            if (!show) pendingKeluarId = null;
+        }
+
+        function handleSaveInvKeluar(e) {
+            if (e) e.preventDefault();
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
+            const id = pendingKeluarId;
+            const item = appState.inventarisEntries.find(x => x.id === id);
+            if (!item) return;
+            const tanggal = document.getElementById('invKeluarTanggal').value;
+            const qty = parseInt(document.getElementById('invKeluarQty').value);
+
+            if (!qty || qty < 1) { showToast('Jumlah barang keluar tidak valid!', 'error'); return; }
+            if (tanggal < item.tanggalMasuk) { showToast('Tanggal keluar tidak boleh sebelum tanggal masuk!', 'error'); return; }
+            if (qty > item.sisa) { showToast(`Jumlah keluar melebihi sisa stok (${fmtNum(item.sisa)} ${item.satuan})!`, 'error'); return; }
+
+            const logKey = database.ref().push().key;
+            let overdraw = false;
+
+            database.ref('inventaris/' + id).transaction(cur => {
+                if (!cur) return cur;
+                const total = Number(cur.qty) || 0;
+                const out = cur.keluarLog
+                    ? Object.values(cur.keluarLog).reduce((a, l) => a + (Number(l.qty) || 0), 0)
+                    : (cur.tanggalKeluar ? total : 0);
+                if (qty > total - out) { overdraw = true; return; }
+                cur.keluarLog = cur.keluarLog || {};
+                cur.keluarLog[logKey] = { tanggal, qty };
+                return cur;
+            }).then(res => {
+                if (res.committed) showToast(`Barang keluar ${fmtNum(qty)} ${item.satuan} dicatat. Stok otomatis berkurang.`, 'success');
+                else showToast(overdraw ? 'Jumlah keluar melebihi sisa stok terbaru!' : 'Gagal menyimpan barang keluar.', 'error');
+            }).catch(() => showToast('Gagal menyimpan barang keluar.', 'error'));
+            toggleInvKeluarModal(false);
+        }
+
         // ================= INIT =================
         window.addEventListener('DOMContentLoaded', () => {
             try { appState.customLogo = localStorage.getItem('kasinternal_logo'); } catch (e) { }
@@ -1348,13 +2019,34 @@
                 if (el) el.classList.toggle('hidden', on);
             });
 
-            // Banner Role di Tab Cuti
+            // Visibilitas Form Cuti & Lebar Tabel saat SPV Login
+            const cutiFormWrapper = document.getElementById('cutiFormWrapper');
+            const cutiTableWrapper = document.getElementById('cutiTableWrapper');
             const cutiRoleText = document.getElementById('cutiRoleText');
-            if (cutiRoleText) {
-                if (isSpv || (on && appState.role === 'ADMIN')) {
-                    cutiRoleText.innerHTML = `<b class="text-orange-600"><i class="fa-solid fa-user-check mr-1"></i> Mode SPV / Admin:</b> Berhak memberikan persetujuan (ACC) / Menolak Cuti.`;
-                } else {
-                    cutiRoleText.innerHTML = `<i class="fa-solid fa-user mr-1 text-slate-500"></i> Mode Anggota: Mengajukan cuti dan menunggu ACC SPV.`;
+
+            if (isSpv) {
+                // Sembunyikan form pengajuan cuti baru untuk SPV
+                if (cutiFormWrapper) cutiFormWrapper.classList.add('hidden');
+                if (cutiTableWrapper) {
+                    cutiTableWrapper.classList.remove('lg:col-span-2');
+                    cutiTableWrapper.classList.add('lg:col-span-3');
+                }
+                if (cutiRoleText) {
+                    cutiRoleText.innerHTML = `<b class="text-orange-600"><i class="fa-solid fa-user-check mr-1"></i> Mode SPV (Mida Ru'yati Laila):</b> Peninjauan & Persetujuan (ACC) Cuti Anggota.`;
+                }
+            } else {
+                // Tampilkan form untuk Anggota / Tamu / Admin biasa
+                if (cutiFormWrapper) cutiFormWrapper.classList.remove('hidden');
+                if (cutiTableWrapper) {
+                    cutiTableWrapper.classList.remove('lg:col-span-3');
+                    cutiTableWrapper.classList.add('lg:col-span-2');
+                }
+                if (cutiRoleText) {
+                    if (on && appState.role === 'ADMIN') {
+                        cutiRoleText.innerHTML = `<b class="text-blue-600"><i class="fa-solid fa-user-shield mr-1"></i> Mode Admin:</b> Pengelolaan Cuti & Akses ACC.`;
+                    } else {
+                        cutiRoleText.innerHTML = `<i class="fa-solid fa-user mr-1 text-slate-500"></i> Mode Anggota: Mengajukan cuti dan menunggu ACC SPV.`;
+                    }
                 }
             }
 
@@ -1366,722 +2058,7 @@
             renderLaporan();
         }
 
-        // ================= DASHBOARD =================
-        function calculateSummary() {
-            const totalPemasukan = sumBy(appState.kasEntries, 'total');
-            const totalPengeluaran = sumBy(appState.pengeluaranEntries, 'nominal');
-            const saldoAwal = appState.saldoAwal || 0;
-            return {
-                totalPemasukan, totalPengeluaran, saldoAwal,
-                saldoAkhir: saldoAwal + totalPemasukan - totalPengeluaran,
-                pemasukanCount: appState.kasEntries.length,
-                pengeluaranCount: appState.pengeluaranEntries.length
-            };
-        }
-
-        function renderDashboard() {
-            const s = calculateSummary();
-            setTxt('dashSaldoAwal', formatRupiah(s.saldoAwal));
-            setTxt('dashTotalPemasukan', formatRupiah(s.totalPemasukan));
-            setTxt('dashPemasukanCount', s.pemasukanCount);
-            setTxt('dashTotalPengeluaran', formatRupiah(s.totalPengeluaran));
-            setTxt('dashPengeluaranCount', s.pengeluaranCount);
-            setTxt('dashSaldoAkhir', formatRupiah(s.saldoAkhir));
-
-            renderMonthly();
-            renderCharts();
-            renderStorage();
-            renderInventarisDashboard();
-            renderUnpaidMembers();
-            renderRecentIncome();
-            renderRecentExpense();
-            updatePendingCutiBadge();
-        }
-
-        // ================= GRAFIK BATANG =================
-        let chartKasInst = null, chartInvInst = null;
-
-        function barGradient(ctx, top, bottom) {
-            const g = ctx.createLinearGradient(0, 0, 0, 300);
-            g.addColorStop(0, top); g.addColorStop(1, bottom);
-            return g;
-        }
-
-        function buildBarChart(canvasId, labelA, labelB, colorsA, colorsB, fmt) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas || typeof Chart === 'undefined') return null;
-            const ctx = canvas.getContext('2d');
-            return new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: MONTHS_ID.map(m => m.slice(0, 3)),
-                    datasets: [
-                        { label: labelA, data: [], backgroundColor: barGradient(ctx, colorsA[0], colorsA[1]), borderRadius: 6, borderSkipped: false, maxBarThickness: 22 },
-                        { label: labelB, data: [], backgroundColor: barGradient(ctx, colorsB[0], colorsB[1]), borderRadius: 6, borderSkipped: false, maxBarThickness: 22 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Plus Jakarta Sans', weight: '600' } } },
-                        tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${fmt(c.parsed.y)}` } }
-                    },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { font: { family: 'Plus Jakarta Sans' } } },
-                        y: { beginAtZero: true, grid: { color: 'rgba(100,116,139,.15)' }, ticks: { font: { family: 'Plus Jakarta Sans' }, callback: v => fmt(v, true) } }
-                    }
-                }
-            });
-        }
-
-        function renderCharts() {
-            if (typeof Chart === 'undefined') return;
-            const ym = document.getElementById('dashMonth')?.value || todayYM();
-            const yr = ym.slice(0, 4);
-            setTxt('chartYearKas', yr);
-            setTxt('chartYearInv', yr);
-            const key = m => yr + '-' + String(m + 1).padStart(2, '0');
-
-            if (!chartKasInst) {
-                chartKasInst = buildBarChart('chartKas', 'Masuk', 'Keluar', ['#60a5fa', '#1d4ed8'], ['#fdba74', '#ea580c'],
-                    (v, short) => short ? (v >= 1e6 ? (v / 1e6) + ' jt' : v >= 1e3 ? (v / 1e3) + ' rb' : v) : formatRupiah(v));
-            }
-            if (!chartInvInst) {
-                chartInvInst = buildBarChart('chartInv', 'Barang Masuk', 'Barang Keluar', ['#94a3b8', '#475569'], ['#fb923c', '#c2410c'],
-                    v => fmtNum(v));
-            }
-            if (chartKasInst) {
-                chartKasInst.data.datasets[0].data = MONTHS_ID.map((_, m) => sumBy(appState.kasEntries.filter(e => mk(e.tanggal) === key(m)), 'total'));
-                chartKasInst.data.datasets[1].data = MONTHS_ID.map((_, m) => sumBy(appState.pengeluaranEntries.filter(e => mk(e.tanggal) === key(m)), 'nominal'));
-                chartKasInst.update();
-            }
-            if (chartInvInst) {
-                chartInvInst.data.datasets[0].data = MONTHS_ID.map((_, m) => sumBy(appState.inventarisEntries.filter(e => mk(e.tanggalMasuk) === key(m)), 'qty'));
-                chartInvInst.data.datasets[1].data = MONTHS_ID.map((_, m) => sumBy(appState.inventarisEntries.flatMap(e => e.logs).filter(l => mk(l.tanggal) === key(m)), 'qty'));
-                chartInvInst.update();
-            }
-        }
-
-        function renderMonthly() {
-            const sel = document.getElementById('dashMonth');
-            if (!sel) return;
-            if (!sel.value) sel.value = todayYM();
-            const ym = sel.value, yr = ym.slice(0, 4);
-            const kas = appState.kasEntries, exp = appState.pengeluaranEntries;
-
-            const inM = kas.filter(e => mk(e.tanggal) === ym);
-            const outM = exp.filter(e => mk(e.tanggal) === ym);
-            const i = sumBy(inM, 'total'), o = sumBy(outM, 'nominal'), net = i - o;
-
-            setTxt('mIn', formatRupiah(i)); setTxt('mInCount', inM.length);
-            setTxt('mOut', formatRupiah(o)); setTxt('mOutCount', outM.length);
-            const netEl = document.getElementById('mNet');
-            if (netEl) {
-                netEl.innerText = (net > 0 ? '+ ' : net < 0 ? '- ' : '') + formatRupiah(Math.abs(net));
-                netEl.className = 'text-xl font-extrabold mt-1 ' + (net >= 0 ? 'text-blue-700' : 'text-orange-700');
-            }
-
-            let max = 1;
-            const rows = MONTHS_ID.map((name, m) => {
-                const k = yr + '-' + String(m + 1).padStart(2, '0');
-                const a = sumBy(kas.filter(e => mk(e.tanggal) === k), 'total');
-                const b = sumBy(exp.filter(e => mk(e.tanggal) === k), 'nominal');
-                max = Math.max(max, a, b);
-                return { k, name, a, b };
-            });
-
-            const body = document.getElementById('monthlyTable');
-            if (!body) return;
-            body.innerHTML = rows.map(r => {
-                const n = r.a - r.b;
-                return `<tr class="${r.k === ym ? 'bg-blue-50 font-semibold' : ''}">
-                    <td class="p-2.5">${r.name} ${yr}</td>
-                    <td class="p-2.5 text-right text-blue-600">${formatRupiah(r.a)}</td>
-                    <td class="p-2.5 text-right text-orange-600">${formatRupiah(r.b)}</td>
-                    <td class="p-2.5 text-right ${n >= 0 ? 'text-slate-700' : 'text-orange-700'}">${formatRupiah(n)}</td>
-                    <td class="p-2.5"><div class="bar-track mb-1"><div class="bar-fill bg-blue-500" style="width:${r.a / max * 100}%"></div></div><div class="bar-track"><div class="bar-fill bg-orange-500" style="width:${r.b / max * 100}%"></div></div></td>
-                </tr>`;
-            }).join('');
-        }
-
-        function renderStorage() {
-            if (!document.getElementById('fbUsed')) return;
-            const pack = arr => Object.fromEntries(arr.map(({ id, ...v }) => [id, v]));
-            const json = JSON.stringify({
-                settings: { iuranPerBulan: appState.iuranPerBulan, saldoAwal: appState.saldoAwal, targetMonth: appState.targetMonth },
-                kas: pack(appState.kasEntries),
-                pengeluaran: pack(appState.pengeluaranEntries),
-                inventaris: Object.fromEntries(appState.inventarisEntries.map(({ id, logs, qtyKeluar, sisa, ...v }) => [id, v])),
-                cuti: pack(appState.cutiEntries)
-            });
-            const bytes = new TextEncoder().encode(json).length;
-            const n = appState.kasEntries.length + appState.pengeluaranEntries.length + appState.inventarisEntries.length + appState.cutiEntries.length;
-            const avg = n ? bytes / n : 0;
-            const pct = bytes / FB_LIMIT_BYTES * 100;
-
-            setTxt('fbUsed', fmtBytes(bytes));
-            setTxt('fbPct', (pct < 0.01 ? '< 0,01' : pct.toFixed(2).replace('.', ',')) + '%');
-            setTxt('fbRecords', n.toLocaleString('id-ID'));
-            setTxt('fbAvg', fmtBytes(Math.round(avg)));
-            setTxt('fbLeft', avg ? '± ' + Math.floor((FB_LIMIT_BYTES - bytes) / avg).toLocaleString('id-ID') + ' record' : '-');
-
-            const bar = document.getElementById('fbBar');
-            if (bar) {
-                bar.style.width = Math.max(pct, 0.5) + '%';
-                bar.className = 'bar-fill ' + (pct >= 90 ? 'bg-orange-500' : pct >= 70 ? 'bg-orange-500' : 'bg-blue-500');
-            }
-        }
-
-        // ================= INVENTARIS: DASHBOARD =================
-        function renderInventarisDashboard() {
-            if (!document.getElementById('dashInvIn')) return;
-            const all = appState.inventarisEntries;
-            const logs = all.flatMap(e => e.logs.map(l => ({ ...l, nama: e.nama, satuan: e.satuan })));
-            const sisaList = all.filter(e => e.sisa > 0);
-
-            setTxt('invQtyMasuk', fmtUnits(all, 'qty'));
-            setTxt('invCountMasuk', all.length);
-            setTxt('invQtyKeluar', fmtUnits(logs, 'qty'));
-            setTxt('invCountKeluar', logs.length);
-            setTxt('invQtySisa', fmtUnits(sisaList, 'sisa'));
-            setTxt('invCountSisa', sisaList.length);
-
-            const recentIn = [...all].sort((a, b) => String(b.tanggalMasuk).localeCompare(String(a.tanggalMasuk))).slice(0, 5);
-            const recentOut = [...logs].sort((a, b) => String(b.tanggal).localeCompare(String(a.tanggal))).slice(0, 5);
-
-            document.getElementById('dashInvIn').innerHTML = recentIn.length ? recentIn.map(item => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-2.5 whitespace-nowrap text-slate-500">${esc(item.tanggalMasuk)}</td>
-                    <td class="p-2.5 font-semibold text-slate-800">${esc(item.nama)}</td>
-                    <td class="p-2.5 text-right font-bold text-blue-600 whitespace-nowrap">${fmtNum(item.qty)} ${esc(item.satuan)}</td>
-                </tr>`).join('') : `<tr><td colspan="3" class="text-center py-4 text-slate-400">Belum ada barang masuk</td></tr>`;
-
-            document.getElementById('dashInvOut').innerHTML = recentOut.length ? recentOut.map(item => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-2.5 whitespace-nowrap text-slate-500">${esc(item.tanggal)}</td>
-                    <td class="p-2.5 font-semibold text-slate-800">${esc(item.nama)}</td>
-                    <td class="p-2.5 text-right font-bold text-orange-600 whitespace-nowrap">${fmtNum(item.qty)} ${esc(item.satuan)}</td>
-                </tr>`).join('') : `<tr><td colspan="3" class="text-center py-4 text-slate-400">Belum ada barang keluar</td></tr>`;
-        }
-
-        function openSaldoAwalModal() {
-            if (!appState.isAdminLoggedIn) {
-                showToast('Login sebagai Admin terlebih dahulu untuk mengatur saldo awal!', 'error');
-                toggleAuthModal();
-                return;
-            }
-            const input = document.getElementById('inputSaldoAwal');
-            if (input) input.value = appState.saldoAwal || 0;
-            toggleSaldoAwalModal(true);
-        }
-
-        function toggleSaldoAwalModal(show = true) {
-            const modal = document.getElementById('saldoAwalModal');
-            if (modal) modal.classList.toggle('hidden', !show);
-        }
-
-        function handleSaveSaldoAwal(e) {
-            e.preventDefault();
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login sebagai Admin.', 'error'); return; }
-            const val = parseInt(document.getElementById('inputSaldoAwal').value) || 0;
-            appState.saldoAwal = val;
-            database.ref('settings/saldoAwal').set(val)
-                .then(() => showToast(`Saldo awal berhasil diperbarui menjadi ${formatRupiah(val)}`, 'success'))
-                .catch(() => showToast('Gagal menyimpan saldo awal.', 'error'));
-            toggleSaldoAwalModal(false);
-        }
-
-        function populateMemberDropdown() {
-            const selects = ['kasNamaAnggota', 'cutiNamaAnggota'];
-            selects.forEach(id => {
-                const select = document.getElementById(id);
-                if (!select) return;
-                select.innerHTML = `<option value="">-- Pilih Anggota --</option>`;
-                MASTER_MEMBERS.slice().sort().forEach(member => {
-                    const opt = document.createElement('option');
-                    opt.value = member;
-                    opt.textContent = member;
-                    select.appendChild(opt);
-                });
-            });
-        }
-
-        function setDefaultDates() {
-            const today = todayStr();
-            const kasTgl = document.getElementById('kasTanggal');
-            const expTgl = document.getElementById('expTanggal');
-            const invTgl = document.getElementById('invTglMasuk');
-            const cutiMulai = document.getElementById('cutiTglMulai');
-            const cutiSelesai = document.getElementById('cutiTglSelesai');
-
-            if (kasTgl) kasTgl.value = today;
-            if (expTgl) expTgl.value = today;
-            if (invTgl) invTgl.value = today;
-            if (cutiMulai) cutiMulai.value = today;
-            if (cutiSelesai) cutiSelesai.value = today;
-            calculateDurasiCuti();
-        }
-
-        function updateIuranSetting(val) {
-            const iuranPerBulan = parseInt(val) || 10000;
-            const inputNominal = document.getElementById('kasNominalPerBulan');
-            if (inputNominal) inputNominal.value = iuranPerBulan;
-            calculateTotalKas();
-            database.ref('settings/iuranPerBulan').set(iuranPerBulan)
-                .then(() => showToast(`Tarif iuran per bulan diubah menjadi ${formatRupiah(iuranPerBulan)}`, 'info'))
-                .catch(() => showToast('Gagal menyimpan tarif iuran.', 'error'));
-        }
-
-        // ================= LOGO =================
-        function triggerLogoChange() {
-            if (!appState.isAdminLoggedIn) {
-                showToast('Login sebagai Admin untuk mengubah logo!', 'error');
-                toggleAuthModal();
-                return;
-            }
-            document.getElementById('logoFileInput').click();
-        }
-
-        function handleLogoUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = evt => {
-                appState.customLogo = evt.target.result;
-                saveLogoToStorage();
-                renderLogo();
-                showToast('Logo berhasil diperbarui!', 'success');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function renderLogo() {
-            const logoImg = document.getElementById('customLogoImg');
-            const defaultIcon = document.getElementById('defaultLogoIcon');
-            if (appState.customLogo) {
-                if (logoImg) { logoImg.src = appState.customLogo; logoImg.classList.remove('hidden'); }
-                if (defaultIcon) defaultIcon.classList.add('hidden');
-            } else {
-                if (logoImg) logoImg.classList.add('hidden');
-                if (defaultIcon) defaultIcon.classList.remove('hidden');
-            }
-        }
-
-        function changeTargetMonth(val) {
-            const targetMonth = parseInt(val) || 8;
-            database.ref('settings/targetMonth').set(targetMonth)
-                .catch(() => showToast('Gagal menyimpan target bulan.', 'error'));
-        }
-
-        // ================= ANGGOTA BELUM BAYAR =================
-        function monthsPaidOf(member) {
-            const totalPaid = appState.kasEntries.filter(e => e.nama === member).reduce((a, c) => a + (Number(c.total) || 0), 0);
-            return { totalPaid, monthsPaid: Math.floor(totalPaid / appState.iuranPerBulan) };
-        }
-
-        function renderUnpaidMembers() {
-            const container = document.getElementById('unpaidMembersGrid');
-            if (!container) return;
-            container.innerHTML = '';
-
-            const targetMonth = appState.targetMonth || 8;
-            const selectedMonthName = MONTHS_ID[targetMonth - 1];
-            const requiredMonths = getRequiredMonthsCount(targetMonth);
-
-            setTxt('currentMonthName', `${selectedMonthName} (Bulan Ke-${requiredMonths} dari Ags)`);
-
-            MASTER_MEMBERS.forEach(member => {
-                const { monthsPaid } = monthsPaidOf(member);
-                if (monthsPaid >= requiredMonths) return;
-
-                const tunggakanBulan = requiredMonths - monthsPaid;
-                const nominalTunggakan = tunggakanBulan * appState.iuranPerBulan;
-
-                const card = document.createElement('div');
-                card.className = "bg-orange-50/70 border border-orange-200/90 rounded-xl p-3 flex items-center justify-between shadow-sm hover:shadow-md transition";
-                card.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <div class="w-9 h-9 rounded-full bg-orange-200/80 text-orange-800 flex items-center justify-center font-bold text-xs shadow-inner">${esc(member.charAt(0))}</div>
-                        <div>
-                            <h4 class="font-bold text-xs text-slate-800 line-clamp-1">${esc(member)}</h4>
-                            <p class="text-[11px] text-orange-800 font-semibold mt-0.5">
-                                <i class="fa-solid fa-circle-exclamation mr-1 text-orange-600"></i>
-                                Kurang ${tunggakanBulan} Bulan (${formatRupiah(nominalTunggakan)})
-                            </p>
-                        </div>
-                    </div>
-                    ${appState.isAdminLoggedIn ? `
-                        <button onclick="quickPayMember('${esc(member)}', ${tunggakanBulan})" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-bold shadow transition flex items-center whitespace-nowrap">
-                            <i class="fa-solid fa-dollar-sign mr-1"></i> Bayar
-                        </button>` : `<span class="px-2 py-1 bg-orange-100 text-orange-700 rounded text-[10px] font-bold">Belum</span>`}
-                `;
-                container.appendChild(card);
-            });
-
-            if (container.children.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full py-6 text-center text-blue-700 font-bold bg-blue-50 rounded-xl border border-blue-200">
-                        <i class="fa-solid fa-circle-check text-2xl mb-1 block text-blue-600"></i>
-                        Semua 18 Anggota Sudah Lunas Kas Sampai Bulan ${selectedMonthName}! 🎉
-                    </div>`;
-            }
-        }
-
-        function openResetUnpaidModal() {
-            if (!appState.isAdminLoggedIn) {
-                showToast('Login sebagai Admin terlebih dahulu untuk mereset tunggakan!', 'error');
-                toggleAuthModal();
-                return;
-            }
-            toggleResetUnpaidModal(true);
-        }
-
-        function toggleResetUnpaidModal(show = true) {
-            const modal = document.getElementById('resetUnpaidModal');
-            if (modal) modal.classList.toggle('hidden', !show);
-        }
-
-        function executeResetUnpaid(mode) {
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
-
-            const targetMonth = appState.targetMonth || 8;
-            const requiredMonths = getRequiredMonthsCount(targetMonth);
-            const updates = {};
-            const sheetOps = [];
-
-            if (mode === 'mark-all-paid') {
-                MASTER_MEMBERS.forEach(member => {
-                    const { monthsPaid } = monthsPaidOf(member);
-                    if (monthsPaid < requiredMonths) {
-                        const neededMonths = requiredMonths - monthsPaid;
-                        const id = database.ref('kas').push().key;
-                        const entry = {
-                            tanggal: todayStr(),
-                            nama: member,
-                            jumlahBulan: neededMonths,
-                            nominalPerBulan: appState.iuranPerBulan,
-                            total: neededMonths * appState.iuranPerBulan,
-                            catatan: `Pelunasan Kas s/d ${MONTHS_ID[targetMonth - 1]} (Reset Auto)`
-                        };
-                        updates[id] = entry;
-                        sheetOps.push({ action: 'ADD_KAS', id, ...entry });
-                    }
-                });
-            } else if (mode === 'clear-month-kas') {
-                appState.kasEntries.forEach(e => {
-                    if (parseInt(String(e.tanggal).slice(5, 7)) === targetMonth) {
-                        updates[e.id] = null;
-                        sheetOps.push({ action: 'DELETE', type: 'kas', id: e.id });
-                    }
-                });
-            }
-
-            toggleResetUnpaidModal(false);
-            if (Object.keys(updates).length === 0) { showToast('Tidak ada data yang perlu diubah.', 'info'); return; }
-
-            database.ref('kas').update(updates)
-                .then(() => {
-                    sheetOps.forEach(sendToGoogleSheets);
-                    showToast('Status tunggakan berhasil diperbarui!', 'success');
-                })
-                .catch(() => showToast('Gagal memperbarui status tunggakan.', 'error'));
-        }
-
-        function quickPayMember(memberName, months) {
-            switchTab('input-kas');
-            const selectMember = document.getElementById('kasNamaAnggota');
-            const selectMonths = document.getElementById('kasJumlahBulan');
-            if (selectMember) selectMember.value = memberName;
-            if (selectMonths) selectMonths.value = [1, 2, 3, 4, 5, 6, 12].includes(months) ? months : (months > 6 ? 12 : 1);
-            calculateTotalKas();
-            showToast(`Form diisi untuk pembayaran kas ${memberName}`, 'info');
-        }
-
-        // ================= TABEL TERBARU =================
-        function renderRecentIncome() {
-            const tbody = document.getElementById('dashRecentIncome');
-            if (!tbody) return;
-            const recent = [...appState.kasEntries].sort(byDateDesc).slice(0, 5);
-            if (!recent.length) { tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada transaksi kas</td></tr>`; return; }
-            tbody.innerHTML = recent.map(item => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-2.5 whitespace-nowrap text-slate-500">${esc(item.tanggal)}</td>
-                    <td class="p-2.5 font-semibold text-slate-800">${esc(item.nama)}</td>
-                    <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px]">${esc(item.jumlahBulan)} Bulan</span></td>
-                    <td class="p-2.5 text-right font-bold text-blue-600">${formatRupiah(item.total)}</td>
-                </tr>`).join('');
-        }
-
-        function renderRecentExpense() {
-            const tbody = document.getElementById('dashRecentExpense');
-            if (!tbody) return;
-            const recent = [...appState.pengeluaranEntries].sort(byDateDesc).slice(0, 5);
-            if (!recent.length) { tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada pengeluaran</td></tr>`; return; }
-            tbody.innerHTML = recent.map(item => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-2.5 whitespace-nowrap text-slate-500">${esc(item.tanggal)}</td>
-                    <td class="p-2.5 font-semibold text-slate-800">${esc(item.judul)}</td>
-                    <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium text-[10px]">${esc(item.kategori)}</span></td>
-                    <td class="p-2.5 text-right font-bold text-orange-600">${formatRupiah(item.nominal)}</td>
-                </tr>`).join('');
-        }
-
-        // ================= FORM KAS =================
-        function calculateTotalKas() {
-            const bulan = parseInt(document.getElementById('kasJumlahBulan')?.value) || 1;
-            const perBulan = parseInt(document.getElementById('kasNominalPerBulan')?.value) || 0;
-            setTxt('kasTotalCalculated', formatRupiah(bulan * perBulan));
-        }
-
-        function handleSaveKas(e) {
-            e.preventDefault();
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
-
-            const tanggal = document.getElementById('kasTanggal').value;
-            const nama = document.getElementById('kasNamaAnggota').value;
-            const jumlahBulan = parseInt(document.getElementById('kasJumlahBulan').value);
-            const nominalPerBulan = parseInt(document.getElementById('kasNominalPerBulan').value);
-            const catatan = document.getElementById('kasCatatan').value;
-
-            if (!nama) { showToast('Pilih nama anggota terlebih dahulu!', 'error'); return; }
-
-            const newEntry = {
-                tanggal, nama, jumlahBulan, nominalPerBulan,
-                total: jumlahBulan * nominalPerBulan,
-                catatan: catatan || `Bayar ${jumlahBulan} Bulan Kas`
-            };
-
-            const newKasRef = database.ref('kas').push();
-            const newKasId = newKasRef.key;
-
-            newKasRef.set(newEntry)
-                .then(() => {
-                    sendToGoogleSheets({ action: 'ADD_KAS', id: newKasId, ...newEntry });
-                    document.getElementById('formInputKas').reset();
-                    setDefaultDates();
-                    document.getElementById('kasNominalPerBulan').value = appState.iuranPerBulan;
-                    calculateTotalKas();
-                    showToast(`Uang Kas sebesar ${formatRupiah(newEntry.total)} berhasil disimpan!`, 'success');
-                })
-                .catch(error => {
-                    console.error('Error simpan kas:', error);
-                    showToast('Gagal menyimpan pembayaran kas.', 'error');
-                });
-        }
-
-        // ================= FORM PENGELUARAN =================
-        function handleSavePengeluaran(e) {
-            e.preventDefault();
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
-
-            const newEntry = {
-                tanggal: document.getElementById('expTanggal').value,
-                judul: document.getElementById('expJudul').value,
-                kategori: document.getElementById('expKategori').value,
-                nominal: parseInt(document.getElementById('expNominal').value),
-                catatan: document.getElementById('expCatatan').value
-            };
-
-            const newRef = database.ref('pengeluaran').push();
-            const newId = newRef.key;
-
-            newRef.set(newEntry)
-                .then(() => {
-                    sendToGoogleSheets({ action: 'ADD_PENGELUARAN', id: newId, ...newEntry });
-                    document.getElementById('formInputPengeluaran').reset();
-                    setDefaultDates();
-                    showToast(`Pengeluaran ${formatRupiah(newEntry.nominal)} berhasil dicatat!`, 'success');
-                })
-                .catch(error => {
-                    console.error('Error simpan pengeluaran:', error);
-                    showToast('Gagal menyimpan pengeluaran.', 'error');
-                });
-        }
-
-        // ================= FORM INVENTARIS =================
-        const SATUAN_INV = ['pcs', 'pack', 'box'];
-
-        function normalizeInvItem(id, item) {
-            const qty = Number(item.qty) || 0;
-            let logs = [];
-            if (item.keluarLog) {
-                logs = Object.entries(item.keluarLog).map(([key, l]) => ({ key, tanggal: normalizeDateOnly(l.tanggal), qty: Number(l.qty) || 0 }));
-            } else if (item.tanggalKeluar) {
-                logs = [{ key: 'legacy', tanggal: normalizeDateOnly(item.tanggalKeluar), qty }];
-            }
-            logs.sort((a, b) => String(a.tanggal).localeCompare(String(b.tanggal)));
-            const qtyKeluar = sumBy(logs, 'qty');
-            return {
-                id, ...item, qty,
-                satuan: item.satuan || 'pcs',
-                tanggalMasuk: normalizeDateOnly(item.tanggalMasuk),
-                tanggalKeluar: logs.length ? logs[logs.length - 1].tanggal : '',
-                logs, qtyKeluar,
-                sisa: Math.max(qty - qtyKeluar, 0)
-            };
-        }
-
-        function fmtUnits(arr, field) {
-            const m = {};
-            arr.forEach(e => { m[e.satuan || 'pcs'] = (m[e.satuan || 'pcs'] || 0) + (Number(e[field]) || 0); });
-            const parts = Object.keys(m).sort((a, b) => SATUAN_INV.indexOf(a) - SATUAN_INV.indexOf(b)).filter(k => m[k] > 0).map(k => `${fmtNum(m[k])} ${k}`);
-            return parts.length ? parts.join(' · ') : '0';
-        }
-
-        function handleSaveInventaris(e) {
-            e.preventDefault();
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
-
-            const tanggalMasuk = document.getElementById('invTglMasuk').value;
-            const tanggalKeluar = document.getElementById('invTglKeluar').value || '';
-            const nama = document.getElementById('invNama').value.trim();
-            const qty = parseInt(document.getElementById('invQty').value);
-            const satuan = document.getElementById('invSatuan').value || 'pcs';
-
-            if (!nama || !qty || qty < 1) { showToast('Nama barang dan quantity wajib diisi dengan benar!', 'error'); return; }
-            if (tanggalKeluar && tanggalKeluar < tanggalMasuk) { showToast('Tanggal keluar tidak boleh sebelum tanggal masuk!', 'error'); return; }
-
-            const data = { tanggalMasuk, nama, qty, satuan, tanggalKeluar: '' };
-            if (tanggalKeluar) data.keluarLog = { [database.ref().push().key]: { tanggal: tanggalKeluar, qty } };
-
-            database.ref('inventaris').push().set(data)
-                .then(() => {
-                    document.getElementById('formInputInventaris').reset();
-                    setDefaultDates();
-                    showToast(`Barang "${nama}" (${fmtNum(qty)} ${satuan}) berhasil dicatat!`, 'success');
-                })
-                .catch(error => {
-                    console.error('Error simpan inventaris:', error);
-                    showToast('Gagal menyimpan inventaris.', 'error');
-                });
-        }
-
-        let pendingKeluarId = null;
-
-        function openInvKeluarModal(id) {
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
-            const item = appState.inventarisEntries.find(x => x.id === id);
-            if (!item) return;
-            if (item.sisa <= 0) { showToast('Stok barang ini sudah habis.', 'info'); return; }
-            pendingKeluarId = id;
-            setTxt('invKeluarNama', item.nama);
-            setTxt('invKeluarInfo', `Masuk ${fmtNum(item.qty)} ${item.satuan} · Sudah keluar ${fmtNum(item.qtyKeluar)} · Sisa stok ${fmtNum(item.sisa)} ${item.satuan}`);
-            setTxt('invKeluarSatuan', `(${item.satuan}, maks. ${fmtNum(item.sisa)})`);
-            const qtyInput = document.getElementById('invKeluarQty');
-            qtyInput.max = item.sisa;
-            qtyInput.value = item.sisa;
-            document.getElementById('invKeluarTanggal').value = todayStr();
-            toggleInvKeluarModal(true);
-        }
-
-        function toggleInvKeluarModal(show = true) {
-            const modal = document.getElementById('invKeluarModal');
-            if (modal) modal.classList.toggle('hidden', !show);
-            if (!show) pendingKeluarId = null;
-        }
-
-        function handleSaveInvKeluar(e) {
-            e.preventDefault();
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
-            const id = pendingKeluarId;
-            const item = appState.inventarisEntries.find(x => x.id === id);
-            if (!item) return;
-            const tanggal = document.getElementById('invKeluarTanggal').value;
-            const qty = parseInt(document.getElementById('invKeluarQty').value);
-
-            if (!qty || qty < 1) { showToast('Jumlah barang keluar tidak valid!', 'error'); return; }
-            if (tanggal < item.tanggalMasuk) { showToast('Tanggal keluar tidak boleh sebelum tanggal masuk!', 'error'); return; }
-            if (qty > item.sisa) { showToast(`Jumlah keluar melebihi sisa stok (${fmtNum(item.sisa)} ${item.satuan})!`, 'error'); return; }
-
-            const logKey = database.ref().push().key;
-            let overdraw = false;
-
-            database.ref('inventaris/' + id).transaction(cur => {
-                if (!cur) return cur;
-                const total = Number(cur.qty) || 0;
-                const out = cur.keluarLog
-                    ? Object.values(cur.keluarLog).reduce((a, l) => a + (Number(l.qty) || 0), 0)
-                    : (cur.tanggalKeluar ? total : 0);
-                if (qty > total - out) { overdraw = true; return; }
-                cur.keluarLog = cur.keluarLog || {};
-                cur.keluarLog[logKey] = { tanggal, qty };
-                return cur;
-            }).then(res => {
-                if (res.committed) showToast(`Barang keluar ${fmtNum(qty)} ${item.satuan} dicatat. Stok otomatis berkurang.`, 'success');
-                else showToast(overdraw ? 'Jumlah keluar melebihi sisa stok terbaru!' : 'Gagal menyimpan barang keluar.', 'error');
-            }).catch(() => showToast('Gagal menyimpan barang keluar.', 'error'));
-            toggleInvKeluarModal(false);
-        }
-
         // ================= PENGAJUAN CUTI & LOGIC ACC SPV =================
-        function calculateDurasiCuti() {
-            const tglMulai = document.getElementById('cutiTglMulai')?.value;
-            const tglSelesai = document.getElementById('cutiTglSelesai')?.value;
-            if (!tglMulai || !tglSelesai) return 1;
-
-            const d1 = new Date(tglMulai);
-            const d2 = new Date(tglSelesai);
-
-            if (d2 < d1) {
-                setTxt('cutiDurasiDisplay', 'Tanggal tidak valid');
-                return 0;
-            }
-
-            const diffTime = Math.abs(d2 - d1);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-            setTxt('cutiDurasiDisplay', `${diffDays} Hari`);
-            return diffDays;
-        }
-
-        function handleSaveCuti(e) {
-            e.preventDefault();
-            const nama = document.getElementById('cutiNamaAnggota').value;
-            const tglMulai = document.getElementById('cutiTglMulai').value;
-            const tglSelesai = document.getElementById('cutiTglSelesai').value;
-            const alasan = document.getElementById('cutiAlasan').value.trim();
-            const durasi = calculateDurasiCuti();
-
-            if (!nama) { showToast('Pilih nama anggota terlebih dahulu!', 'error'); return; }
-            if (durasi <= 0) { showToast('Tanggal selesai cuti tidak boleh sebelum tanggal mulai!', 'error'); return; }
-            if (!alasan) { showToast('Mohon isi alasan pengajuan cuti!', 'error'); return; }
-
-            const newCuti = {
-                nama,
-                tglPengajuan: todayStr(),
-                tglMulai,
-                tglSelesai,
-                durasi,
-                alasan,
-                status: 'PENDING', // PENDING, APPROVED, REJECTED
-                disetujuiOleh: ''
-            };
-
-            database.ref('cuti').push().set(newCuti)
-                .then(() => {
-                    document.getElementById('formPengajuanCuti').reset();
-                    setDefaultDates();
-                    showToast(`Pengajuan cuti atas nama ${nama} berhasil dikirim! Menunggu ACC SPV.`, 'success');
-                })
-                .catch(error => {
-                    console.error('Error pengajuan cuti:', error);
-                    showToast('Gagal mengirimkan pengajuan cuti.', 'error');
-                });
-        }
-
-        function updatePendingCutiBadge() {
-            const pendingCount = appState.cutiEntries.filter(c => c.status === 'PENDING').length;
-            const badge = document.getElementById('pendingCutiBadge');
-            if (badge) {
-                if (pendingCount > 0) {
-                    badge.innerText = pendingCount;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
-            }
-        }
-
         function updateCutiStatus(id, newStatus) {
             const canApprove = appState.isAdminLoggedIn && (appState.role === 'SPV' || appState.role === 'ADMIN');
             if (!canApprove) {
@@ -2097,6 +2074,7 @@
                 tglProses: todayStr()
             }).then(() => {
                 showToast(`Pengajuan cuti berhasil ${newStatus === 'APPROVED' ? 'DISETUJUI (ACC)' : 'DITOLAK'} oleh ${approverName}`, newStatus === 'APPROVED' ? 'success' : 'info');
+                renderCutiTable();
             }).catch(() => showToast('Gagal memproses status cuti.', 'error'));
         }
 
@@ -2136,16 +2114,22 @@
                     if (item.status === 'PENDING') {
                         actionCol = `
                             <div class="flex items-center justify-center space-x-1.5">
-                                <button onclick="updateCutiStatus('${item.id}', 'APPROVED')" title="ACC / Setujui Cuti" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-[10px] shadow transition">
+                                <button onclick="updateCutiStatus('${item.id}', 'APPROVED')" title="ACC / Setujui Cuti" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow transition flex items-center">
                                     <i class="fa-solid fa-check mr-1"></i> ACC
                                 </button>
-                                <button onclick="updateCutiStatus('${item.id}', 'REJECTED')" title="Tolak Cuti" class="px-2 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold rounded-lg text-[10px] transition">
-                                    Tolak
+                                <button onclick="updateCutiStatus('${item.id}', 'REJECTED')" title="Tolak Cuti" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-xs shadow transition flex items-center">
+                                    <i class="fa-solid fa-xmark mr-1"></i> Tolak
                                 </button>
                                 ${deleteButton('cuti', item.id)}
                             </div>`;
                     } else {
-                        actionCol = `<div class="flex items-center justify-center space-x-1">${deleteButton('cuti', item.id)}</div>`;
+                        actionCol = `
+                            <div class="flex items-center justify-center space-x-1">
+                                <button onclick="updateCutiStatus('${item.id}', 'PENDING')" title="Ubah kembali ke Pending" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded text-[10px] mr-1">
+                                    <i class="fa-solid fa-rotate-left mr-0.5"></i> Reset
+                                </button>
+                                ${deleteButton('cuti', item.id)}
+                            </div>`;
                     }
                 } else if (appState.isAdminLoggedIn) {
                     actionCol = deleteButton('cuti', item.id);
