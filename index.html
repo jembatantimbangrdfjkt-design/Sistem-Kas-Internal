@@ -72,7 +72,6 @@
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col antialiased relative">
 
-    <!-- HEADER NAVBAR -->
     <header class="bg-gradient-to-r from-orange-600 via-slate-700 to-blue-800 text-white shadow-xl sticky top-0 z-30 no-print backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
             <div class="flex items-center justify-between">
@@ -84,8 +83,8 @@
                         <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[9px] text-white font-bold transition">Ubah</div>
                     </div>
                     <div>
-                        <h1 class="font-extrabold text-xl sm:text-2xl tracking-tight leading-tight"></h1>
-                        <p class="text-xs text-blue-200 font-medium hidden sm:block">Jembatan Timbang RDF Plant Jakarta</p>
+                        <h1 class="font-extrabold text-xl sm:text-2xl tracking-tight leading-tight">JEMBATAN TIMBANG</h1>
+                        <p class="text-xs text-blue-200 font-medium hidden sm:block">RDF Plant Jakarta</p>
                     </div>
                 </div>
 
@@ -119,7 +118,6 @@
                     <i class="fa-solid fa-boxes-stacked mr-2"></i> Inventaris JT
                     <span id="lockInvBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-blue-950/60 text-orange-300 border border-orange-500/20"><i class="fa-solid fa-lock text-[9px]"></i></span>
                 </button>
-                <!-- TAB BARU: PENGAJUAN CUTI -->
                 <button onclick="switchTab('cuti')" id="tab-cuti" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-white/80 hover:bg-white/10">
                     <i class="fa-solid fa-user-clock mr-2"></i> Pengajuan Cuti
                     <span id="pendingCutiBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500 text-white font-extrabold hidden">0</span>
@@ -136,10 +134,8 @@
 
         <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-        <!-- ================= TAB 1: DASHBOARD ================= -->
         <section id="content-dashboard" class="tab-content space-y-6">
 
-            <!-- Sapaan sesuai jam (muncul setelah login) -->
             <div id="greetingBanner" class="hidden glass-card rounded-2xl px-5 py-4 border border-white/60 flex items-center gap-3">
                 <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-lg"><i id="greetIcon" class="fa-solid fa-sun"></i></div>
                 <div>
@@ -148,7 +144,6 @@
                 </div>
             </div>
 
-            <!-- Kartu ringkasan total -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="glass-card rounded-2xl p-5 border border-white/60">
                     <div class="flex items-center justify-between mb-2">
@@ -192,7 +187,6 @@
                 </div>
             </div>
 
-            <!-- GRAFIK BATANG -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="glass-card rounded-2xl p-5 sm:p-6 border border-white/60">
                     <div class="flex items-center justify-between mb-3">
@@ -214,7 +208,6 @@
                 </div>
             </div>
 
-            <!-- RINGKASAN BULANAN + INDIKATOR FIREBASE -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 glass-card rounded-2xl p-5 sm:p-6 border border-white/60">
                     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -269,7 +262,7 @@
                 </div>
             </div>
 
-            <!-- INVENTARIS JEMBATAN TIMBANG (RINGKASAN) -->
+            <!-- INVENTARIS RINGKASAN -->
             <div class="glass-card rounded-2xl p-5 sm:p-6 border border-blue-200/70 relative overflow-hidden">
                 <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-orange-400 via-slate-400 to-blue-500"></div>
                 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -322,7 +315,7 @@
                 </div>
             </div>
 
-            <!-- RINGKASAN STATUS CUTI ANGGOTA (DASHBOARD) -->
+            <!-- CUTI RINGKASAN -->
             <div class="glass-card rounded-2xl p-5 sm:p-6 border border-orange-200/80 relative overflow-hidden">
                 <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-orange-500 via-amber-400 to-blue-600"></div>
                 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -478,7 +471,6 @@
             </div>
         </section>
 
-        <!-- ================= TAB 2: INPUT KAS ================= -->
         <section id="content-input-kas" class="tab-content hidden space-y-6">
 
             <div id="kasAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
@@ -567,7 +559,6 @@
             </div>
         </section>
 
-        <!-- ================= TAB 3: INPUT PENGELUARAN ================= -->
         <section id="content-input-pengeluaran" class="tab-content hidden space-y-6">
 
             <div id="pengeluaranAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
@@ -648,7 +639,6 @@
             </div>
         </section>
 
-        <!-- ================= TAB: INVENTARIS JEMBATAN TIMBANG ================= -->
         <section id="content-inventaris" class="tab-content hidden space-y-6">
 
             <div id="invAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
@@ -683,6 +673,14 @@
                                     <option value="pcs">pcs</option>
                                     <option value="pack">pack</option>
                                     <option value="box">box</option>
+                                    <option value="unit">unit</option>
+                                    <option value="set">set</option>
+                                    <option value="roll">roll</option>
+                                    <option value="rim">rim</option>
+                                    <option value="kg">kg</option>
+                                    <option value="liter">liter</option>
+                                    <option value="meter">meter</option>
+                                    <option value="pasang">pasang</option>
                                 </select>
                             </div>
                         </div>
@@ -742,10 +740,8 @@
             </div>
         </section>
 
-        <!-- ================= TAB BARU: PENGAJUAN CUTI ================= -->
         <section id="content-cuti" class="tab-content hidden space-y-6">
 
-            <!-- Banner Info untuk User/SPV -->
             <div class="glass-card rounded-2xl p-5 border border-white/60 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center space-x-3">
                     <div class="w-11 h-11 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl shrink-0">
@@ -762,7 +758,6 @@
             </div>
 
             <div id="cutiGridContainer" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- FORM PENGAJUAN CUTI (Sembunyi saat login SPV) -->
                 <div id="cutiFormWrapper" class="lg:col-span-1 glass-card p-6 rounded-2xl border border-white/60">
                     <div class="flex items-center space-x-2 border-b border-slate-100 pb-3 mb-4">
                         <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold">
@@ -802,7 +797,6 @@
                     </form>
                 </div>
 
-                <!-- TABEL RIWAYAT PENGAJUAN CUTI & ACC SPV -->
                 <div id="cutiTableWrapper" class="lg:col-span-2 glass-card p-6 rounded-2xl border border-white/60 flex flex-col">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
                         <div>
@@ -842,7 +836,6 @@
             </div>
         </section>
 
-        <!-- ================= TAB 4: LAPORAN ================= -->
         <section id="content-laporan" class="tab-content hidden space-y-6">
 
             <div id="laporanAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
@@ -926,6 +919,58 @@
             </div>
         </section>
     </main>
+
+
+    <!-- MODAL EDIT INVENTARIS (BARU) -->
+    <div id="invEditModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-pen-to-square text-base"></i></div>
+                    <h3 class="font-extrabold text-slate-800 text-lg">Edit Inventaris Barang</h3>
+                </div>
+                <button onclick="toggleInvEditModal(false)" class="text-slate-400 hover:text-slate-600 text-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="handleUpdateInventaris(event)" class="space-y-4">
+                <input type="hidden" id="editInvId">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Barang Masuk <span class="text-orange-500">*</span></label>
+                    <input type="date" id="editInvTglMasuk" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nama Barang <span class="text-orange-500">*</span></label>
+                    <input type="text" id="editInvNama" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Quantity &amp; Satuan <span class="text-orange-500">*</span></label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="number" id="editInvQty" min="1" step="1" required class="col-span-2 w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <select id="editInvSatuan" required class="w-full text-sm border border-slate-300 rounded-xl px-2 py-2 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="pcs">pcs</option>
+                            <option value="pack">pack</option>
+                            <option value="box">box</option>
+                            <option value="unit">unit</option>
+                            <option value="set">set</option>
+                            <option value="roll">roll</option>
+                            <option value="rim">rim</option>
+                            <option value="kg">kg</option>
+                            <option value="liter">liter</option>
+                            <option value="meter">meter</option>
+                            <option value="pasang">pasang</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Barang Keluar Terakhir (Opsional)</label>
+                    <input type="date" id="editInvTglKeluar" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div class="flex items-center justify-end space-x-2 pt-2">
+                    <button type="button" onclick="toggleInvEditModal(false)" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-200">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 shadow">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- MODAL LOGIN ADMIN & SPV -->
     <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -1378,7 +1423,7 @@
             });
         }
 
-        const SATUAN_INV = ['pcs', 'pack', 'box'];
+        const SATUAN_INV = ['pcs', 'pack', 'box', 'unit', 'set', 'roll', 'rim', 'kg', 'liter', 'meter', 'pasang'];
 
         function normalizeInvItem(id, item) {
             const qty = Number(item.qty) || 0;
@@ -1394,7 +1439,7 @@
                 id, ...item, qty,
                 satuan: item.satuan || 'pcs',
                 tanggalMasuk: normalizeDateOnly(item.tanggalMasuk),
-                tanggalKeluar: logs.length ? logs[logs.length - 1].tanggal : '',
+                tanggalKeluar: logs.length ? logs[logs.length - 1].tanggal : (item.tanggalKeluar ? normalizeDateOnly(item.tanggalKeluar) : ''),
                 logs, qtyKeluar,
                 sisa: Math.max(qty - qtyKeluar, 0)
             };
@@ -1425,6 +1470,68 @@
                 document.getElementById('formInputInventaris').reset();
                 setDefaultDates();
             });
+        }
+
+        function openInvEditModal(id) {
+            if (!appState.isAdminLoggedIn) {
+                showToast('Login sebagai Admin terlebih dahulu untuk mengedit data!', 'error');
+                toggleAuthModal();
+                return;
+            }
+            const item = appState.inventarisEntries.find(x => x.id === id);
+            if (!item) return;
+
+            document.getElementById('editInvId').value = item.id;
+            document.getElementById('editInvTglMasuk').value = item.tanggalMasuk || todayStr();
+            document.getElementById('editInvNama').value = item.nama || '';
+            document.getElementById('editInvQty').value = item.qty || 1;
+            document.getElementById('editInvSatuan').value = item.satuan || 'pcs';
+            document.getElementById('editInvTglKeluar').value = item.tanggalKeluar || '';
+
+            toggleInvEditModal(true);
+        }
+
+        function toggleInvEditModal(show = true) {
+            const modal = document.getElementById('invEditModal');
+            if (modal) modal.classList.toggle('hidden', !show);
+        }
+
+        function handleUpdateInventaris(e) {
+            if (e) e.preventDefault();
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
+
+            const id = document.getElementById('editInvId').value;
+            const tanggalMasuk = document.getElementById('editInvTglMasuk').value;
+            const nama = document.getElementById('editInvNama').value;
+            const qty = parseInt(document.getElementById('editInvQty').value) || 0;
+            const satuan = document.getElementById('editInvSatuan').value;
+            const tanggalKeluar = document.getElementById('editInvTglKeluar').value;
+
+            const existingItem = appState.inventarisEntries.find(x => x.id === id);
+            if (!existingItem) return;
+
+            if (qty < existingItem.qtyKeluar) {
+                showToast(`Total quantity tidak boleh kurang dari quantity yang sudah keluar (${existingItem.qtyKeluar} ${satuan})!`, 'error');
+                return;
+            }
+
+            const updates = {
+                tanggalMasuk,
+                nama,
+                qty,
+                satuan,
+                tanggalKeluar: tanggalKeluar || (existingItem.tanggalKeluar || '')
+            };
+
+            database.ref(`inventaris/${id}`).update(updates)
+                .then(() => {
+                    showToast('Data inventaris berhasil diperbarui.', 'success');
+                    toggleInvEditModal(false);
+                })
+                .catch(err => {
+                    console.error('Error update inventaris:', err);
+                    showToast('Gagal memperbarui inventaris.', 'error');
+                });
         }
 
         function calculateSummary() {
@@ -1975,7 +2082,6 @@
                 renderInventarisTable();
             });
 
-            // Node Baru: 'cuti'
             database.ref('cuti').on('value', snapshot => {
                 const data = snapshot.val() || {};
                 appState.cutiEntries = Object.entries(data).map(([id, item]) => ({
@@ -2001,12 +2107,11 @@
         }
 
         function saveLogoToStorage() {
-            try { if (appState.customLogo) localStorage.getItem('kasinternal_logo', appState.customLogo); }
+            try { if (appState.customLogo) localStorage.setItem('kasinternal_logo', appState.customLogo); }
             catch (e) { showToast('Logo terlalu besar untuk disimpan di browser.', 'error'); }
         }
 
         // ================= AKUN ADMIN & SPV =================
-        // Menambahkan Mida Ru'yati Laila sebagai SPV
         const ADMIN_ACCOUNTS = [
             { names: ['pirda ripiani', 'pirda'], display: 'Pirda Ripiani', password: 'Pirda Upst!@#', role: 'ADMIN' },
             { names: ['ahmad rafi', 'ahmad rafi al hadad', 'rafi'], display: 'Ahmad Rafi', password: 'Rafi20', role: 'ADMIN' },
@@ -2118,13 +2223,11 @@
                 if (el) el.classList.toggle('hidden', on);
             });
 
-            // Visibilitas Form Cuti & Lebar Tabel saat SPV Login
             const cutiFormWrapper = document.getElementById('cutiFormWrapper');
             const cutiTableWrapper = document.getElementById('cutiTableWrapper');
             const cutiRoleText = document.getElementById('cutiRoleText');
 
             if (isSpv) {
-                // Sembunyikan form pengajuan cuti baru untuk SPV
                 if (cutiFormWrapper) cutiFormWrapper.classList.add('hidden');
                 if (cutiTableWrapper) {
                     cutiTableWrapper.classList.remove('lg:col-span-2');
@@ -2134,7 +2237,6 @@
                     cutiRoleText.innerHTML = `<b class="text-orange-600"><i class="fa-solid fa-user-check mr-1"></i> Mode SPV (Mida Ru'yati Laila):</b> Peninjauan & Persetujuan (ACC) Cuti Anggota.`;
                 }
             } else {
-                // Tampilkan form untuk Anggota / Tamu / Admin biasa
                 if (cutiFormWrapper) cutiFormWrapper.classList.remove('hidden');
                 if (cutiTableWrapper) {
                     cutiTableWrapper.classList.remove('lg:col-span-3');
@@ -2157,7 +2259,6 @@
             renderLaporan();
         }
 
-        // ================= PENGAJUAN CUTI & LOGIC ACC SPV =================
         function updateCutiStatus(id, newStatus) {
             const canApprove = appState.isAdminLoggedIn && (appState.role === 'SPV' || appState.role === 'ADMIN');
             if (!canApprove) {
@@ -2359,9 +2460,14 @@
                 const habis = item.sisa === 0;
                 const sebagian = !habis && item.qtyKeluar > 0;
                 const badge = habis ? ['bg-orange-100 text-orange-800', 'Sudah Keluar'] : sebagian ? ['bg-slate-200 text-slate-700', 'Sebagian Keluar'] : ['bg-blue-100 text-blue-800', 'Masih Ada'];
+                
+                const editBtn = `<button onclick="openInvEditModal('${String(item.id).replace(/'/g, "\\'")}')" title="Edit Data Barang" class="text-amber-600 hover:text-amber-800 font-bold px-2 py-1 rounded hover:bg-amber-50 mr-1"><i class="fa-solid fa-pen-to-square"></i></button>`;
+                const keluarBtn = habis ? '' : `<button onclick="openInvKeluarModal('${String(item.id).replace(/'/g, "\\'")}')" title="Catat barang keluar" class="text-blue-600 hover:text-blue-800 font-bold px-2 py-1 rounded hover:bg-blue-50 mr-1"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>`;
+
                 const aksi = appState.isAdminLoggedIn
-                    ? `${habis ? '' : `<button onclick="openInvKeluarModal('${String(item.id).replace(/'/g, "\\'")}')" title="Catat barang keluar" class="text-blue-600 hover:text-blue-800 font-bold px-2 py-1 rounded hover:bg-blue-50"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>`}${deleteButton('inventaris', item.id)}`
+                    ? `${editBtn}${keluarBtn}${deleteButton('inventaris', item.id)}`
                     : `<span class="text-slate-300">-</span>`;
+
                 return `
                 <tr class="hover:bg-slate-50 transition">
                     <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${esc(item.tanggalMasuk)}</td>
