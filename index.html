@@ -22,7 +22,9 @@
             appId: "1:131200737107:web:059b7474ceb70619548ba6"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const database = firebase.database();
 
         tailwind.config = {
@@ -34,7 +36,7 @@
                     }
                 }
             }
-        }
+        };
     </script>
     <style>
         body {
@@ -46,7 +48,6 @@
             background-attachment: fixed;
         }
         .chart-box { position: relative; height: 290px; width: 100%; }
-        .gradient-text { background: linear-gradient(90deg, #f97316, #64748b, #2563eb); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .glass-card {
             background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(12px);
@@ -134,6 +135,7 @@
 
         <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
+        <!-- DASHBOARD TAB -->
         <section id="content-dashboard" class="tab-content space-y-6">
 
             <div id="greetingBanner" class="hidden glass-card rounded-2xl px-5 py-4 border border-white/60 flex items-center gap-3">
@@ -471,6 +473,7 @@
             </div>
         </section>
 
+        <!-- KAS TAB -->
         <section id="content-input-kas" class="tab-content hidden space-y-6">
 
             <div id="kasAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
@@ -559,6 +562,7 @@
             </div>
         </section>
 
+        <!-- PENGELUARAN TAB -->
         <section id="content-input-pengeluaran" class="tab-content hidden space-y-6">
 
             <div id="pengeluaranAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
@@ -639,6 +643,7 @@
             </div>
         </section>
 
+        <!-- INVENTARIS TAB -->
         <section id="content-inventaris" class="tab-content hidden space-y-6">
 
             <div id="invAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
@@ -740,6 +745,7 @@
             </div>
         </section>
 
+        <!-- CUTI TAB -->
         <section id="content-cuti" class="tab-content hidden space-y-6">
 
             <div class="glass-card rounded-2xl p-5 border border-white/60 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -749,11 +755,16 @@
                     </div>
                     <div>
                         <h2 class="font-extrabold text-slate-800 text-base">Sistem Pengajuan Cuti Anggota</h2>
-                        <p class="text-xs text-slate-500 mt-0.5">Pengajuan cuti dari anggota JT yang memerlukan persetujuan (ACC) SPV: <b>Mida Ru'yati Laila</b></p>
+                        <p class="text-xs text-slate-500 mt-0.5">Pengajuan cuti dari anggota JT yang memerlukan persetujuan (ACC) SPV: <b>Mida Ru'yati Laila</b> (Jatah Cuti Bawaan: <b>12 Hari</b>)</p>
                     </div>
                 </div>
-                <div id="cutiRoleStatus" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                    <i class="fa-solid fa-user mr-1 text-slate-500"></i> <span id="cutiRoleText">Akses Tamu (Dapat Mengajukan Cuti)</span>
+                <div class="flex items-center space-x-2">
+                    <button id="btnEditQuotaRafi" onclick="openEditQuotaModal()" class="hidden px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow transition flex items-center">
+                        <i class="fa-solid fa-user-gear mr-1.5"></i> Edit Jatah Cuti (PIC Rafi)
+                    </button>
+                    <div id="cutiRoleStatus" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                        <i class="fa-solid fa-user mr-1 text-slate-500"></i> <span id="cutiRoleText">Akses Tamu (Dapat Mengajukan Cuti)</span>
+                    </div>
                 </div>
             </div>
 
@@ -769,10 +780,38 @@
                     <form id="formPengajuanCuti" onsubmit="handleSaveCuti(event)" class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Nama Anggota <span class="text-orange-500">*</span></label>
-                            <select id="cutiNamaAnggota" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-orange-500 outline-none bg-white">
+                            <select id="cutiNamaAnggota" onchange="onCutiMemberChange()" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-orange-500 outline-none bg-white">
                                 <option value="">-- Pilih Nama Anggota --</option>
                             </select>
                         </div>
+
+                        <!-- BANNER SISA CUTI ANGGOTA -->
+                        <div id="cutiQuotaInfoBox" class="hidden p-3.5 rounded-xl border transition-all duration-200 bg-orange-50/80 border-orange-200 text-orange-950">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="text-xs font-extrabold uppercase tracking-wide flex items-center">
+                                    <i class="fa-solid fa-calendar-check mr-1.5 text-orange-600"></i> Status Cuti Anggota
+                                </span>
+                                <span id="quotaStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-200 text-orange-900">12 Hari/Tahun</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-center mt-2 pt-2 border-t border-orange-200/60">
+                                <div>
+                                    <p class="text-[10px] text-slate-500 uppercase font-semibold">Total Jatah</p>
+                                    <p id="quotaTotalDisplay" class="text-sm font-bold text-slate-800">12 Hari</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-500 uppercase font-semibold">Terpakai</p>
+                                    <p id="quotaUsedDisplay" class="text-sm font-bold text-orange-700">0 Hari</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-500 uppercase font-semibold">Sisa Cuti</p>
+                                    <p id="quotaRemainingDisplay" class="text-sm font-extrabold text-blue-700">12 Hari</p>
+                                </div>
+                            </div>
+                            <p id="quotaWarningMsg" class="hidden text-[11px] font-bold text-red-600 mt-2 bg-red-100/80 border border-red-200 p-2 rounded-lg flex items-center">
+                                <i class="fa-solid fa-triangle-exclamation mr-1.5 text-red-600"></i> Sisa cuti Anda telah habis! Tidak dapat melakukan pengajuan cuti baru.
+                            </p>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1">Mulai Cuti <span class="text-orange-500">*</span></label>
@@ -834,8 +873,22 @@
                     </div>
                 </div>
             </div>
+
+            <!-- REKAPITULASI SISA CUTI SEMUA ANGGOTA -->
+            <div class="glass-card p-6 rounded-2xl border border-white/60">
+                <div class="mb-4 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base flex items-center">
+                            <i class="fa-solid fa-users text-orange-600 mr-2"></i> Rekapitulasi Sisa Cuti Anggota
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Sisa cuti dihitung dari Total Jatah Cuti dikurangi cuti yang telah ACC &amp; Menunggu ACC.</p>
+                    </div>
+                </div>
+                <div id="rekapCutiGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+            </div>
         </section>
 
+        <!-- LAPORAN TAB -->
         <section id="content-laporan" class="tab-content hidden space-y-6">
 
             <div id="laporanAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
@@ -920,8 +973,38 @@
         </section>
     </main>
 
+    <!-- MODAL EDIT JATAH CUTI (KHUSUS PIC AHMAD RAFI) -->
+    <div id="editQuotaModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center"><i class="fa-solid fa-user-pen text-base"></i></div>
+                    <h3 class="font-extrabold text-slate-800 text-lg">Edit Jatah Cuti Karyawan</h3>
+                </div>
+                <button onclick="toggleEditQuotaModal(false)" class="text-slate-400 hover:text-slate-600 text-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-500">Khusus PIC <b>Ahmad Rafi</b> untuk mengubah/menyesuaikan jatah cuti tahunan milik karyawan tertentu.</p>
+            <form onsubmit="handleSaveCustomQuota(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Karyawan <span class="text-orange-500">*</span></label>
+                    <select id="editQuotaMember" onchange="onQuotaMemberSelectChange()" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-amber-500 outline-none bg-white">
+                        <option value="">-- Pilih Karyawan --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Jatah Cuti Tahunan (Hari) <span class="text-orange-500">*</span></label>
+                    <input type="number" id="editQuotaDays" min="0" max="365" step="1" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-amber-500 outline-none">
+                    <p class="text-[10px] text-slate-400 mt-1">Default jatah awal sistem: 12 Hari.</p>
+                </div>
+                <div class="flex items-center justify-end space-x-2 pt-2">
+                    <button type="button" onclick="toggleEditQuotaModal(false)" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-200">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-amber-600 text-white text-xs font-bold rounded-xl hover:bg-amber-700 shadow">Simpan Jatah Cuti</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    <!-- MODAL EDIT INVENTARIS (BARU) -->
+    <!-- MODAL EDIT INVENTARIS -->
     <div id="invEditModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
             <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -982,13 +1065,13 @@
                 </div>
                 <button onclick="toggleAuthModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <p class="text-xs text-slate-500 mb-4">Login sebagai Admin untuk mengelola Kas & Inventaris, atau sebagai <b>SPV (Mida Ru'yati Laila)</b> untuk menyetujui (ACC) Pengajuan Cuti.</p>
+            <p class="text-xs text-slate-500 mb-4">Login sebagai Admin untuk mengelola Kas & Inventaris, atau sebagai <b>SPV (Mida Ru'yati Laila)</b> / <b>Ahmad Rafi (PIC Cuti)</b>.</p>
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Username / Nama</label>
                     <div class="relative">
                         <i class="fa-solid fa-user absolute left-3 top-3 text-slate-400 text-xs"></i>
-                        <input type="text" id="loginUsername" required autocomplete="username" placeholder="cth: Mida Ru'yati Laila / Pirda Ripiani" class="w-full text-sm pl-9 pr-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="text" id="loginUsername" required autocomplete="username" placeholder="cth: Ahmad Rafi / Pirda Ripiani" class="w-full text-sm pl-9 pr-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                 </div>
                 <div>
@@ -1141,7 +1224,7 @@
     </div>
 
     <script>
-        // ================= GOOGLE SHEETS =================
+        // ================= GOOGLE SHEETS API =================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyM7Z_lvb56gbgwiC9yVJ0nUpDSb32PebUyuhZhyGeZ-1UniEHYqr45FyTg8dbhaN4/exec";
 
         function sendToGoogleSheets(payload) {
@@ -1171,7 +1254,8 @@
 
         const START_MONTH = 8; // Agustus
         const MONTHS_ID = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        const FB_LIMIT_BYTES = 1024 * 1024 * 1024; // batas gratis Firebase: 1 GB
+        const FB_LIMIT_BYTES = 1024 * 1024 * 1024; // 1 GB
+        const DEFAULT_LEAVE_QUOTA = 12; // Jatah Cuti Tahunan Standard
 
         let appState = {
             isAdminLoggedIn: false,
@@ -1185,6 +1269,7 @@
             pengeluaranEntries: [],
             inventarisEntries: [],
             cutiEntries: [],
+            customCutiQuota: {}, // { "Nama Member": 15, ... }
             customLogo: null
         };
 
@@ -1203,9 +1288,8 @@
             { id: 202, tanggal: '2026-08-09', judul: 'Konsumsi Rapat Bulanan', kategori: 'Acara / Kegiatan', nominal: 45000, catatan: 'Snack rapat rutin' }
         ];
 
-        // ================= HELPER =================
         const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-        const mk = t => String(t || '').slice(0, 7); // 'YYYY-MM'
+        const mk = t => String(t || '').slice(0, 7);
         const sumBy = (arr, key) => arr.reduce((s, e) => s + (Number(e[key]) || 0), 0);
         const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
         const byDateDesc = (a, b) => String(b.tanggal || b.tglPengajuan).localeCompare(String(a.tanggal || a.tglPengajuan));
@@ -1253,12 +1337,14 @@
         function populateMemberDropdown() {
             const kasSelect = document.getElementById('kasNamaAnggota');
             const cutiSelect = document.getElementById('cutiNamaAnggota');
+            const editQuotaSelect = document.getElementById('editQuotaMember');
 
             const optionsHtml = '<option value="">-- Pilih Anggota --</option>' + 
                 MASTER_MEMBERS.slice().sort().map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
 
             if (kasSelect) kasSelect.innerHTML = optionsHtml;
             if (cutiSelect) cutiSelect.innerHTML = optionsHtml;
+            if (editQuotaSelect) editQuotaSelect.innerHTML = optionsHtml;
         }
 
         function setDefaultDates() {
@@ -1302,19 +1388,155 @@
             if (isNaN(diffDays) || diffDays < 1) diffDays = 1;
 
             display.innerText = `${diffDays} Hari`;
+            onCutiMemberChange();
             return diffDays;
         }
 
-        function updatePendingCutiBadge() {
-            const badge = document.getElementById('pendingCutiBadge');
-            if (!badge) return;
-            const count = appState.cutiEntries.filter(c => c.status === 'PENDING').length;
-            if (count > 0) {
-                badge.innerText = count;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
+        function getMemberLeaveStats(memberName) {
+            if (!memberName) return { totalQuota: DEFAULT_LEAVE_QUOTA, usedDays: 0, remainingDays: DEFAULT_LEAVE_QUOTA };
+            
+            const totalQuota = appState.customCutiQuota[memberName] !== undefined 
+                ? Number(appState.customCutiQuota[memberName]) 
+                : DEFAULT_LEAVE_QUOTA;
+
+            const memberCutis = appState.cutiEntries.filter(c => c.nama === memberName && (c.status === 'APPROVED' || c.status === 'PENDING'));
+            const usedDays = memberCutis.reduce((acc, curr) => acc + (Number(curr.durasi) || 0), 0);
+            const remainingDays = Math.max(0, totalQuota - usedDays);
+
+            return { totalQuota, usedDays, remainingDays };
+        }
+
+        function onCutiMemberChange() {
+            const selectEl = document.getElementById('cutiNamaAnggota');
+            const infoBox = document.getElementById('cutiQuotaInfoBox');
+            const warningMsg = document.getElementById('quotaWarningMsg');
+            const submitBtn = document.getElementById('btnSubmitCuti');
+
+            if (!selectEl || !infoBox) return;
+
+            const memberName = selectEl.value;
+            if (!memberName) {
+                infoBox.classList.add('hidden');
+                if (submitBtn) submitBtn.disabled = false;
+                return;
             }
+
+            const stats = getMemberLeaveStats(memberName);
+            const currentRequestedDurasi = calculateDurasiCuti();
+
+            setTxt('quotaTotalDisplay', `${stats.totalQuota} Hari`);
+            setTxt('quotaUsedDisplay', `${stats.usedDays} Hari`);
+            setTxt('quotaRemainingDisplay', `${stats.remainingDays} Hari`);
+
+            infoBox.classList.remove('hidden');
+
+            if (stats.remainingDays <= 0) {
+                if (warningMsg) {
+                    warningMsg.innerText = `Sisa cuti ${memberName} telah habis (${stats.remainingDays} Hari)! Tidak dapat membuat pengajuan cuti baru.`;
+                    warningMsg.classList.remove('hidden');
+                }
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            } else if (currentRequestedDurasi > stats.remainingDays) {
+                if (warningMsg) {
+                    warningMsg.innerText = `Durasi cuti (${currentRequestedDurasi} Hari) melebihi sisa cuti tersisa (${stats.remainingDays} Hari).`;
+                    warningMsg.classList.remove('hidden');
+                }
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            } else {
+                if (warningMsg) warningMsg.classList.add('hidden');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+        }
+
+        function isUserRafi() {
+            if (!appState.isAdminLoggedIn || !appState.adminName) return false;
+            const n = appState.adminName.toLowerCase();
+            return n.includes('rafi') || n.includes('ahmad rafi');
+        }
+
+        function openEditQuotaModal() {
+            if (!isUserRafi()) {
+                showToast('Hanya PIC Ahmad Rafi yang berhak mengubah Jatah Cuti Karyawan!', 'error');
+                return;
+            }
+            toggleEditQuotaModal(true);
+        }
+
+        function toggleEditQuotaModal(show = true) {
+            const modal = document.getElementById('editQuotaModal');
+            if (modal) modal.classList.toggle('hidden', !show);
+        }
+
+        function onQuotaMemberSelectChange() {
+            const member = document.getElementById('editQuotaMember')?.value;
+            const input = document.getElementById('editQuotaDays');
+            if (!input) return;
+            if (member) {
+                const stats = getMemberLeaveStats(member);
+                input.value = stats.totalQuota;
+            } else {
+                input.value = DEFAULT_LEAVE_QUOTA;
+            }
+        }
+
+        function handleSaveCustomQuota(e) {
+            if (e) e.preventDefault();
+            if (!isUserRafi()) {
+                showToast('Akses Ditolak! Hanya Ahmad Rafi yang dapat mengubah jatah cuti.', 'error');
+                return;
+            }
+
+            const member = document.getElementById('editQuotaMember')?.value;
+            const days = parseInt(document.getElementById('editQuotaDays')?.value);
+
+            if (!member || isNaN(days) || days < 0) {
+                showToast('Pilih karyawan dan masukkan jumlah jatah cuti yang valid!', 'error');
+                return;
+            }
+
+            database.ref(`customCutiQuota/${member}`).set(days)
+                .then(() => {
+                    showToast(`Jatah Cuti untuk ${member} berhasil diubah menjadi ${days} Hari oleh PIC Rafi.`, 'success');
+                    toggleEditQuotaModal(false);
+                    onCutiMemberChange();
+                    renderRekapCutiGrid();
+                })
+                .catch(() => showToast('Gagal memperbarui jatah cuti.', 'error'));
+        }
+
+        function renderRekapCutiGrid() {
+            const container = document.getElementById('rekapCutiGrid');
+            if (!container) return;
+
+            container.innerHTML = MASTER_MEMBERS.slice().sort().map(member => {
+                const stats = getMemberLeaveStats(member);
+                const isHabis = stats.remainingDays <= 0;
+                const isHampirHabis = stats.remainingDays <= 3 && !isHabis;
+
+                const bgBadge = isHabis ? 'bg-red-100 text-red-800 border-red-200' : isHampirHabis ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-blue-50 text-blue-800 border-blue-200';
+
+                return `
+                    <div class="p-3.5 rounded-xl border ${bgBadge} transition shadow-sm hover:shadow-md">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="font-extrabold text-xs truncate max-w-[140px]" title="${esc(member)}">${esc(member)}</h4>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isHabis ? 'bg-red-200 text-red-900' : 'bg-white/80 text-slate-700'}">${stats.remainingDays} Hari Sisa</span>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] mt-2 pt-2 border-t border-black/5">
+                            <span class="text-slate-500 font-medium">Terpakai: <b>${stats.usedDays}</b>/${stats.totalQuota} Hari</span>
+                            <span class="font-bold ${isHabis ? 'text-red-700' : 'text-blue-700'}">${isHabis ? 'Habis' : 'Tersedia'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function handleSaveCuti(e) {
@@ -1327,7 +1549,18 @@
             const durasi = calculateDurasiCuti();
 
             if (!nama || !tglMulai || !tglSelesai || !alasan) {
-                showToast('Semua field wajib diisi!', 'error');
+                showToast('Semua field pengajuan cuti wajib diisi!', 'error');
+                return;
+            }
+
+            const stats = getMemberLeaveStats(nama);
+            if (stats.remainingDays <= 0) {
+                showToast(`Pengajuan gagal! Sisa cuti ${nama} sudah habis (0 Hari).`, 'error');
+                return;
+            }
+
+            if (durasi > stats.remainingDays) {
+                showToast(`Durasi pengajuan (${durasi} Hari) melebihi sisa cuti tersisa (${stats.remainingDays} Hari)!`, 'error');
                 return;
             }
 
@@ -1347,6 +1580,7 @@
                     showToast('Pengajuan cuti berhasil dikirim. Menunggu ACC SPV.', 'success');
                     document.getElementById('formPengajuanCuti')?.reset();
                     setDefaultDates();
+                    onCutiMemberChange();
                 })
                 .catch(err => {
                     console.error('Error pengajuan cuti:', err);
@@ -1544,6 +1778,19 @@
                 pemasukanCount: appState.kasEntries.length,
                 pengeluaranCount: appState.pengeluaranEntries.length
             };
+        }
+
+        function updatePendingCutiBadge() {
+            const pending = appState.cutiEntries.filter(c => c.status === 'PENDING').length;
+            const badge = document.getElementById('pendingCutiBadge');
+            if (badge) {
+                if (pending > 0) {
+                    badge.innerText = pending;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
         }
 
         function renderCutiDashboard() {
@@ -2028,7 +2275,6 @@
             toggleInvKeluarModal(false);
         }
 
-        // ================= INIT =================
         window.addEventListener('DOMContentLoaded', () => {
             try { appState.customLogo = localStorage.getItem('kasinternal_logo'); } catch (e) { }
             populateMemberDropdown();
@@ -2042,7 +2288,6 @@
             if (printDateElem) printDateElem.innerText = new Date().toLocaleDateString('id-ID', { dateStyle: 'full' });
         });
 
-        // ================= FIREBASE LISTENERS =================
         function startRealtimeListeners() {
             database.ref('settings').on('value', snapshot => {
                 const settings = snapshot.val() || {};
@@ -2057,6 +2302,12 @@
 
                 renderDashboard();
                 renderLaporan();
+            });
+
+            database.ref('customCutiQuota').on('value', snapshot => {
+                appState.customCutiQuota = snapshot.val() || {};
+                renderRekapCutiGrid();
+                onCutiMemberChange();
             });
 
             database.ref('kas').on('value', snapshot => {
@@ -2111,7 +2362,7 @@
             catch (e) { showToast('Logo terlalu besar untuk disimpan di browser.', 'error'); }
         }
 
-        // ================= AKUN ADMIN & SPV =================
+        // ================= AUTH MANAGEMENT =================
         const ADMIN_ACCOUNTS = [
             { names: ['pirda ripiani', 'pirda'], display: 'Pirda Ripiani', password: 'Pirda Upst!@#', role: 'ADMIN' },
             { names: ['ahmad rafi', 'ahmad rafi al hadad', 'rafi'], display: 'Ahmad Rafi', password: 'Rafi20', role: 'ADMIN' },
@@ -2145,7 +2396,6 @@
         }
         setInterval(renderGreeting, 60000);
 
-        // ================= TAB SWITCHING =================
         function switchTab(tabId) {
             appState.activeTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -2171,7 +2421,6 @@
             else if (tabId === 'laporan') renderLaporan();
         }
 
-        // ================= AUTH =================
         function toggleAuthModal() {
             const modal = document.getElementById('authModal');
             if (!modal) return;
@@ -2207,7 +2456,15 @@
         function updateUIState() {
             const on = appState.isAdminLoggedIn;
             const isSpv = appState.role === 'SPV';
+            const userIsRafi = isUserRafi();
+
             renderGreeting();
+
+            const btnRafi = document.getElementById('btnEditQuotaRafi');
+            if (btnRafi) {
+                if (userIsRafi) btnRafi.classList.remove('hidden');
+                else btnRafi.classList.add('hidden');
+            }
 
             const statusDot = document.getElementById('statusDot');
             if (statusDot) statusDot.className = `w-2 h-2 rounded-full ${on ? 'bg-blue-400' : 'bg-orange-400'} mr-2 animate-pulse`;
@@ -2243,8 +2500,10 @@
                     cutiTableWrapper.classList.add('lg:col-span-2');
                 }
                 if (cutiRoleText) {
-                    if (on && appState.role === 'ADMIN') {
-                        cutiRoleText.innerHTML = `<b class="text-blue-600"><i class="fa-solid fa-user-shield mr-1"></i> Mode Admin:</b> Pengelolaan Cuti & Akses ACC.`;
+                    if (on && userIsRafi) {
+                        cutiRoleText.innerHTML = `<b class="text-amber-600"><i class="fa-solid fa-user-gear mr-1"></i> PIC Rafi:</b> Akses Pengelolaan Jatah Cuti Karyawan.`;
+                    } else if (on && appState.role === 'ADMIN') {
+                        cutiRoleText.innerHTML = `<b class="text-blue-600"><i class="fa-solid fa-user-shield mr-1"></i> Mode Admin:</b> Pengelolaan Cuti.`;
                     } else {
                         cutiRoleText.innerHTML = `<i class="fa-solid fa-user mr-1 text-slate-500"></i> Mode Anggota: Mengajukan cuti dan menunggu ACC SPV.`;
                     }
@@ -2289,6 +2548,8 @@
                 (!st || item.status === st) &&
                 ((item.nama || '').toLowerCase().includes(q) || (item.alasan || '').toLowerCase().includes(q))
             ).sort((a, b) => String(b.tglPengajuan || '').localeCompare(String(a.tglPengajuan || '')));
+
+            renderRekapCutiGrid();
 
             if (!filtered.length) {
                 tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-400">Belum ada data pengajuan cuti.</td></tr>`;
@@ -2348,7 +2609,6 @@
             }).join('');
         }
 
-        // ================= TABEL RIWAYAT =================
         function deleteButton(type, id) {
             if (!appState.isAdminLoggedIn) return `<span class="text-slate-300">-</span>`;
             return `<button onclick="promptDeleteTransaction('${type}', '${String(id).replace(/'/g, "\\'")}')" class="text-orange-500 hover:text-orange-700 font-bold px-2 py-1 rounded hover:bg-orange-50"><i class="fa-solid fa-trash"></i></button>`;
@@ -2482,7 +2742,7 @@
             }).join('');
         }
 
-        // ================= HAPUS DATA =================
+        // ================= DELETE & RESET PROCEDURES =================
         let pendingDeleteType = null;
         let pendingDeleteId = null;
 
@@ -2519,7 +2779,6 @@
                 .catch(() => showToast('Gagal menghapus data.', 'error'));
         }
 
-        // ================= RESET DATA =================
         function toggleResetModal(show = true) {
             if (show && !appState.isAdminLoggedIn) {
                 showToast('Login sebagai Admin terlebih dahulu untuk melakukan reset data!', 'error');
@@ -2549,7 +2808,7 @@
             toggleResetModal(false);
         }
 
-        // ================= LAPORAN =================
+        // ================= FINANCIAL REPORT RENDERING =================
         function renderLaporan() {
             setTxt('rekapTarifBadge', formatRupiah(appState.iuranPerBulan));
 
@@ -2614,7 +2873,7 @@
             setTxt('jurnalTotalSaldo', formatRupiah(calculateSummary().saldoAkhir));
         }
 
-        // ================= TOAST NOTIFICATION =================
+        // ================= TOAST NOTIFICATION UTILITY =================
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             if (!container) return;
