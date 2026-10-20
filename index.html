@@ -72,6 +72,7 @@
             #jadwalThead th { background-color: #334155 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .bg-red-600 { background-color: #dc2626 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .bg-yellow-400 { background-color: #facc15 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .bg-blue-600 { background-color: #2563eb !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -126,6 +127,10 @@
                 <button onclick="switchTab('cuti')" id="tab-cuti" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-white/80 hover:bg-white/10">
                     <i class="fa-solid fa-user-clock mr-2"></i> Pengajuan Cuti
                     <span id="pendingCutiBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500 text-white font-extrabold hidden">0</span>
+                </button>
+                <button onclick="switchTab('tukar-shift')" id="tab-tukar-shift" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-white/80 hover:bg-white/10">
+                    <i class="fa-solid fa-right-left mr-2"></i> Tukar Shift
+                    <span id="pendingTukarBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500 text-white font-extrabold hidden">0</span>
                 </button>
                 <button onclick="switchTab('jadwal')" id="tab-jadwal" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-white/80 hover:bg-white/10">
                     <i class="fa-solid fa-calendar-alt mr-2"></i> Jadwal Kerja
@@ -888,6 +893,99 @@
             </div>
         </section>
 
+        <!-- TUKAR SHIFT SECTION -->
+        <section id="content-tukar-shift" class="tab-content hidden space-y-6">
+            <div class="glass-card rounded-2xl p-5 border border-white/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-11 h-11 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid fa-right-left"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-extrabold text-slate-800 text-base">Pengajuan Tukar Shift</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Fasilitas bagi anggota untuk bertukar jadwal shift. Memerlukan ACC dari SPV <b>Mida Ru'yati Laila</b>.</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div id="tsRoleStatus" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                        <i class="fa-solid fa-user mr-1 text-slate-500"></i> <span id="tsRoleText">Akses Tamu (Dapat Mengajukan)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div id="tsFormWrapper" class="lg:col-span-1 glass-card p-6 rounded-2xl border border-white/60">
+                    <div class="flex items-center space-x-2 border-b border-slate-100 pb-3 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-file-pen"></i>
+                        </div>
+                        <h2 class="font-bold text-slate-800 text-base">Form Tukar Shift</h2>
+                    </div>
+
+                    <form id="formTukarShift" onsubmit="handleSaveTukarShift(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Nama Anda (Pemohon) <span class="text-orange-500">*</span></label>
+                            <select id="tsPemohon" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                <option value="">-- Pilih Nama --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Shift Anda <span class="text-orange-500">*</span></label>
+                            <input type="date" id="tsTglPemohon" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        
+                        <div class="py-2 flex items-center justify-center">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-400 flex items-center justify-center">
+                                <i class="fa-solid fa-arrow-down"></i>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Ditukar Dengan (Pengganti) <span class="text-orange-500">*</span></label>
+                            <select id="tsPengganti" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                <option value="">-- Pilih Pengganti --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Tgl Shift Pengganti <span class="text-slate-400 font-medium">(Opsional)</span></label>
+                            <input type="date" id="tsTglPengganti" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" title="Isi jika ini adalah pertukaran hari (Misal: Anda ganti shift dia di hari lain)">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Alasan Tukar Shift <span class="text-orange-500">*</span></label>
+                            <textarea id="tsAlasan" rows="2" required placeholder="Contoh: Ada keperluan keluarga mendadak..." class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-md flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i><span>Kirim Pengajuan</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div id="tsTableWrapper" class="lg:col-span-2 glass-card p-6 rounded-2xl border border-white/60 flex flex-col">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-base">Riwayat & Status Tukar Shift</h2>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto flex-grow">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 text-slate-600 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg">Tgl Pengajuan</th>
+                                    <th class="p-3">Pemohon</th>
+                                    <th class="p-3">Pengganti</th>
+                                    <th class="p-3">Alasan</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-center rounded-r-lg">Aksi / ACC</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tsTableBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="content-jadwal" class="tab-content hidden space-y-6">
             <div class="glass-card rounded-2xl p-5 sm:p-6 border border-white/60">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 border-b border-slate-100 pb-4">
@@ -931,6 +1029,7 @@
                     <span class="flex items-center"><span class="w-4 h-4 bg-red-600 inline-block mr-1.5 rounded-sm shadow-sm"></span> X: Libur</span>
                     <span class="flex items-center"><span class="w-4 h-4 bg-slate-200 border border-slate-300 inline-block mr-1.5 rounded-sm"></span> Pk: Piket</span>
                     <span class="flex items-center"><span class="w-4 h-4 bg-yellow-400 border border-yellow-500 inline-block mr-1.5 rounded-sm shadow-sm"></span> C: Cuti (ACC)</span>
+                    <span class="flex items-center"><span class="w-4 h-4 bg-blue-600 border border-blue-700 inline-block mr-1.5 rounded-sm shadow-sm"></span> Tukar Shift</span>
                 </div>
 
                 <div class="overflow-x-auto rounded-xl border border-slate-300 shadow-sm relative">
@@ -1342,6 +1441,7 @@
             pengeluaranEntries: [],
             inventarisEntries: [],
             cutiEntries: [],
+            tukarShiftEntries: [],
             customCutiQuota: {}, // { "Nama Member": 15, ... }
             customLogo: null
         };
@@ -1420,6 +1520,8 @@
             const kasSelect = document.getElementById('kasNamaAnggota');
             const cutiSelect = document.getElementById('cutiNamaAnggota');
             const editQuotaSelect = document.getElementById('editQuotaMember');
+            const tsPemohonSelect = document.getElementById('tsPemohon');
+            const tsPenggantiSelect = document.getElementById('tsPengganti');
 
             const optionsHtml = '<option value="">-- Pilih Anggota --</option>' + 
                 MASTER_MEMBERS.slice().sort().map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
@@ -1427,11 +1529,13 @@
             if (kasSelect) kasSelect.innerHTML = optionsHtml;
             if (cutiSelect) cutiSelect.innerHTML = optionsHtml;
             if (editQuotaSelect) editQuotaSelect.innerHTML = optionsHtml;
+            if (tsPemohonSelect) tsPemohonSelect.innerHTML = optionsHtml;
+            if (tsPenggantiSelect) tsPenggantiSelect.innerHTML = optionsHtml;
         }
 
         function setDefaultDates() {
             const t = todayStr();
-            ['kasTanggal', 'expTanggal', 'invTglMasuk', 'cutiTglMulai', 'cutiTglSelesai'].forEach(id => {
+            ['kasTanggal', 'expTanggal', 'invTglMasuk', 'cutiTglMulai', 'cutiTglSelesai', 'tsTglPemohon'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = t;
             });
@@ -1604,17 +1708,8 @@
             }
         }
 
-        function getShift(memberName, targetDateString) {
-            // 1. Is the member on approved cuti?
-            const cuti = appState.cutiEntries.find(c =>
-                c.nama === memberName &&
-                c.status === 'APPROVED' &&
-                targetDateString >= c.tglMulai &&
-                targetDateString <= c.tglSelesai
-            );
-            if (cuti) return 'C'; // Indicator for CUTI
-
-            // 2. Specialized Logic for Ahmad Rafi
+        function getBaseShift(memberName, targetDateString) {
+            // Specialized Logic for Ahmad Rafi
             if (memberName.includes("Ahmad Rafi")) {
                 const [y, m, d] = targetDateString.split('-').map(Number);
                 const targetDate = new Date(y, m-1, d);
@@ -1623,7 +1718,6 @@
                 if (dayOfWeek >= 1 && dayOfWeek <= 5) return 'P'; // Monday-Friday -> P
                 if (dayOfWeek === 0) return 'X'; // Sunday -> X
                 if (dayOfWeek === 6) { // Saturday Piket logic
-                    // Anchor Saturday for Piket is Oct 3rd, 2026 based on sample image
                     const diffDays = getDaysDiffUTC('2026-10-03', targetDateString);
                     const diffWeeks = Math.floor(diffDays / 7);
                     if (diffWeeks % 2 === 0) return 'Pk'; 
@@ -1631,7 +1725,7 @@
                 }
             }
 
-            // 3. Normal Rolling Schedule Logic (6-2)
+            // Normal Rolling Schedule Logic (6-2)
             const offset = MEMBER_SHIFT_OFFSETS[memberName];
             if (offset === undefined) return '-'; 
 
@@ -1640,6 +1734,45 @@
             if (index < 0) index += 8; // Normalize negative modulos
             
             return SHIFT_CYCLE[index];
+        }
+
+        function getShift(memberName, targetDateString) {
+            // 1. Is the member on approved cuti?
+            const cuti = appState.cutiEntries.find(c =>
+                c.nama === memberName &&
+                c.status === 'APPROVED' &&
+                targetDateString >= c.tglMulai &&
+                targetDateString <= c.tglSelesai
+            );
+            if (cuti) return { val: 'C', type: 'cuti' }; // Indicator for CUTI
+
+            // 2. Is the member involved in an approved Tukar Shift?
+            const approvedSwaps = (appState.tukarShiftEntries || []).filter(ts => ts.status === 'APPROVED');
+            
+            for (const ts of approvedSwaps) {
+                const isSameDaySwap = ts.tglShiftPengganti === '-';
+                
+                if (isSameDaySwap) {
+                    // Jika Tukar Shift di hari yang persis sama
+                    if (targetDateString === ts.tglShiftPemohon) {
+                        if (memberName === ts.pemohon) return { val: getBaseShift(ts.pengganti, targetDateString), type: 'swap' };
+                        if (memberName === ts.pengganti) return { val: getBaseShift(ts.pemohon, targetDateString), type: 'swap' };
+                    }
+                } else {
+                    // Jika Tukar Shift secara silang hari
+                    if (targetDateString === ts.tglShiftPemohon) {
+                        if (memberName === ts.pengganti) return { val: getBaseShift(ts.pemohon, ts.tglShiftPemohon), type: 'swap' };
+                        if (memberName === ts.pemohon) return { val: getBaseShift(ts.pengganti, ts.tglShiftPemohon), type: 'swap' }; 
+                    }
+                    if (targetDateString === ts.tglShiftPengganti) {
+                        if (memberName === ts.pemohon) return { val: getBaseShift(ts.pengganti, ts.tglShiftPengganti), type: 'swap' };
+                        if (memberName === ts.pengganti) return { val: getBaseShift(ts.pemohon, ts.tglShiftPengganti), type: 'swap' };
+                    }
+                }
+            }
+
+            // 3. Output Base Shift Jika tidak Cuti / Tukar Shift
+            return { val: getBaseShift(memberName, targetDateString), type: 'normal' };
         }
 
         function setJadwalBulanIni() {
@@ -1693,13 +1826,22 @@
                 
                 for(let d=1; d<=daysInMonth; d++) {
                     const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                    const shift = getShift(member, dateStr);
+                    
+                    const shiftData = getShift(member, dateStr);
+                    const shift = shiftData.val;
+                    
                     let bg = 'bg-white';
                     let text = 'text-slate-800';
                     
-                    if (shift === 'X') { bg = 'bg-red-600'; text = 'text-white'; }
-                    else if (shift === 'C') { bg = 'bg-yellow-400'; text = 'text-slate-900'; }
-                    else if (shift === 'Pk') { bg = 'bg-slate-200'; text = 'text-slate-900'; }
+                    if (shiftData.type === 'swap') { 
+                        bg = 'bg-blue-600'; text = 'text-white'; 
+                    } else if (shiftData.type === 'cuti') { 
+                        bg = 'bg-yellow-400'; text = 'text-slate-900'; 
+                    } else if (shift === 'X') { 
+                        bg = 'bg-red-600'; text = 'text-white'; 
+                    } else if (shift === 'Pk') { 
+                        bg = 'bg-slate-200'; text = 'text-slate-900'; 
+                    }
                     
                     tbody += `<td class="p-1 border border-slate-300 text-center text-[11px] font-bold ${bg} ${text}">${shift}</td>`;
                 }
@@ -1708,7 +1850,6 @@
 
             document.getElementById('jadwalTbody').innerHTML = tbody;
         }
-
 
         function calculateDurasiCuti() {
             const start = document.getElementById('cutiTglMulai')?.value;
@@ -1928,6 +2069,142 @@
                 });
         }
 
+        function handleSaveTukarShift(e) {
+            if (e) e.preventDefault();
+
+            const pemohon = document.getElementById('tsPemohon')?.value;
+            const tglShiftPemohon = document.getElementById('tsTglPemohon')?.value;
+            const pengganti = document.getElementById('tsPengganti')?.value;
+            const tglShiftPengganti = document.getElementById('tsTglPengganti')?.value || '-';
+            const alasan = document.getElementById('tsAlasan')?.value;
+
+            if (!pemohon || !tglShiftPemohon || !pengganti || !alasan) {
+                showToast('Semua kolom wajib (*) pengajuan tukar shift harus diisi!', 'error');
+                return;
+            }
+            if (pemohon === pengganti) {
+                showToast('Pemohon dan pengganti tidak boleh orang yang sama!', 'error');
+                return;
+            }
+
+            const newTS = {
+                tglPengajuan: todayStr(),
+                pemohon,
+                tglShiftPemohon,
+                pengganti,
+                tglShiftPengganti,
+                alasan,
+                status: 'PENDING',
+                disetujuiOleh: ''
+            };
+
+            database.ref('tukar_shift').push(newTS)
+                .then(() => {
+                    showToast('Pengajuan tukar shift berhasil dikirim. Menunggu ACC SPV.', 'success');
+                    document.getElementById('formTukarShift')?.reset();
+                    document.getElementById('tsTglPemohon').value = todayStr();
+                })
+                .catch(err => {
+                    console.error('Error pengajuan tukar shift:', err);
+                    showToast('Gagal mengirim pengajuan.', 'error');
+                });
+        }
+
+        function updateTukarShiftStatus(id, newStatus) {
+            const canApprove = appState.isAdminLoggedIn && (appState.role === 'SPV' || appState.role === 'ADMIN');
+            if (!canApprove) {
+                showToast('Hanya SPV atau Admin yang berhak memproses tukar shift!', 'error');
+                toggleAuthModal();
+                return;
+            }
+
+            const approverName = appState.adminName || "Mida Ru'yati Laila (SPV)";
+            database.ref(`tukar_shift/${id}`).update({
+                status: newStatus,
+                disetujuiOleh: approverName,
+                tglProses: todayStr()
+            }).then(() => {
+                showToast(`Tukar Shift berhasil ${newStatus === 'APPROVED' ? 'DISETUJUI' : 'DITOLAK'}`, newStatus === 'APPROVED' ? 'success' : 'info');
+            }).catch(() => showToast('Gagal memproses status tukar shift.', 'error'));
+        }
+
+        function renderTukarShiftTable() {
+            const tbody = document.getElementById('tsTableBody');
+            if (!tbody) return;
+
+            const entries = appState.tukarShiftEntries || [];
+            const sorted = [...entries].sort((a, b) => String(b.tglPengajuan).localeCompare(String(a.tglPengajuan)));
+
+            if (!sorted.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">Belum ada pengajuan tukar shift.</td></tr>`;
+                return;
+            }
+
+            const isApprover = appState.isAdminLoggedIn && (appState.role === 'SPV' || appState.role === 'ADMIN');
+
+            tbody.innerHTML = sorted.map(item => {
+                let badgeClass = "bg-orange-100 text-orange-800 border-orange-200";
+                let statusText = "<i class='fa-solid fa-clock mr-1'></i> Menunggu ACC";
+
+                if (item.status === 'APPROVED') {
+                    badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
+                    statusText = `<i class='fa-solid fa-circle-check mr-1'></i> ACC (${esc(item.disetujuiOleh || 'SPV')})`;
+                } else if (item.status === 'REJECTED') {
+                    badgeClass = "bg-slate-200 text-slate-700 border-slate-300";
+                    statusText = `<i class='fa-solid fa-circle-xmark mr-1'></i> Ditolak (${esc(item.disetujuiOleh || 'SPV')})`;
+                }
+
+                let actionCol = `-`;
+                if (isApprover) {
+                    if (item.status === 'PENDING') {
+                        actionCol = `
+                            <div class="flex items-center justify-center space-x-1.5">
+                                <button onclick="updateTukarShiftStatus('${item.id}', 'APPROVED')" title="Setujui" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow transition">ACC</button>
+                                <button onclick="updateTukarShiftStatus('${item.id}', 'REJECTED')" title="Tolak" class="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-xs shadow transition">Tolak</button>
+                                ${deleteButton('tukar-shift', item.id)}
+                            </div>`;
+                    } else {
+                        actionCol = `
+                            <div class="flex items-center justify-center space-x-1">
+                                <button onclick="updateTukarShiftStatus('${item.id}', 'PENDING')" title="Reset ke Pending" class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] mr-1"><i class="fa-solid fa-rotate-left"></i></button>
+                                ${deleteButton('tukar-shift', item.id)}
+                            </div>`;
+                    }
+                } else if (appState.isAdminLoggedIn) {
+                    actionCol = deleteButton('tukar-shift', item.id);
+                }
+
+                return `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${esc(item.tglPengajuan)}</td>
+                    <td class="p-3">
+                        <div class="font-bold text-slate-800">${esc(item.pemohon)}</div>
+                        <div class="text-[10px] text-blue-600 bg-blue-50 inline-block px-1.5 py-0.5 rounded mt-1 border border-blue-200">Shift Asli: ${esc(item.tglShiftPemohon)}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-bold text-slate-800">${esc(item.pengganti)}</div>
+                        ${item.tglShiftPengganti !== '-' ? `<div class="text-[10px] text-orange-600 bg-orange-50 inline-block px-1.5 py-0.5 rounded mt-1 border border-orange-200">Shift Asli: ${esc(item.tglShiftPengganti)}</div>` : ''}
+                    </td>
+                    <td class="p-3 text-slate-600 max-w-xs truncate" title="${esc(item.alasan)}">${esc(item.alasan)}</td>
+                    <td class="p-3"><span class="px-2.5 py-1 rounded-full border text-[10px] font-bold whitespace-nowrap ${badgeClass}">${statusText}</span></td>
+                    <td class="p-3 text-center whitespace-nowrap">${actionCol}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function updatePendingTukarBadge() {
+            const pending = appState.tukarShiftEntries.filter(c => c.status === 'PENDING').length;
+            const badge = document.getElementById('pendingTukarBadge');
+            if (badge) {
+                if (pending > 0) {
+                    badge.innerText = pending;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+        }
+
         function switchTab(tabId) {
             appState.activeTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -1950,6 +2227,7 @@
             else if (tabId === 'input-pengeluaran') renderPengeluaranTable();
             else if (tabId === 'inventaris') renderInventarisTable();
             else if (tabId === 'cuti') renderCutiTable();
+            else if (tabId === 'tukar-shift') renderTukarShiftTable();
             else if (tabId === 'jadwal') renderJadwalTable();
             else if (tabId === 'laporan') renderLaporan();
         }
@@ -2013,6 +2291,21 @@
                 // Immediately refresh Jadwal if currently viewing
                 if(appState.activeTab === 'jadwal') renderJadwalTable();
             });
+
+            database.ref('tukar_shift').on('value', snapshot => {
+                const data = snapshot.val() || {};
+                appState.tukarShiftEntries = Object.entries(data).map(([id, item]) => ({
+                    id, ...item,
+                    tglPengajuan: normalizeDateOnly(item.tglPengajuan),
+                    tglShiftPemohon: normalizeDateOnly(item.tglShiftPemohon),
+                    tglShiftPengganti: item.tglShiftPengganti !== '-' ? normalizeDateOnly(item.tglShiftPengganti) : '-'
+                }));
+                renderTukarShiftTable();
+                updatePendingTukarBadge();
+                
+                // Segera refresh Jadwal Kerja jika sedang aktif
+                if(appState.activeTab === 'jadwal') renderJadwalTable();
+            });
         }
         
         function updateUIState() {
@@ -2045,6 +2338,10 @@
             const cutiFormWrapper = document.getElementById('cutiFormWrapper');
             const cutiTableWrapper = document.getElementById('cutiTableWrapper');
             const cutiRoleText = document.getElementById('cutiRoleText');
+            
+            const tsFormWrapper = document.getElementById('tsFormWrapper');
+            const tsTableWrapper = document.getElementById('tsTableWrapper');
+            const tsRoleText = document.getElementById('tsRoleText');
 
             if (isSpv) {
                 if (cutiFormWrapper) cutiFormWrapper.classList.add('hidden');
@@ -2055,6 +2352,14 @@
                 if (cutiRoleText) {
                     cutiRoleText.innerHTML = `<b class="text-orange-600"><i class="fa-solid fa-user-check mr-1"></i> Mode SPV (Mida Ru'yati Laila):</b> Peninjauan & Persetujuan (ACC) Cuti Anggota.`;
                 }
+
+                if (tsFormWrapper) tsFormWrapper.classList.add('hidden');
+                if (tsTableWrapper) {
+                    tsTableWrapper.classList.remove('lg:col-span-2');
+                    tsTableWrapper.classList.add('lg:col-span-3');
+                }
+                if (tsRoleText) tsRoleText.innerHTML = `<b class="text-orange-600"><i class="fa-solid fa-user-check mr-1"></i> Mode SPV:</b> ACC Tukar Shift.`;
+
             } else {
                 if (cutiFormWrapper) cutiFormWrapper.classList.remove('hidden');
                 if (cutiTableWrapper) {
@@ -2070,6 +2375,19 @@
                         cutiRoleText.innerHTML = `<i class="fa-solid fa-user mr-1 text-slate-500"></i> Mode Anggota: Mengajukan cuti dan menunggu ACC SPV.`;
                     }
                 }
+
+                if (tsFormWrapper) tsFormWrapper.classList.remove('hidden');
+                if (tsTableWrapper) {
+                    tsTableWrapper.classList.remove('lg:col-span-3');
+                    tsTableWrapper.classList.add('lg:col-span-2');
+                }
+                if (tsRoleText) {
+                    if (on && appState.role === 'ADMIN') {
+                        tsRoleText.innerHTML = `<b class="text-blue-600"><i class="fa-solid fa-user-shield mr-1"></i> Mode Admin</b>`;
+                    } else {
+                        tsRoleText.innerHTML = `<i class="fa-solid fa-user mr-1 text-slate-500"></i> Mode Anggota: Mengajukan Tukar Shift.`;
+                    }
+                }
             }
 
             renderDashboard();
@@ -2077,6 +2395,7 @@
             renderPengeluaranTable();
             renderInventarisTable();
             renderCutiTable();
+            renderTukarShiftTable();
             renderLaporan();
         }
 
@@ -2735,9 +3054,9 @@
         function promptDeleteTransaction(type, id) {
             pendingDeleteType = type;
             pendingDeleteId = id;
-            const label = type === 'kas' ? 'Pemasukan Kas' : type === 'inventaris' ? 'Inventaris' : type === 'cuti' ? 'Pengajuan Cuti' : 'Pengeluaran';
+            const label = type === 'kas' ? 'Pemasukan Kas' : type === 'inventaris' ? 'Inventaris' : type === 'cuti' ? 'Pengajuan Cuti' : type === 'tukar-shift' ? 'Tukar Shift' : 'Pengeluaran';
             setTxt('confirmTitle', `Hapus Data ${label}?`);
-            setTxt('confirmMessage', type === 'inventaris' || type === 'cuti'
+            setTxt('confirmMessage', type === 'inventaris' || type === 'cuti' || type === 'tukar-shift'
                 ? `Catatan ${label.toLowerCase()} ini akan dihapus dari sistem.`
                 : 'Data ini akan terhapus dari sistem dan saldo akhir akan disesuaikan.');
             document.getElementById('confirmModal').classList.remove('hidden');
@@ -2754,7 +3073,7 @@
             if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login terlebih dahulu.', 'error'); return; }
             if (!pendingDeleteType || !pendingDeleteId) return;
 
-            const collection = pendingDeleteType === 'kas' ? 'kas' : pendingDeleteType === 'inventaris' ? 'inventaris' : pendingDeleteType === 'cuti' ? 'cuti' : 'pengeluaran';
+            const collection = pendingDeleteType === 'kas' ? 'kas' : pendingDeleteType === 'inventaris' ? 'inventaris' : pendingDeleteType === 'cuti' ? 'cuti' : pendingDeleteType === 'tukar-shift' ? 'tukar_shift' : 'pengeluaran';
 
             if (pendingDeleteType === 'kas' || pendingDeleteType === 'pengeluaran') {
                 sendToGoogleSheets({ action: 'DELETE', type: pendingDeleteType, id: pendingDeleteId });
