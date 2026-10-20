@@ -898,9 +898,29 @@
                         <p class="text-xs text-slate-500 mt-1">Sistem otomatis perputaran shift &amp; terintegrasi dengan cuti anggota.</p>
                     </div>
                     <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
-                        <label for="jadwalMonth" class="text-xs font-bold text-slate-600 hidden sm:block">Pilih Bulan:</label>
-                        <input type="month" id="jadwalMonth" onchange="renderJadwalTable()" class="text-sm font-bold border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                        <button onclick="document.getElementById('jadwalMonth').value=todayYM();renderJadwalTable()" class="px-3 py-1.5 bg-blue-100 text-blue-700 font-bold rounded-lg text-xs hover:bg-blue-200 transition border border-blue-200">Bulan Ini</button>
+                        <label class="text-xs font-bold text-slate-600 hidden sm:block">Periode:</label>
+                        <select id="jadwalBulan" onchange="renderJadwalTable()" class="text-sm font-bold border border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer">
+                            <option value="1">Januari</option>
+                            <option value="2">Februari</option>
+                            <option value="3">Maret</option>
+                            <option value="4">April</option>
+                            <option value="5">Mei</option>
+                            <option value="6">Juni</option>
+                            <option value="7">Juli</option>
+                            <option value="8">Agustus</option>
+                            <option value="9">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12">Desember</option>
+                        </select>
+                        <select id="jadwalTahun" onchange="renderJadwalTable()" class="text-sm font-bold border border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer">
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                        </select>
+                        <button onclick="setJadwalBulanIni()" class="px-3 py-1.5 bg-blue-100 text-blue-700 font-bold rounded-lg text-xs hover:bg-blue-200 transition border border-blue-200 shadow-sm">Bulan Ini</button>
                     </div>
                 </div>
 
@@ -1416,6 +1436,7 @@
                 if (el) el.value = t;
             });
             calculateDurasiCuti();
+            setJadwalBulanIni();
         }
 
         function renderLogo() {
@@ -1621,13 +1642,30 @@
             return SHIFT_CYCLE[index];
         }
 
+        function setJadwalBulanIni() {
+            const d = new Date();
+            const b = document.getElementById('jadwalBulan');
+            const t = document.getElementById('jadwalTahun');
+            if(b && t) {
+                b.value = d.getMonth() + 1;
+                // Add option dynamically if future year is not in select
+                if (!Array.from(t.options).some(opt => parseInt(opt.value) === d.getFullYear())) {
+                    const opt = document.createElement('option');
+                    opt.value = d.getFullYear(); opt.text = d.getFullYear();
+                    t.appendChild(opt);
+                }
+                t.value = d.getFullYear();
+            }
+            renderJadwalTable();
+        }
+
         function renderJadwalTable() {
-            const monthInput = document.getElementById('jadwalMonth');
-            if (!monthInput) return;
-            if (!monthInput.value) monthInput.value = todayYM();
-            const [yearStr, monthStr] = monthInput.value.split('-');
-            const year = parseInt(yearStr);
-            const month = parseInt(monthStr);
+            const bulanSelect = document.getElementById('jadwalBulan');
+            const tahunSelect = document.getElementById('jadwalTahun');
+            if (!bulanSelect || !tahunSelect) return;
+            
+            const year = parseInt(tahunSelect.value);
+            const month = parseInt(bulanSelect.value);
             const daysInMonth = new Date(year, month, 0).getDate();
 
             // Constructing Header Row Dynamically
