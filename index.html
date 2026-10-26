@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/jpeg" href="logo_RDF1.png">
+    <link rel="icon" type="image/jpeg" href="JT.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         const firebaseConfig = {
@@ -87,7 +87,7 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div onclick="triggerLogoChange()" title="Klik untuk mengunggah logo baru" class="relative group cursor-pointer w-11 h-11 rounded-2xl bg-gradient-to-tr from-orange-400 to-blue-500 flex items-center justify-center text-white shadow-lg overflow-hidden border border-blue-300/30">
-                        <img id="customLogoImg" src="JT.png" alt="Logo Jembatan Timbang" class="w-full h-full object-cover" onerror="this.classList.add('hidden'); document.getElementById('defaultLogoIcon').classList.remove('hidden');">
+                        <img id="customLogoImg" src="logo_RDF1.png" alt="Logo Jembatan Timbang" class="w-full h-full object-cover" onerror="this.classList.add('hidden'); document.getElementById('defaultLogoIcon').classList.remove('hidden');">
                         <i id="defaultLogoIcon" class="fa-solid fa-scale-balanced text-xl hidden"></i>
                         <input type="file" id="logoFileInput" accept="image/*" onchange="handleLogoUpload(event)" class="hidden">
                         <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[9px] text-white font-bold transition">Ubah Logo</div>
@@ -1673,7 +1673,7 @@
                 img.classList.remove('hidden');
                 icon.classList.add('hidden');
             } else {
-                img.src = "JT.png";
+                img.src = "logo_RDF1.png";
                 img.classList.remove('hidden');
             }
         }
