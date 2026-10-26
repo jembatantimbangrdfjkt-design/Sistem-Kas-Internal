@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/jpeg" href="JT.png">
+    <link rel="icon" type="image/jpeg" href="logo_RDF1.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         const firebaseConfig = {
@@ -74,7 +74,6 @@
             .bg-yellow-400 { background-color: #facc15 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .bg-blue-600 { background-color: #2563eb !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             
-            /* Logic for Print Inventaris */
             body.print-inventaris header, body.print-inventaris #toastContainer { display: none !important; }
             body.print-inventaris section:not(#content-inventaris) { display: none !important; }
             body.print-inventaris #content-inventaris { display: block !important; }
@@ -87,11 +86,11 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div onclick="triggerLogoChange()" title="Klik untuk ubah logo (Mode Admin)" class="relative group cursor-pointer w-11 h-11 rounded-2xl bg-gradient-to-tr from-orange-400 to-blue-500 flex items-center justify-center text-white shadow-lg overflow-hidden border border-blue-300/30">
-                        <img id="customLogoImg" src="" alt="Logo Internal" class="w-full h-full object-cover hidden">
-                        <i id="defaultLogoIcon" class="fa-solid fa-building-columns text-xl"></i>
+                    <div onclick="triggerLogoChange()" title="Klik untuk mengunggah logo baru" class="relative group cursor-pointer w-11 h-11 rounded-2xl bg-gradient-to-tr from-orange-400 to-blue-500 flex items-center justify-center text-white shadow-lg overflow-hidden border border-blue-300/30">
+                        <img id="customLogoImg" src="JT.png" alt="Logo Jembatan Timbang" class="w-full h-full object-cover" onerror="this.classList.add('hidden'); document.getElementById('defaultLogoIcon').classList.remove('hidden');">
+                        <i id="defaultLogoIcon" class="fa-solid fa-scale-balanced text-xl hidden"></i>
                         <input type="file" id="logoFileInput" accept="image/*" onchange="handleLogoUpload(event)" class="hidden">
-                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[9px] text-white font-bold transition">Ubah</div>
+                        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[9px] text-white font-bold transition">Ubah Logo</div>
                     </div>
                     <div>
                         <h1 class="font-extrabold text-xl sm:text-2xl tracking-tight leading-tight">JEMBATAN TIMBANG</h1>
@@ -999,8 +998,8 @@
                         <i class="fa-solid fa-right-left"></i>
                     </div>
                     <div>
-                        <h2 class="font-extrabold text-slate-800 text-base">Pengajuan Tukar Shift</h2>
-                        <p class="text-xs text-slate-500 mt-0.5">Fasilitas bagi anggota untuk bertukar jadwal shift. Memerlukan ACC dari PIC <b>Ahmad Rafi</b>.</p>
+                        <h2 class="font-extrabold text-slate-800 text-base">Pengajuan Tukar Shift & Piket</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Fasilitas pertukaran jadwal shift dan piket mingguan. Memerlukan ACC dari PIC <b>Ahmad Rafi</b>.</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
@@ -1016,18 +1015,18 @@
                         <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
                             <i class="fa-solid fa-file-pen"></i>
                         </div>
-                        <h2 class="font-bold text-slate-800 text-base">Form Tukar Shift</h2>
+                        <h2 class="font-bold text-slate-800 text-base">Form Tukar Shift / Piket</h2>
                     </div>
 
                     <form id="formTukarShift" onsubmit="handleSaveTukarShift(event)" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Nama Anda (Pemohon) <span class="text-orange-500">*</span></label>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Nama Pemohon (Misal: Ahmad Rafi) <span class="text-orange-500">*</span></label>
                             <select id="tsPemohon" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                                <option value="">-- Pilih Nama --</option>
+                                <option value="">-- Pilih Nama Pemohon --</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Shift Anda <span class="text-orange-500">*</span></label>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Shift / Piket Anda <span class="text-orange-500">*</span></label>
                             <input type="date" id="tsTglPemohon" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
                         
@@ -1045,12 +1044,12 @@
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Tgl Shift Pengganti <span class="text-slate-400 font-medium">(Opsional)</span></label>
-                            <input type="date" id="tsTglPengganti" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" title="Isi jika ini adalah pertukaran hari (Misal: Anda ganti shift dia di hari lain)">
+                            <input type="date" id="tsTglPengganti" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" title="Isi jika ini adalah pertukaran hari">
                         </div>
                         
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Alasan Tukar Shift <span class="text-orange-500">*</span></label>
-                            <textarea id="tsAlasan" rows="2" required placeholder="Contoh: Ada keperluan keluarga mendadak..." class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Alasan Tukar Shift / Piket <span class="text-orange-500">*</span></label>
+                            <textarea id="tsAlasan" rows="2" required placeholder="Contoh: Tukar jadwal piket Sabtu / keperluan mendadak..." class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
                         </div>
                         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-md flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-paper-plane"></i><span>Kirim Pengajuan</span>
@@ -1061,7 +1060,8 @@
                 <div id="tsTableWrapper" class="lg:col-span-2 glass-card p-6 rounded-2xl border border-white/60 flex flex-col">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
                         <div>
-                            <h2 class="font-bold text-slate-800 text-base">Riwayat & Status Tukar Shift</h2>
+                            <h2 class="font-bold text-slate-800 text-base">Riwayat & Status Tukar Shift / Piket</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">PIC Ahmad Rafi dapat memberikan ACC langsung pada tabel di bawah.</p>
                         </div>
                     </div>
 
@@ -1666,14 +1666,60 @@
         function renderLogo() {
             const img = document.getElementById('customLogoImg');
             const icon = document.getElementById('defaultLogoIcon');
-            if (appState.customLogo && img) {
+            if (!img || !icon) return;
+
+            if (appState.customLogo) {
                 img.src = appState.customLogo;
                 img.classList.remove('hidden');
-                if (icon) icon.classList.add('hidden');
-            } else if (img) {
-                img.classList.add('hidden');
-                if (icon) icon.classList.remove('hidden');
+                icon.classList.add('hidden');
+            } else {
+                img.src = "JT.png";
+                img.classList.remove('hidden');
             }
+        }
+
+        function triggerLogoChange() {
+            document.getElementById('logoFileInput')?.click();
+        }
+
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                appState.customLogo = e.target.result;
+                try { localStorage.setItem('kasinternal_logo', appState.customLogo); } catch (err) {}
+                renderLogo();
+                showToast('Logo berhasil diperbarui!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function normalizeInvItem(id, item) {
+            const qty = Number(item.qty) || 0;
+            const logs = Array.isArray(item.logs) ? item.logs.map(l => ({ ...l, tanggal: normalizeDateOnly(l.tanggal) })) : [];
+            const qtyKeluar = logs.length ? sumBy(logs, 'qty') : (Number(item.qtyKeluar) || 0);
+            const sisa = Math.max(0, qty - qtyKeluar);
+            return {
+                id,
+                ...item,
+                tanggalMasuk: normalizeDateOnly(item.tanggalMasuk),
+                tanggalKeluar: item.tanggalKeluar ? normalizeDateOnly(item.tanggalKeluar) : '',
+                qty,
+                qtyKeluar,
+                sisa,
+                logs
+            };
+        }
+
+        function fmtUnits(arr, key) {
+            const totals = {};
+            arr.forEach(item => {
+                const s = item.satuan || 'unit';
+                totals[s] = (totals[s] || 0) + (Number(item[key]) || 0);
+            });
+            const parts = Object.entries(totals).map(([s, val]) => `${fmtNum(val)} ${s}`);
+            return parts.length ? parts.join(', ') : '0';
         }
 
         function renderInventarisDashboard() {
@@ -1900,7 +1946,7 @@
             }
             if (chartInvInst) {
                 chartInvInst.data.datasets[0].data = MONTHS_ID.map((_, m) => sumBy(appState.inventarisEntries.filter(e => mk(e.tanggalMasuk) === key(m)), 'qty'));
-                chartInvInst.data.datasets[1].data = MONTHS_ID.map((_, m) => sumBy(appState.inventarisEntries.flatMap(e => e.logs).filter(l => mk(l.tanggal) === key(m)), 'qty'));
+                chartInvInst.data.datasets[1].data = MONTHS_ID.map((_, m) => sumBy(appState.inventarisEntries.flatMap(e => e.logs || []).filter(l => mk(l.tanggal) === key(m)), 'qty'));
                 chartInvInst.update();
             }
         }
@@ -2802,7 +2848,7 @@
                     database.ref(`users/${userKey}`).update(updates).then(() => {
                         showToast('Profil berhasil diubah! Silakan login ulang.', 'success');
                         document.getElementById('formProfile').reset();
-                        toggleAuthModal(); // trigger logout to apply changes properly
+                        toggleAuthModal(); 
                     }).catch(err => {
                         showToast('Gagal mengubah profil.', 'error');
                     });
@@ -3107,7 +3153,7 @@
             appState.targetMonth = Number(val) || 8;
             database.ref('settings/targetMonth').set(appState.targetMonth);
         }
-        
+
         function handleSavePengeluaran(e) {
             if (e) e.preventDefault();
             if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
@@ -3118,17 +3164,19 @@
             const nominal = Number(document.getElementById('expNominal').value) || 0;
             const catatan = document.getElementById('expCatatan').value;
 
+            if (!judul || !nominal) { showToast('Isi nama pengeluaran dan nominal!', 'error'); return; }
+
             const newExp = { tanggal, judul, kategori, nominal, catatan };
 
             const ref = database.ref('pengeluaran').push();
             ref.set(newExp).then(() => {
                 sendToGoogleSheets({ action: 'ADD_PENGELUARAN', id: ref.key, ...newExp });
-                showToast('Pengeluaran berhasil dicatat.', 'success');
+                showToast('Pengeluaran berhasil disimpan.', 'success');
                 document.getElementById('formInputPengeluaran').reset();
                 setDefaultDates();
             });
         }
-        
+
         function handleSaveInventaris(e) {
             if (e) e.preventDefault();
             if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
@@ -3137,60 +3185,113 @@
             const nama = document.getElementById('invNama').value;
             const qty = Number(document.getElementById('invQty').value) || 0;
             const satuan = document.getElementById('invSatuan').value;
-            const tanggalKeluar = document.getElementById('invTglKeluar').value || '';
+            const tanggalKeluar = document.getElementById('invTglKeluar').value;
 
-            const item = { tanggalMasuk, nama, qty, satuan, tanggalKeluar: '' };
-            if (tanggalKeluar) item.keluarLog = { [database.ref().push().key]: { tanggal: tanggalKeluar, qty } };
+            if (!nama || !qty) { showToast('Isi nama barang dan quantity!', 'error'); return; }
 
-            database.ref('inventaris').push(item).then(() => {
+            const logs = tanggalKeluar ? [{ tanggal: tanggalKeluar, qty: qty }] : [];
+            const newInv = { tanggalMasuk, nama, qty, satuan, tanggalKeluar: tanggalKeluar || '', qtyKeluar: logs.length ? qty : 0, logs };
+
+            database.ref('inventaris').push(newInv).then(() => {
                 showToast('Inventaris berhasil disimpan.', 'success');
                 document.getElementById('formInputInventaris').reset();
                 setDefaultDates();
             });
         }
-        
-        const SATUAN_INV = ['pcs', 'pack', 'box', 'unit', 'set', 'roll', 'rim', 'kg', 'liter', 'meter', 'pasang'];
 
-        function normalizeInvItem(id, item) {
-            const qty = Number(item.qty) || 0;
-            let logs = [];
-            if (item.keluarLog) {
-                logs = Object.entries(item.keluarLog).map(([key, l]) => ({ key, tanggal: normalizeDateOnly(l.tanggal), qty: Number(l.qty) || 0 }));
-            } else if (item.tanggalKeluar) {
-                logs = [{ key: 'legacy', tanggal: normalizeDateOnly(item.tanggalKeluar), qty }];
+        let currentDeleteInfo = null;
+        function promptDeleteTransaction(type, id) {
+            if (!appState.isAdminLoggedIn) return;
+            currentDeleteInfo = { type, id };
+            const confirmModal = document.getElementById('confirmModal');
+            const confirmBtn = document.getElementById('btnActionConfirm');
+            if (confirmModal && confirmBtn) {
+                confirmBtn.onclick = executeDeleteTransaction;
+                confirmModal.classList.remove('hidden');
             }
-            logs.sort((a, b) => String(a.tanggal).localeCompare(String(b.tanggal)));
-            const qtyKeluar = sumBy(logs, 'qty');
-            return {
-                id, ...item, qty,
-                satuan: item.satuan || 'pcs',
-                tanggalMasuk: normalizeDateOnly(item.tanggalMasuk),
-                tanggalKeluar: logs.length ? logs[logs.length - 1].tanggal : (item.tanggalKeluar ? normalizeDateOnly(item.tanggalKeluar) : ''),
-                logs, qtyKeluar,
-                sisa: Math.max(qty - qtyKeluar, 0)
-            };
         }
 
-        function fmtUnits(arr, field) {
-            const m = {};
-            arr.forEach(e => { m[e.satuan || 'pcs'] = (m[e.satuan || 'pcs'] || 0) + (Number(e[field]) || 0); });
-            const parts = Object.keys(m).sort((a, b) => SATUAN_INV.indexOf(a) - SATUAN_INV.indexOf(b)).filter(k => m[k] > 0).map(k => `${fmtNum(m[k])} ${k}`);
-            return parts.length ? parts.join(' · ') : '0';
+        function closeConfirmModal() {
+            document.getElementById('confirmModal')?.classList.add('hidden');
+            currentDeleteInfo = null;
         }
-        
-        function openInvEditModal(id) {
-            if (!appState.isAdminLoggedIn) {
-                showToast('Login sebagai Admin terlebih dahulu untuk mengedit data!', 'error');
-                toggleAuthModal();
+
+        function executeDeleteTransaction() {
+            if (!currentDeleteInfo) return;
+            const { type, id } = currentDeleteInfo;
+            database.ref(`${type}/${id}`).remove().then(() => {
+                showToast('Data berhasil dihapus.', 'success');
+                closeConfirmModal();
+            }).catch(err => {
+                console.error(err);
+                showToast('Gagal menghapus data.', 'error');
+                closeConfirmModal();
+            });
+        }
+
+        let selectedInvId = null;
+        function openInvKeluarModal(id) {
+            if (!appState.isAdminLoggedIn) return;
+            selectedInvId = id;
+            const item = appState.inventarisEntries.find(i => i.id === id);
+            if (!item) return;
+
+            setTxt('invKeluarNama', item.nama);
+            setTxt('invKeluarInfo', `Tersedia: ${fmtNum(item.sisa)} ${item.satuan}`);
+            setTxt('invKeluarSatuan', `(${item.satuan})`);
+            
+            const qtyInput = document.getElementById('invKeluarQty');
+            if(qtyInput) {
+                qtyInput.max = item.sisa;
+                qtyInput.value = item.sisa;
+            }
+            const dateInput = document.getElementById('invKeluarTanggal');
+            if(dateInput) dateInput.value = todayStr();
+
+            toggleInvKeluarModal(true);
+        }
+
+        function toggleInvKeluarModal(show = true) {
+            const modal = document.getElementById('invKeluarModal');
+            if(modal) modal.classList.toggle('hidden', !show);
+        }
+
+        function handleSaveInvKeluar(e) {
+            if(e) e.preventDefault();
+            if(!selectedInvId) return;
+
+            const qty = Number(document.getElementById('invKeluarQty').value) || 0;
+            const tanggal = document.getElementById('invKeluarTanggal').value;
+            const item = appState.inventarisEntries.find(i => i.id === selectedInvId);
+
+            if(!item || qty <= 0 || qty > item.sisa) {
+                showToast('Jumlah tidak valid / melebihi stok tersisa!', 'error');
                 return;
             }
-            const item = appState.inventarisEntries.find(x => x.id === id);
+
+            const logs = item.logs ? [...item.logs] : [];
+            logs.push({ tanggal, qty });
+            const totalKeluar = sumBy(logs, 'qty');
+
+            database.ref(`inventaris/${selectedInvId}`).update({
+                qtyKeluar: totalKeluar,
+                tanggalKeluar: tanggal,
+                logs: logs
+            }).then(() => {
+                showToast('Pencatatan barang keluar berhasil disimpan.', 'success');
+                toggleInvKeluarModal(false);
+            });
+        }
+
+        function openInvEditModal(id) {
+            if (!appState.isAdminLoggedIn) return;
+            const item = appState.inventarisEntries.find(i => i.id === id);
             if (!item) return;
 
             document.getElementById('editInvId').value = item.id;
             document.getElementById('editInvTglMasuk').value = item.tanggalMasuk || todayStr();
-            document.getElementById('editInvNama').value = item.nama || '';
-            document.getElementById('editInvQty').value = item.qty || 1;
+            document.getElementById('editInvNama').value = item.nama;
+            document.getElementById('editInvQty').value = item.qty;
             document.getElementById('editInvSatuan').value = item.satuan || 'pcs';
             document.getElementById('editInvTglKeluar').value = item.tanggalKeluar || '';
 
@@ -3199,339 +3300,176 @@
 
         function toggleInvEditModal(show = true) {
             const modal = document.getElementById('invEditModal');
-            if (modal) modal.classList.toggle('hidden', !show);
+            if(modal) modal.classList.toggle('hidden', !show);
         }
 
         function handleUpdateInventaris(e) {
             if (e) e.preventDefault();
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
+            if (!appState.isAdminLoggedIn) return;
 
             const id = document.getElementById('editInvId').value;
+            const item = appState.inventarisEntries.find(i => i.id === id);
+            if (!item) return;
+
             const tanggalMasuk = document.getElementById('editInvTglMasuk').value;
             const nama = document.getElementById('editInvNama').value;
-            const qty = parseInt(document.getElementById('editInvQty').value) || 0;
+            const qty = Number(document.getElementById('editInvQty').value) || 0;
             const satuan = document.getElementById('editInvSatuan').value;
             const tanggalKeluar = document.getElementById('editInvTglKeluar').value;
 
-            const existingItem = appState.inventarisEntries.find(x => x.id === id);
-            if (!existingItem) return;
-
-            if (qty < existingItem.qtyKeluar) {
-                showToast(`Total quantity tidak boleh kurang dari quantity yang sudah keluar (${existingItem.qtyKeluar} ${satuan})!`, 'error');
+            if (qty < item.qtyKeluar) {
+                showToast(`Total quantity tidak boleh lebih kecil dari barang yang sudah keluar (${item.qtyKeluar})!`, 'error');
                 return;
             }
 
-            const updates = {
-                tanggalMasuk,
-                nama,
-                qty,
-                satuan,
-                tanggalKeluar: tanggalKeluar || (existingItem.tanggalKeluar || '')
-            };
-
-            database.ref(`inventaris/${id}`).update(updates)
-                .then(() => {
-                    showToast('Data inventaris berhasil diperbarui.', 'success');
-                    toggleInvEditModal(false);
-                })
-                .catch(err => {
-                    console.error('Error update inventaris:', err);
-                    showToast('Gagal memperbarui inventaris.', 'error');
-                });
-        }
-        
-        let pendingKeluarId = null;
-
-        function openInvKeluarModal(id) {
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
-            const item = appState.inventarisEntries.find(x => x.id === id);
-            if (!item) return;
-            if (item.sisa <= 0) { showToast('Stok barang ini sudah habis.', 'info'); return; }
-            pendingKeluarId = id;
-            setTxt('invKeluarNama', item.nama);
-            setTxt('invKeluarInfo', `Masuk ${fmtNum(item.qty)} ${item.satuan} · Sudah keluar ${fmtNum(item.qtyKeluar)} · Sisa stok ${fmtNum(item.sisa)} ${item.satuan}`);
-            setTxt('invKeluarSatuan', `(${item.satuan}, maks. ${fmtNum(item.sisa)})`);
-            const qtyInput = document.getElementById('invKeluarQty');
-            if (qtyInput) {
-                qtyInput.max = item.sisa;
-                qtyInput.value = item.sisa;
-            }
-            const tglInput = document.getElementById('invKeluarTanggal');
-            if (tglInput) tglInput.value = todayStr();
-            toggleInvKeluarModal(true);
+            database.ref(`inventaris/${id}`).update({
+                tanggalMasuk, nama, qty, satuan,
+                tanggalKeluar: tanggalKeluar || item.tanggalKeluar || ''
+            }).then(() => {
+                showToast('Data inventaris berhasil diperbarui.', 'success');
+                toggleInvEditModal(false);
+            });
         }
 
-        function toggleInvKeluarModal(show = true) {
-            const modal = document.getElementById('invKeluarModal');
-            if (modal) modal.classList.toggle('hidden', !show);
-            if (!show) pendingKeluarId = null;
-        }
-
-        function handleSaveInvKeluar(e) {
-            if (e) e.preventDefault();
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
-            const id = pendingKeluarId;
-            const item = appState.inventarisEntries.find(x => x.id === id);
-            if (!item) return;
-            const tanggal = document.getElementById('invKeluarTanggal').value;
-            const qty = parseInt(document.getElementById('invKeluarQty').value);
-
-            if (!qty || qty < 1) { showToast('Jumlah barang keluar tidak valid!', 'error'); return; }
-            if (tanggal < item.tanggalMasuk) { showToast('Tanggal keluar tidak boleh sebelum tanggal masuk!', 'error'); return; }
-            if (qty > item.sisa) { showToast(`Jumlah keluar melebihi sisa stok (${fmtNum(item.sisa)} ${item.satuan})!`, 'error'); return; }
-
-            const logKey = database.ref().push().key;
-            let overdraw = false;
-
-            database.ref('inventaris/' + id).transaction(cur => {
-                if (!cur) return cur;
-                const total = Number(cur.qty) || 0;
-                const out = cur.keluarLog
-                    ? Object.values(cur.keluarLog).reduce((a, l) => a + (Number(l.qty) || 0), 0)
-                    : (cur.tanggalKeluar ? total : 0);
-                if (qty > total - out) { overdraw = true; return; }
-                cur.keluarLog = cur.keluarLog || {};
-                cur.keluarLog[logKey] = { tanggal, qty };
-                return cur;
-            }).then(res => {
-                if (res.committed) showToast(`Barang keluar ${fmtNum(qty)} ${item.satuan} dicatat. Stok otomatis berkurang.`, 'success');
-                else showToast(overdraw ? 'Jumlah keluar melebihi sisa stok terbaru!' : 'Gagal menyimpan barang keluar.', 'error');
-            }).catch(() => showToast('Gagal menyimpan barang keluar.', 'error'));
-            toggleInvKeluarModal(false);
-        }
-        
-        let pendingDeleteType = null;
-        let pendingDeleteId = null;
-
-        function promptDeleteTransaction(type, id) {
-            pendingDeleteType = type;
-            pendingDeleteId = id;
-            const label = type === 'kas' ? 'Pemasukan Kas' : type === 'inventaris' ? 'Inventaris' : type === 'cuti' ? 'Pengajuan Cuti' : type === 'tukar-shift' ? 'Tukar Shift' : 'Pengeluaran';
-            setTxt('confirmTitle', `Hapus Data ${label}?`);
-            setTxt('confirmMessage', type === 'inventaris' || type === 'cuti' || type === 'tukar-shift'
-                ? `Catatan ${label.toLowerCase()} ini akan dihapus dari sistem.`
-                : 'Data ini akan terhapus dari sistem dan saldo akhir akan disesuaikan.');
-            document.getElementById('confirmModal').classList.remove('hidden');
-            document.getElementById('btnActionConfirm').onclick = executeDelete;
-        }
-
-        function closeConfirmModal() {
-            document.getElementById('confirmModal').classList.add('hidden');
-            pendingDeleteType = null;
-            pendingDeleteId = null;
-        }
-
-        function executeDelete() {
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login terlebih dahulu.', 'error'); return; }
-            if (!pendingDeleteType || !pendingDeleteId) return;
-
-            const collection = pendingDeleteType === 'kas' ? 'kas' : pendingDeleteType === 'inventaris' ? 'inventaris' : pendingDeleteType === 'cuti' ? 'cuti' : pendingDeleteType === 'tukar-shift' ? 'tukar_shift' : 'pengeluaran';
-
-            if (pendingDeleteType === 'kas' || pendingDeleteType === 'pengeluaran') {
-                sendToGoogleSheets({ action: 'DELETE', type: pendingDeleteType, id: pendingDeleteId });
-            }
-
-            database.ref(`${collection}/${pendingDeleteId}`).remove()
-                .then(() => { closeConfirmModal(); showToast('Data berhasil dihapus', 'success'); })
-                .catch(() => showToast('Gagal menghapus data.', 'error'));
-        }
-        
-        function toggleResetModal(show = true) {
-            if (show && !appState.isAdminLoggedIn) {
-                showToast('Login sebagai Admin terlebih dahulu untuk melakukan reset data!', 'error');
-                toggleAuthModal();
-                return;
-            }
-            const modal = document.getElementById('resetModal');
-            if (modal) modal.classList.toggle('hidden', !show);
-        }
-
-        function executeResetData(mode) {
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
-
-            const resetData = mode === 'empty' ? {
-                'settings/saldoAwal': 0,
-                'kas': {},
-                'pengeluaran': {}
-            } : {
-                'settings/saldoAwal': 250000,
-                'kas': entriesToFirebaseObject(INITIAL_DUMMY_KAS),
-                'pengeluaran': entriesToFirebaseObject(INITIAL_DUMMY_PENGELUARAN)
-            };
-
-            database.ref().update(resetData)
-                .then(() => showToast(mode === 'empty' ? 'Seluruh data transaksi & saldo awal berhasil dikosongkan!' : 'Data berhasil dikembalikan ke data sampel awal periode Agustus!', 'success'))
-                .catch(() => showToast('Gagal mereset data Firebase.', 'error'));
-            toggleResetModal(false);
-        }
-        
         function openSaldoAwalModal() {
-            if (!appState.isAdminLoggedIn) {
-                showToast('Login sebagai Admin terlebih dahulu untuk mengatur saldo awal!', 'error');
-                toggleAuthModal();
-                return;
-            }
-            const input = document.getElementById('inputSaldoAwal');
-            if (input) input.value = appState.saldoAwal || 0;
+            if(!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
+            document.getElementById('inputSaldoAwal').value = appState.saldoAwal;
             toggleSaldoAwalModal(true);
         }
 
         function toggleSaldoAwalModal(show = true) {
             const modal = document.getElementById('saldoAwalModal');
-            if (modal) modal.classList.toggle('hidden', !show);
+            if(modal) modal.classList.toggle('hidden', !show);
         }
-        
+
         function handleSaveSaldoAwal(e) {
-            if (e) e.preventDefault();
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak!', 'error'); return; }
-            const v = Number(document.getElementById('inputSaldoAwal').value) || 0;
-            database.ref('settings/saldoAwal').set(v)
-                .then(() => { showToast('Saldo awal berhasil diperbarui.', 'success'); toggleSaldoAwalModal(false); })
-                .catch(() => showToast('Gagal menyimpan saldo awal.', 'error'));
+            if(e) e.preventDefault();
+            const val = Number(document.getElementById('inputSaldoAwal').value) || 0;
+            database.ref('settings/saldoAwal').set(val).then(() => {
+                showToast('Saldo awal berhasil disesuaikan.', 'success');
+                toggleSaldoAwalModal(false);
+            });
+        }
+
+        function toggleResetModal(show = true) {
+            if(!appState.isAdminLoggedIn && show) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
+            const modal = document.getElementById('resetModal');
+            if(modal) modal.classList.toggle('hidden', !show);
+        }
+
+        function executeResetData(mode) {
+            if(!appState.isAdminLoggedIn) return;
+            if (mode === 'empty') {
+                database.ref('kas').remove();
+                database.ref('pengeluaran').remove();
+                database.ref('settings/saldoAwal').set(0);
+                showToast('Seluruh data transaksi kas berhasil dikosongkan.', 'info');
+            } else if (mode === 'demo') {
+                database.ref('kas').remove();
+                database.ref('pengeluaran').remove();
+                database.ref('settings/saldoAwal').set(500000);
+                showToast('Data telah dikembalikan ke mode demo.', 'success');
+            }
+            toggleResetModal(false);
         }
 
         function openResetUnpaidModal() {
-            if (!appState.isAdminLoggedIn) {
-                showToast('Hanya Admin yang dapat mereset status tunggakan!', 'error');
-                toggleAuthModal();
-                return;
-            }
+            if(!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
             toggleResetUnpaidModal(true);
         }
 
         function toggleResetUnpaidModal(show = true) {
             const modal = document.getElementById('resetUnpaidModal');
-            if (modal) modal.classList.toggle('hidden', !show);
+            if(modal) modal.classList.toggle('hidden', !show);
         }
 
-        function executeResetUnpaid(action) {
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak!', 'error'); return; }
-            
-            let reqMonths = getRequiredMonthsCount(appState.targetMonth);
+        function executeResetUnpaid(mode) {
+            if(!appState.isAdminLoggedIn) return;
+            const targetMonth = appState.targetMonth;
+            const reqMonths = getRequiredMonthsCount(targetMonth);
             const reqAmount = reqMonths * appState.iuranPerBulan;
-            const targetMonthName = MONTHS_ID[appState.targetMonth - 1] || 'Bulan';
-            let updateOps = {};
-            let isMarkAll = action === 'mark-all-paid';
-            let promises = [];
 
-            if (isMarkAll) {
+            if (mode === 'mark-all-paid') {
+                const updates = {};
                 MASTER_MEMBERS.forEach(m => {
-                    const tot = sumBy(appState.kasEntries.filter(e => e.nama === m), 'total');
-                    if (tot < reqAmount) {
-                        const deficiency = reqAmount - tot;
-                        const missingMonths = Math.ceil(deficiency / appState.iuranPerBulan);
-                        const newKas = {
+                    const paid = sumBy(appState.kasEntries.filter(e => e.nama === m), 'total');
+                    const diff = reqAmount - paid;
+                    if (diff > 0) {
+                        const newKey = database.ref('kas').push().key;
+                        updates[`kas/${newKey}`] = {
                             tanggal: todayStr(),
                             nama: m,
-                            jumlahBulan: missingMonths,
+                            jumlahBulan: Math.ceil(diff / appState.iuranPerBulan),
                             nominalPerBulan: appState.iuranPerBulan,
-                            total: missingMonths * appState.iuranPerBulan,
-                            catatan: `Pelunasan Otomatis s/d ${targetMonthName}`
+                            total: diff,
+                            catatan: `Pelunasan Otomatis s/d ${MONTHS_ID[targetMonth - 1]}`
                         };
-                        promises.push(database.ref('kas').push(newKas));
                     }
                 });
-            } else if (action === 'clear-month-kas') {
-                const ym = `${new Date().getFullYear()}-${String(appState.targetMonth).padStart(2, '0')}`;
-                appState.kasEntries.forEach(k => {
-                    if (mk(k.tanggal) === ym || (k.catatan && k.catatan.includes(targetMonthName))) {
-                        promises.push(database.ref(`kas/${k.id}`).remove());
-                    }
-                });
+                if (Object.keys(updates).length) {
+                    database.ref().update(updates).then(() => showToast('Seluruh anggota berhasil ditandai lunas.', 'success'));
+                } else {
+                    showToast('Semua anggota sudah lunas!', 'info');
+                }
+            } else if (mode === 'clear-month-kas') {
+                const ym = `${new Date().getFullYear()}-${String(targetMonth).padStart(2, '0')}`;
+                const toRemove = appState.kasEntries.filter(e => mk(e.tanggal) === ym);
+                const updates = {};
+                toRemove.forEach(e => updates[`kas/${e.id}`] = null);
+                if (Object.keys(updates).length) {
+                    database.ref().update(updates).then(() => showToast(`Catatan kas bulan ${MONTHS_ID[targetMonth - 1]} dihapus.`, 'info'));
+                } else {
+                    showToast('Tidak ada transaksi di bulan ini.', 'info');
+                }
             }
-
-            Promise.all(promises).then(() => {
-                showToast(isMarkAll ? `Semua anggota berhasil dilunaskan hingga ${targetMonthName}.` : 'Catatan kas bulan terkait berhasil direset.', 'success');
-                toggleResetUnpaidModal(false);
-            }).catch(err => {
-                showToast('Terjadi kesalahan saat memproses reset data.', 'error');
-            });
+            toggleResetUnpaidModal(false);
         }
-        
+
         function renderLaporan() {
             const rekapBody = document.getElementById('rekapAnggotaTable');
             const jurnalBody = document.getElementById('jurnalTableBody');
             if (!rekapBody || !jurnalBody) return;
 
             setTxt('rekapTarifBadge', formatRupiah(appState.iuranPerBulan));
-
             const reqMonths = getRequiredMonthsCount(appState.targetMonth);
-            const targetAmount = reqMonths * appState.iuranPerBulan;
+            const reqAmount = reqMonths * appState.iuranPerBulan;
 
-            let rekapRows = MASTER_MEMBERS.sort().map((m, idx) => {
-                const totalDibayar = sumBy(appState.kasEntries.filter(e => e.nama === m), 'total');
-                const bulanLunas = Math.floor(totalDibayar / appState.iuranPerBulan);
-                let badgeClass = 'bg-slate-200 text-slate-700 border-slate-300';
-                let statusText = 'Belum Bayar Sama Sekali';
-
-                if (totalDibayar >= targetAmount) {
-                    badgeClass = 'bg-blue-100 text-blue-800 border-blue-200';
-                    statusText = '<i class="fa-solid fa-check-circle mr-1"></i> Lunas s/d Bulan Ini';
-                } else if (totalDibayar > 0) {
-                    badgeClass = 'bg-orange-100 text-orange-800 border-orange-200';
-                    statusText = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> Menunggak ${reqMonths - bulanLunas} Bln`;
-                }
+            let rekapRows = MASTER_MEMBERS.map((m, idx) => {
+                const total = sumBy(appState.kasEntries.filter(e => e.nama === m), 'total');
+                const bulanLunasCount = Math.floor(total / appState.iuranPerBulan);
+                const isLunas = total >= reqAmount;
 
                 return `
-                <tr class="hover:bg-slate-50 transition border-b border-slate-50">
-                    <td class="p-2.5 border-r border-slate-100 text-slate-500 font-medium">${idx + 1}</td>
-                    <td class="p-2.5 border-r border-slate-100 font-bold text-slate-800 text-left">${esc(m)}</td>
-                    <td class="p-2.5 font-bold text-blue-600">${formatRupiah(totalDibayar)}</td>
-                    <td class="p-2.5 font-semibold text-slate-600">${bulanLunas} Bulan</td>
-                    <td class="p-2.5"><span class="px-2.5 py-1 rounded-full border text-[10px] font-bold ${badgeClass}">${statusText}</span></td>
+                <tr class="hover:bg-slate-50 border-b border-slate-100">
+                    <td class="p-2.5 text-left border-r font-medium text-slate-500">${idx + 1}</td>
+                    <td class="p-2.5 text-left border-r font-bold text-slate-800">${esc(m)}</td>
+                    <td class="p-2.5 font-bold text-blue-600">${formatRupiah(total)}</td>
+                    <td class="p-2.5 font-semibold text-slate-700">${bulanLunasCount} Bulan</td>
+                    <td class="p-2.5"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${isLunas ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}">${isLunas ? 'LUNAS' : 'MENUNGGAK'}</span></td>
                 </tr>`;
             }).join('');
             rekapBody.innerHTML = rekapRows;
 
-            const k = appState.kasEntries.map(e => ({ t: e.tanggal, j: 'Pemasukan', n: e.nama, k: e.catatan, nom: e.total }));
-            const p = appState.pengeluaranEntries.map(e => ({ t: e.tanggal, j: 'Pengeluaran', n: e.judul, k: e.catatan, nom: -e.nominal }));
-            const jrn = [...k, ...p].sort((a, b) => a.t.localeCompare(b.t));
+            const allTx = [
+                ...appState.kasEntries.map(e => ({ type: 'MASUK', date: e.tanggal, title: e.nama, note: e.catatan, amount: e.total })),
+                ...appState.pengeluaranEntries.map(e => ({ type: 'KELUAR', date: e.tanggal, title: e.judul, note: `[${e.kategori}] ${e.catatan || ''}`, amount: e.nominal }))
+            ].sort((a, b) => b.date.localeCompare(a.date));
 
-            let saldo = appState.saldoAwal;
-            let jurnalRows = jrn.map(x => {
-                saldo += x.nom;
-                const isInc = x.nom > 0;
-                return `
-                <tr class="hover:bg-slate-50 transition border-b border-slate-50">
-                    <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${esc(x.t)}</td>
-                    <td class="p-3 font-semibold ${isInc ? 'text-blue-600' : 'text-orange-600'}">${x.j}</td>
-                    <td class="p-3 font-bold text-slate-800">${esc(x.n)}</td>
-                    <td class="p-3 text-slate-500">${esc(x.k) || '-'}</td>
-                    <td class="p-3 text-right font-bold ${isInc ? 'text-blue-600' : 'text-orange-600'}">${isInc ? '+ ' : '- '}${formatRupiah(Math.abs(x.nom))}</td>
-                </tr>`;
-            });
-            
-            if(!jurnalRows.length) jurnalRows = [`<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada jurnal transaksi.</td></tr>`];
-
-            jurnalBody.innerHTML = jurnalRows.join('');
-            setTxt('jurnalTotalSaldo', formatRupiah(saldo));
-        }
-
-        function triggerLogoChange() {
-            if (!appState.isAdminLoggedIn) {
-                showToast('Login sebagai Admin untuk mengubah logo aplikasi.', 'error');
-                return;
+            if (!allTx.length) {
+                jurnalBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada transaksi recorded.</td></tr>`;
+            } else {
+                jurnalBody.innerHTML = allTx.map(t => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-medium text-slate-500">${t.date}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.type === 'MASUK' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}">${t.type}</span></td>
+                    <td class="p-3 font-bold text-slate-800">${esc(t.title)}</td>
+                    <td class="p-3 text-slate-500">${esc(t.note)}</td>
+                    <td class="p-3 text-right font-bold ${t.type === 'MASUK' ? 'text-blue-600' : 'text-orange-600'}">${t.type === 'MASUK' ? '+' : '-'} ${formatRupiah(t.amount)}</td>
+                </tr>`).join('');
             }
-            document.getElementById('logoFileInput').click();
-        }
 
-        function handleLogoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const dataUrl = e.target.result;
-                appState.customLogo = dataUrl;
-                try {
-                    localStorage.setItem('kasinternal_logo', dataUrl);
-                } catch (e) {
-                    showToast('Logo terlalu besar untuk disimpan di browser.', 'error');
-                }
-                renderLogo();
-                showToast('Logo internal berhasil diperbarui.', 'success');
-            };
-            reader.readAsDataURL(file);
+            const s = calculateSummary();
+            setTxt('jurnalTotalSaldo', formatRupiah(s.saldoAkhir));
         }
     </script>
 </body>
