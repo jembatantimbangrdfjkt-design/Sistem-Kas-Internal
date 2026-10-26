@@ -73,6 +73,11 @@
             .bg-red-600 { background-color: #dc2626 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .bg-yellow-400 { background-color: #facc15 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .bg-blue-600 { background-color: #2563eb !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            
+            /* Logic for Print Inventaris */
+            body.print-inventaris header, body.print-inventaris #toastContainer { display: none !important; }
+            body.print-inventaris section:not(#content-inventaris) { display: none !important; }
+            body.print-inventaris #content-inventaris { display: block !important; }
         }
     </style>
 </head>
@@ -139,6 +144,10 @@
                     <i class="fa-solid fa-file-invoice-dollar mr-2"></i> Laporan Keuangan
                     <span id="lockReportBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-blue-950/60 text-orange-300 border border-orange-500/20"><i class="fa-solid fa-lock text-[9px]"></i></span>
                 </button>
+                <button onclick="switchTab('profil')" id="tab-profil" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-white/80 hover:bg-white/10">
+                    <i class="fa-solid fa-user-cog mr-2"></i> Profil
+                    <span id="lockProfilBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-blue-950/60 text-orange-300 border border-orange-500/20"><i class="fa-solid fa-lock text-[9px]"></i></span>
+                </button>
             </div>
         </div>
     </header>
@@ -146,6 +155,7 @@
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
         <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
+        <!-- DASHBOARD -->
         <section id="content-dashboard" class="tab-content space-y-6">
 
             <div id="greetingBanner" class="hidden glass-card rounded-2xl px-5 py-4 border border-white/60 flex items-center gap-3">
@@ -333,7 +343,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                     <div>
                         <h2 class="font-bold text-slate-800 text-base flex items-center">
-                            <i class="fa-solid fa-user-clock text-orange-600 mr-2"></i> Status Pengajuan Cuti Anggota Terbaru
+                            <i class="fa-solid fa-user-clock text-orange-600 mr-2"></i> Status Pengajuan Cuti Anggota
                         </h2>
                         <p class="text-xs text-slate-500">Pantau status ACC / Tolak / Menunggu dari SPV (Mida Ru'yati Laila)</p>
                     </div>
@@ -377,6 +387,34 @@
                             </tr>
                         </thead>
                         <tbody id="dashRecentCutiBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TUKAR SHIFT RINGKASAN -->
+            <div class="glass-card rounded-2xl p-5 sm:p-6 border border-blue-200/80 relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-600"></div>
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-base flex items-center">
+                            <i class="fa-solid fa-right-left text-blue-600 mr-2"></i> Status Pengajuan Tukar Shift
+                        </h2>
+                        <p class="text-xs text-slate-500">Pantau status persetujuan tukar shift dari PIC (Ahmad Rafi)</p>
+                    </div>
+                    <button onclick="switchTab('tukar-shift')" class="text-xs font-semibold text-blue-600 hover:text-blue-700">Lihat Semua &rarr;</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 text-slate-600 uppercase font-semibold">
+                            <tr>
+                                <th class="p-2.5 rounded-l-lg">Tgl Pengajuan</th>
+                                <th class="p-2.5">Pemohon</th>
+                                <th class="p-2.5">Pengganti</th>
+                                <th class="p-2.5">Alasan</th>
+                                <th class="p-2.5 rounded-r-lg text-center">Status ACC PIC</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashRecentTukarBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
                     </table>
                 </div>
             </div>
@@ -483,8 +521,8 @@
             </div>
         </section>
 
+        <!-- INPUT KAS -->
         <section id="content-input-kas" class="tab-content hidden space-y-6">
-
             <div id="kasAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <i class="fa-solid fa-lock text-orange-600 text-xl"></i>
@@ -571,8 +609,8 @@
             </div>
         </section>
 
+        <!-- INPUT PENGELUARAN -->
         <section id="content-input-pengeluaran" class="tab-content hidden space-y-6">
-
             <div id="pengeluaranAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <i class="fa-solid fa-lock text-orange-600 text-xl"></i>
@@ -651,8 +689,8 @@
             </div>
         </section>
 
+        <!-- INVENTARIS -->
         <section id="content-inventaris" class="tab-content hidden space-y-6">
-
             <div id="invAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <i class="fa-solid fa-lock text-orange-600 text-xl"></i>
@@ -661,7 +699,22 @@
                 <button onclick="toggleAuthModal()" class="px-3 py-1.5 bg-orange-600 text-white rounded-xl text-xs font-bold hover:bg-orange-700">Login Admin</button>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="flex justify-end space-x-2 no-print">
+                <button onclick="exportExcelInventaris()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow flex items-center">
+                    <i class="fa-solid fa-file-excel mr-2"></i> Download Excel
+                </button>
+                <button onclick="printInventaris()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow flex items-center">
+                    <i class="fa-solid fa-print mr-2"></i> Print Inventaris
+                </button>
+            </div>
+
+            <div class="hidden print-only mb-6 text-center border-b pb-4">
+                <h1 class="text-2xl font-bold uppercase">Laporan Inventaris Barang</h1>
+                <p class="text-sm">Sistem Pengelolaan Inventaris Jembatan Timbang</p>
+                <p class="text-xs text-slate-500 mt-1">Tanggal Cetak: <span id="printDateInv"></span></p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 no-print">
                 <div class="lg:col-span-1 glass-card p-6 rounded-2xl border border-white/60">
                     <div class="flex items-center space-x-2 border-b border-slate-100 pb-3 mb-4">
                         <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold"><i class="fa-solid fa-plus"></i></div>
@@ -697,7 +750,7 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Barang Keluar <span class="text-slate-400 font-medium">(opsional — jika diisi, seluruh qty dianggap keluar)</span></label>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Barang Keluar <span class="text-slate-400 font-medium">(opsional)</span></label>
                             <input type="date" id="invTglKeluar" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
                         </div>
                         <button type="submit" id="btnSimpanInventaris" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-md flex items-center justify-center space-x-2">
@@ -728,7 +781,7 @@
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-100 text-slate-600 uppercase font-semibold">
                                 <tr>
-                                    <th class="p-3 rounded-l-lg">Tgl Masuk</th><th class="p-3">Nama Barang</th><th class="p-3">Masuk</th><th class="p-3">Keluar</th><th class="p-3">Sisa</th><th class="p-3">Tgl Keluar</th><th class="p-3">Status</th><th class="p-3 text-center rounded-r-lg">Aksi</th>
+                                    <th class="p-3 rounded-l-lg">Tgl Masuk</th><th class="p-3">Nama Barang</th><th class="p-3">Masuk</th><th class="p-3">Keluar</th><th class="p-3">Sisa</th><th class="p-3">Tgl Keluar</th><th class="p-3">Status</th><th class="p-3 text-center rounded-r-lg no-print">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="invTableBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
@@ -736,10 +789,11 @@
                     </div>
                 </div>
             </div>
+            
             <div class="glass-card p-6 rounded-2xl border border-white/60">
                 <div class="mb-4">
                     <h2 class="font-bold text-slate-800 text-base"><i class="fa-solid fa-warehouse text-blue-600 mr-2"></i>Stok Barang Saat Ini</h2>
-                    <p class="text-xs text-slate-500">Stok = total masuk &minus; total keluar, otomatis berkurang saat barang keluar dicatat</p>
+                    <p class="text-xs text-slate-500 no-print">Stok = total masuk &minus; total keluar, otomatis berkurang saat barang keluar dicatat</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs">
@@ -752,6 +806,50 @@
             </div>
         </section>
 
+        <!-- PENGATURAN PROFIL -->
+        <section id="content-profil" class="tab-content hidden space-y-6">
+            <div id="profilAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-lock text-orange-600 text-xl"></i>
+                    <p class="text-xs sm:text-sm font-medium">Anda harus login terlebih dahulu untuk mengubah profil.</p>
+                </div>
+                <button onclick="toggleAuthModal()" class="px-3 py-1.5 bg-orange-600 text-white rounded-xl text-xs font-bold hover:bg-orange-700">Login</button>
+            </div>
+
+            <div id="profilSettingsBox" class="glass-card rounded-2xl p-6 border border-white/60 max-w-lg mx-auto">
+                <div class="flex items-center space-x-3 border-b border-slate-100 pb-4 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-user-cog"></i></div>
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-lg">Pengaturan Profil</h2>
+                        <p class="text-xs text-slate-500">Ubah username dan password akun Anda</p>
+                    </div>
+                </div>
+
+                <form id="formProfile" onsubmit="handleUpdateProfile(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nama Tampilan / Username Saat Ini</label>
+                        <input type="text" id="profCurrentName" disabled class="w-full text-sm border border-slate-200 bg-slate-50 rounded-xl px-3 py-2 text-slate-500 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Username Baru <span class="text-xs text-slate-400 font-normal">(Opsional)</span></label>
+                        <input type="text" id="profNewName" placeholder="Masukkan username baru..." class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Password Baru</label>
+                        <input type="password" id="profNewPass" required placeholder="••••••••" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Konfirmasi Password Baru</label>
+                        <input type="password" id="profConfPass" required placeholder="••••••••" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-md flex items-center justify-center space-x-2 mt-2">
+                        <i class="fa-solid fa-save"></i><span>Simpan Perubahan</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- CUTI -->
         <section id="content-cuti" class="tab-content hidden space-y-6">
             <div class="glass-card rounded-2xl p-5 border border-white/60 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center space-x-3">
@@ -986,6 +1084,7 @@
             </div>
         </section>
 
+        <!-- JADWAL KERJA -->
         <section id="content-jadwal" class="tab-content hidden space-y-6">
             <div class="glass-card rounded-2xl p-5 sm:p-6 border border-white/60">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 border-b border-slate-100 pb-4">
@@ -1041,8 +1140,8 @@
             </div>
         </section>
 
+        <!-- LAPORAN -->
         <section id="content-laporan" class="tab-content hidden space-y-6">
-
             <div id="laporanAuthNotice" class="hidden bg-orange-50 border border-orange-200 rounded-2xl p-4 text-orange-800 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <i class="fa-solid fa-lock text-orange-600 text-xl"></i>
@@ -1404,7 +1503,6 @@
             "Putri Parliah", "Shopwatul Musfiqoh"
         ];
         
-        // Sorting exactly as in the visual Jadwal requirement
         const ORDERED_JADWAL_MEMBERS = [
             "Ahmad Rafi Al Hadad", "Kiki Zakyah Apriyani", "Vitri Khardiyanti", "Shopwatul Musfiqoh", "Lisnawati Dewi",
             "Opan", "Diva Kirana Ramadhani", "Makiyatul Husna", "Nia Sumarni",
@@ -1442,23 +1540,16 @@
             inventarisEntries: [],
             cutiEntries: [],
             tukarShiftEntries: [],
-            customCutiQuota: {}, // { "Nama Member": 15, ... }
-            customLogo: null
+            customCutiQuota: {},
+            customLogo: null,
+            users: []
         };
 
-        const INITIAL_DUMMY_KAS = [
-            { id: 101, tanggal: '2026-08-01', nama: 'Ahmad Rafi Al Hadad', jumlahBulan: 3, nominalPerBulan: 10000, total: 30000, catatan: 'Lunas Kas Ags - Okt' },
-            { id: 102, tanggal: '2026-08-02', nama: 'Hilmah Hapsari', jumlahBulan: 2, nominalPerBulan: 10000, total: 20000, catatan: 'Kas Ags & Sep' },
-            { id: 103, tanggal: '2026-08-03', nama: 'Diva Kirana Ramadhani', jumlahBulan: 3, nominalPerBulan: 10000, total: 30000, catatan: 'Lunas Kas Ags - Okt' },
-            { id: 104, tanggal: '2026-08-05', nama: 'Lisnawati Dewi', jumlahBulan: 1, nominalPerBulan: 10000, total: 10000, catatan: 'Kas Bulan Agustus' },
-            { id: 105, tanggal: '2026-08-08', nama: 'Asep Sinuraya', jumlahBulan: 2, nominalPerBulan: 10000, total: 20000, catatan: 'Kas Ags - Sep' },
-            { id: 106, tanggal: '2026-08-10', nama: 'Shopwatul Musfiqoh', jumlahBulan: 3, nominalPerBulan: 10000, total: 30000, catatan: 'Kas Ags - Okt' },
-            { id: 107, tanggal: '2026-08-12', nama: 'Muhammad Rifki', jumlahBulan: 1, nominalPerBulan: 10000, total: 10000, catatan: 'Kas Bulan Agustus' }
-        ];
-
-        const INITIAL_DUMMY_PENGELUARAN = [
-            { id: 201, tanggal: '2026-08-04', judul: 'Beli Buku Kas & Alat Tulis', kategori: 'Operasional', nominal: 25000, catatan: 'Atk pengurus' },
-            { id: 202, tanggal: '2026-08-09', judul: 'Konsumsi Rapat Bulanan', kategori: 'Acara / Kegiatan', nominal: 45000, catatan: 'Snack rapat rutin' }
+        const DEFAULT_ADMIN_ACCOUNTS = [
+            { names: ['pirda ripiani', 'pirda'], display: 'Pirda Ripiani', password: 'Pirda Upst!@#', role: 'ADMIN' },
+            { names: ['ahmad rafi', 'ahmad rafi al hadad', 'rafi'], display: 'Ahmad Rafi', password: 'Rafi20', role: 'ADMIN' },
+            { names: ['kiki zakiyah afriyani', 'kiki zakyah apriyani', 'kiki zakiyah', 'kiki'], display: 'Kiki Zakiyah Afriyani', password: 'Kiki20', role: 'ADMIN' },
+            { names: ['mida ru\'yati laila', 'mida ruyati laila', 'mida', 'spv mida'], display: 'Mida Ru\'yati Laila (SPV)', password: 'Mida20', role: 'SPV' }
         ];
 
         // ================= UTILITIES =================
@@ -1467,6 +1558,21 @@
         const sumBy = (arr, key) => arr.reduce((s, e) => s + (Number(e[key]) || 0), 0);
         const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
         const byDateDesc = (a, b) => String(b.tanggal || b.tglPengajuan).localeCompare(String(a.tanggal || a.tglPengajuan));
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if(!container) return;
+            const t = document.createElement('div');
+            const colors = {
+                'success': 'bg-emerald-500',
+                'error': 'bg-rose-500',
+                'info': 'bg-blue-500'
+            };
+            t.className = `${colors[type]} text-white px-4 py-2 rounded-lg shadow-lg text-sm font-semibold transition-opacity duration-300`;
+            t.innerText = msg;
+            container.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+        }
 
         function todayStr() {
             const n = new Date();
@@ -1543,6 +1649,20 @@
             setJadwalBulanIni();
         }
 
+        function calculateSummary() {
+            const totalMasuk = sumBy(appState.kasEntries, 'total');
+            const totalKeluar = sumBy(appState.pengeluaranEntries, 'nominal');
+            const saldoAkhir = appState.saldoAwal + totalMasuk - totalKeluar;
+            return {
+                saldoAwal: appState.saldoAwal,
+                totalPemasukan: totalMasuk,
+                totalPengeluaran: totalKeluar,
+                saldoAkhir: saldoAkhir,
+                pemasukanCount: appState.kasEntries.length,
+                pengeluaranCount: appState.pengeluaranEntries.length
+            };
+        }
+
         function renderLogo() {
             const img = document.getElementById('customLogoImg');
             const icon = document.getElementById('defaultLogoIcon');
@@ -1553,6 +1673,96 @@
             } else if (img) {
                 img.classList.add('hidden');
                 if (icon) icon.classList.remove('hidden');
+            }
+        }
+
+        function renderInventarisDashboard() {
+            let totalMasuk = 0, totalKeluar = 0;
+            let countMasuk = 0, countKeluar = 0;
+            let sisaQty = 0, countSisa = 0;
+
+            const invData = appState.inventarisEntries || [];
+            invData.forEach(item => {
+                totalMasuk += item.qty;
+                countMasuk++;
+                
+                totalKeluar += item.qtyKeluar;
+                if(item.qtyKeluar > 0) countKeluar += item.logs ? item.logs.length : (item.tanggalKeluar ? 1 : 0);
+                
+                sisaQty += item.sisa;
+                if(item.sisa > 0) countSisa++;
+            });
+
+            setTxt('invQtyMasuk', fmtNum(totalMasuk)); setTxt('invCountMasuk', countMasuk);
+            setTxt('invQtyKeluar', fmtNum(totalKeluar)); setTxt('invCountKeluar', countKeluar);
+            setTxt('invQtySisa', fmtNum(sisaQty)); setTxt('invCountSisa', countSisa);
+
+            const tbodyIn = document.getElementById('dashInvIn');
+            const tbodyOut = document.getElementById('dashInvOut');
+
+            if(tbodyIn) {
+                const recentIn = [...invData].sort((a,b) => String(b.tanggalMasuk).localeCompare(String(a.tanggalMasuk))).slice(0,5);
+                if(!recentIn.length) tbodyIn.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-slate-400">Belum ada barang masuk.</td></tr>`;
+                else tbodyIn.innerHTML = recentIn.map(i => `<tr><td class="p-2.5 text-slate-500">${i.tanggalMasuk}</td><td class="p-2.5 font-bold text-slate-800">${esc(i.nama)}</td><td class="p-2.5 text-right font-bold text-blue-600">${fmtNum(i.qty)} ${esc(i.satuan)}</td></tr>`).join('');
+            }
+
+            if(tbodyOut) {
+                let allLogs = [];
+                invData.forEach(item => {
+                    if (item.logs && item.logs.length) {
+                        item.logs.forEach(l => allLogs.push({ ...l, nama: item.nama, satuan: item.satuan }));
+                    } else if (item.tanggalKeluar && item.qtyKeluar > 0) {
+                        allLogs.push({ tanggal: item.tanggalKeluar, qty: item.qtyKeluar, nama: item.nama, satuan: item.satuan });
+                    }
+                });
+                const recentOut = allLogs.sort((a,b) => String(b.tanggal).localeCompare(String(a.tanggal))).slice(0,5);
+                if(!recentOut.length) tbodyOut.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-slate-400">Belum ada barang keluar.</td></tr>`;
+                else tbodyOut.innerHTML = recentOut.map(i => `<tr><td class="p-2.5 text-slate-500">${i.tanggal}</td><td class="p-2.5 font-bold text-slate-800">${esc(i.nama)}</td><td class="p-2.5 text-right font-bold text-orange-600">${fmtNum(i.qty)} ${esc(i.satuan)}</td></tr>`).join('');
+            }
+        }
+
+        function renderCutiDashboard() {
+            const cuti = appState.cutiEntries || [];
+            const pending = cuti.filter(c => c.status === 'PENDING').length;
+            const approved = cuti.filter(c => c.status === 'APPROVED').length;
+            const rejected = cuti.filter(c => c.status === 'REJECTED').length;
+
+            setTxt('dashCutiPending', pending);
+            setTxt('dashCutiApproved', approved);
+            setTxt('dashCutiRejected', rejected);
+
+            const tbody = document.getElementById('dashRecentCutiBody');
+            if(tbody) {
+                const recent = [...cuti].sort((a,b) => String(b.tglPengajuan).localeCompare(String(a.tglPengajuan))).slice(0,5);
+                if(!recent.length) tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">Belum ada pengajuan cuti.</td></tr>`;
+                else tbody.innerHTML = recent.map(item => {
+                    let badgeClass = "bg-orange-100 text-orange-800 border-orange-200";
+                    let statusText = "<i class='fa-solid fa-clock'></i>";
+                    if (item.status === 'APPROVED') { badgeClass = "bg-blue-100 text-blue-800 border-blue-200"; statusText = "<i class='fa-solid fa-check'></i>"; } 
+                    else if (item.status === 'REJECTED') { badgeClass = "bg-slate-200 text-slate-700 border-slate-300"; statusText = "<i class='fa-solid fa-xmark'></i>"; }
+                    return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-2.5 font-medium text-slate-500 whitespace-nowrap">${item.tglPengajuan}</td>
+                        <td class="p-2.5 font-bold text-slate-800">${esc(item.nama)}</td>
+                        <td class="p-2.5 font-medium text-slate-600 whitespace-nowrap">${item.tglMulai} s/d ${item.tglSelesai}</td>
+                        <td class="p-2.5 font-bold text-orange-600 whitespace-nowrap">${item.durasi} Hari</td>
+                        <td class="p-2.5 text-slate-600 truncate max-w-[100px]" title="${esc(item.alasan)}">${esc(item.alasan)}</td>
+                        <td class="p-2.5 text-center"><span class="px-2 py-1 rounded-full border text-[10px] font-bold ${badgeClass}">${statusText}</span></td>
+                    </tr>`;
+                }).join('');
+            }
+        }
+
+        function updatePendingCutiBadge() {
+            const pending = (appState.cutiEntries || []).filter(c => c.status === 'PENDING').length;
+            const badge = document.getElementById('pendingCutiBadge');
+            if (badge) {
+                if (pending > 0) {
+                    badge.innerText = pending;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
             }
         }
 
@@ -1570,9 +1780,65 @@
             renderStorage();
             renderInventarisDashboard();
             renderCutiDashboard();
+            renderTukarShiftDashboard();
             renderUnpaidMembers();
             renderRecentIncome();
             renderRecentExpense();
+        }
+
+        function renderTukarShiftDashboard() {
+            const tbody = document.getElementById('dashRecentTukarBody');
+            if (!tbody) return;
+
+            const entries = appState.tukarShiftEntries || [];
+            const recent = [...entries].sort((a, b) => String(b.tglPengajuan || '').localeCompare(String(a.tglPengajuan || ''))).slice(0, 5);
+
+            if (!recent.length) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-slate-400">Belum ada pengajuan tukar shift.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = recent.map(item => {
+                let badgeClass = "bg-orange-100 text-orange-800 border-orange-200";
+                let statusText = "<i class='fa-solid fa-clock mr-1'></i> Menunggu";
+
+                if (item.status === 'APPROVED') {
+                    badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
+                    statusText = `<i class='fa-solid fa-check mr-1'></i> ACC (${esc(item.disetujuiOleh)})`;
+                } else if (item.status === 'REJECTED') {
+                    badgeClass = "bg-slate-200 text-slate-700 border-slate-300";
+                    statusText = `<i class='fa-solid fa-xmark mr-1'></i> Ditolak`;
+                }
+
+                return `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-2.5 font-medium text-slate-500 whitespace-nowrap">${esc(item.tglPengajuan)}</td>
+                    <td class="p-2.5 font-bold text-slate-800">${esc(item.pemohon)}</td>
+                    <td class="p-2.5 font-bold text-slate-800">${esc(item.pengganti)}</td>
+                    <td class="p-2.5 text-slate-600 max-w-xs truncate" title="${esc(item.alasan)}">${esc(item.alasan)}</td>
+                    <td class="p-2.5 text-center whitespace-nowrap"><span class="px-2 py-1 rounded-full border text-[10px] font-bold ${badgeClass}">${statusText}</span></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderRecentIncome() {
+            const tbody = document.getElementById('dashRecentIncome');
+            if(!tbody) return;
+            const recent = [...appState.kasEntries].sort(byDateDesc).slice(0,5);
+            if(!recent.length) { tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada kas.</td></tr>`; return; }
+            tbody.innerHTML = recent.map(i => `<tr>
+                <td class="p-2.5 text-slate-500">${i.tanggal}</td><td class="p-2.5 font-bold">${esc(i.nama)}</td><td class="p-2.5">${i.jumlahBulan} Bln</td><td class="p-2.5 text-right font-bold text-blue-600">${formatRupiah(i.total)}</td>
+            </tr>`).join('');
+        }
+
+        function renderRecentExpense() {
+            const tbody = document.getElementById('dashRecentExpense');
+            if(!tbody) return;
+            const recent = [...appState.pengeluaranEntries].sort(byDateDesc).slice(0,5);
+            if(!recent.length) { tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada pengeluaran.</td></tr>`; return; }
+            tbody.innerHTML = recent.map(i => `<tr>
+                <td class="p-2.5 text-slate-500">${i.tanggal}</td><td class="p-2.5 font-bold">${esc(i.judul)}</td><td class="p-2.5">${esc(i.kategori)}</td><td class="p-2.5 text-right font-bold text-orange-600">${formatRupiah(i.nominal)}</td>
+            </tr>`).join('');
         }
 
         let chartKasInst = null, chartInvInst = null;
@@ -1708,16 +1974,50 @@
             }
         }
 
+        function renderUnpaidMembers() {
+            const container = document.getElementById('unpaidMembersGrid');
+            if (!container) return;
+
+            let reqMonths = getRequiredMonthsCount(appState.targetMonth);
+            const reqAmount = reqMonths * appState.iuranPerBulan;
+            const targetMonthName = MONTHS_ID[appState.targetMonth - 1] || 'Bulan';
+            setTxt('currentMonthName', targetMonthName);
+
+            let unpaidList = [];
+            MASTER_MEMBERS.forEach(m => {
+                const tot = sumBy(appState.kasEntries.filter(e => e.nama === m), 'total');
+                if (tot < reqAmount) {
+                    unpaidList.push({ nama: m, dibayar: tot, kurang: reqAmount - tot });
+                }
+            });
+
+            if (unpaidList.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-6 text-center text-slate-500 bg-white/50 rounded-xl border border-dashed border-slate-300"><i class="fa-solid fa-check-circle text-emerald-500 text-2xl mb-2 block"></i>Semua anggota telah lunas hingga ${targetMonthName}!</div>`;
+                return;
+            }
+
+            container.innerHTML = unpaidList.sort((a, b) => b.kurang - a.kurang).map(u => `
+                <div class="bg-white p-4 rounded-xl border border-orange-200 shadow-sm flex items-center justify-between transition hover:shadow-md">
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm max-w-[150px] truncate" title="${esc(u.nama)}">${esc(u.nama)}</h4>
+                        <p class="text-[10px] text-slate-500 mt-1">Sisa tunggakan:</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-extrabold text-orange-600 block">${formatRupiah(u.kurang)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
         function getBaseShift(memberName, targetDateString) {
-            // Specialized Logic for Ahmad Rafi
             if (memberName.includes("Ahmad Rafi")) {
                 const [y, m, d] = targetDateString.split('-').map(Number);
                 const targetDate = new Date(y, m-1, d);
                 const dayOfWeek = targetDate.getDay(); 
                 
-                if (dayOfWeek >= 1 && dayOfWeek <= 5) return 'P'; // Monday-Friday -> P
-                if (dayOfWeek === 0) return 'X'; // Sunday -> X
-                if (dayOfWeek === 6) { // Saturday Piket logic
+                if (dayOfWeek >= 1 && dayOfWeek <= 5) return 'P';
+                if (dayOfWeek === 0) return 'X';
+                if (dayOfWeek === 6) {
                     const diffDays = getDaysDiffUTC('2026-10-03', targetDateString);
                     const diffWeeks = Math.floor(diffDays / 7);
                     if (diffWeeks % 2 === 0) return 'Pk'; 
@@ -1725,41 +2025,34 @@
                 }
             }
 
-            // Normal Rolling Schedule Logic (6-2)
             const offset = MEMBER_SHIFT_OFFSETS[memberName];
             if (offset === undefined) return '-'; 
 
             let diffDays = getDaysDiffUTC(SHIFT_ANCHOR_DATE, targetDateString);
             let index = (offset + diffDays) % 8;
-            if (index < 0) index += 8; // Normalize negative modulos
+            if (index < 0) index += 8; 
             
             return SHIFT_CYCLE[index];
         }
 
         function getShift(memberName, targetDateString) {
-            // 1. Is the member on approved cuti?
             const cuti = appState.cutiEntries.find(c =>
-                c.nama === memberName &&
-                c.status === 'APPROVED' &&
-                targetDateString >= c.tglMulai &&
-                targetDateString <= c.tglSelesai
+                c.nama === memberName && c.status === 'APPROVED' &&
+                targetDateString >= c.tglMulai && targetDateString <= c.tglSelesai
             );
-            if (cuti) return { val: 'C', type: 'cuti' }; // Indicator for CUTI
+            if (cuti) return { val: 'C', type: 'cuti' };
 
-            // 2. Is the member involved in an approved Tukar Shift?
             const approvedSwaps = (appState.tukarShiftEntries || []).filter(ts => ts.status === 'APPROVED');
             
             for (const ts of approvedSwaps) {
                 const isSameDaySwap = ts.tglShiftPengganti === '-';
                 
                 if (isSameDaySwap) {
-                    // Jika Tukar Shift di hari yang persis sama
                     if (targetDateString === ts.tglShiftPemohon) {
                         if (memberName === ts.pemohon) return { val: getBaseShift(ts.pengganti, targetDateString), type: 'swap' };
                         if (memberName === ts.pengganti) return { val: getBaseShift(ts.pemohon, targetDateString), type: 'swap' };
                     }
                 } else {
-                    // Jika Tukar Shift secara silang hari
                     if (targetDateString === ts.tglShiftPemohon) {
                         if (memberName === ts.pengganti) return { val: getBaseShift(ts.pemohon, ts.tglShiftPemohon), type: 'swap' };
                         if (memberName === ts.pemohon) return { val: getBaseShift(ts.pengganti, ts.tglShiftPemohon), type: 'swap' }; 
@@ -1770,8 +2063,6 @@
                     }
                 }
             }
-
-            // 3. Output Base Shift Jika tidak Cuti / Tukar Shift
             return { val: getBaseShift(memberName, targetDateString), type: 'normal' };
         }
 
@@ -1781,7 +2072,6 @@
             const t = document.getElementById('jadwalTahun');
             if(b && t) {
                 b.value = d.getMonth() + 1;
-                // Add option dynamically if future year is not in select
                 if (!Array.from(t.options).some(opt => parseInt(opt.value) === d.getFullYear())) {
                     const opt = document.createElement('option');
                     opt.value = d.getFullYear(); opt.text = d.getFullYear();
@@ -1801,7 +2091,6 @@
             const month = parseInt(bulanSelect.value);
             const daysInMonth = new Date(year, month, 0).getDate();
 
-            // Constructing Header Row Dynamically
             let thead1 = `<tr><th rowspan="2" class="p-2 border border-slate-400 bg-slate-700 text-white w-10 text-center">NO.</th><th rowspan="2" class="p-2 border border-slate-400 bg-slate-700 text-white min-w-[180px]">NAMA</th>`;
             let thead2 = `<tr>`;
 
@@ -1817,7 +2106,6 @@
 
             document.getElementById('jadwalThead').innerHTML = thead1 + thead2;
 
-            // Constructing Body Rows for each member
             let tbody = '';
             ORDERED_JADWAL_MEMBERS.forEach((member, i) => {
                 tbody += `<tr class="hover:bg-slate-100 transition-colors">
@@ -1826,7 +2114,6 @@
                 
                 for(let d=1; d<=daysInMonth; d++) {
                     const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                    
                     const shiftData = getShift(member, dateStr);
                     const shift = shiftData.val;
                     
@@ -1942,6 +2229,10 @@
             if (!appState.isAdminLoggedIn || !appState.adminName) return false;
             const n = appState.adminName.toLowerCase();
             return n.includes('rafi') || n.includes('ahmad rafi');
+        }
+
+        function isUserSPV() {
+            return appState.isAdminLoggedIn && appState.role === 'SPV';
         }
 
         function openEditQuotaModal() {
@@ -2100,7 +2391,7 @@
 
             database.ref('tukar_shift').push(newTS)
                 .then(() => {
-                    showToast('Pengajuan tukar shift berhasil dikirim. Menunggu ACC SPV.', 'success');
+                    showToast('Pengajuan tukar shift berhasil dikirim. Menunggu ACC PIC.', 'success');
                     document.getElementById('formTukarShift')?.reset();
                     document.getElementById('tsTglPemohon').value = todayStr();
                 })
@@ -2111,14 +2402,14 @@
         }
 
         function updateTukarShiftStatus(id, newStatus) {
-            const canApprove = appState.isAdminLoggedIn && (appState.role === 'SPV' || appState.role === 'ADMIN');
+            const canApprove = appState.isAdminLoggedIn && isUserRafi();
             if (!canApprove) {
-                showToast('Hanya SPV atau Admin yang berhak memproses tukar shift!', 'error');
-                toggleAuthModal();
+                showToast('Hanya PIC Ahmad Rafi yang berhak memproses tukar shift!', 'error');
+                if(!appState.isAdminLoggedIn) toggleAuthModal();
                 return;
             }
 
-            const approverName = appState.adminName || "Mida Ru'yati Laila (SPV)";
+            const approverName = appState.adminName || "PIC Ahmad Rafi";
             database.ref(`tukar_shift/${id}`).update({
                 status: newStatus,
                 disetujuiOleh: approverName,
@@ -2140,7 +2431,7 @@
                 return;
             }
 
-            const isApprover = appState.isAdminLoggedIn && (appState.role === 'SPV' || appState.role === 'ADMIN');
+            const isApprover = appState.isAdminLoggedIn && isUserRafi();
 
             tbody.innerHTML = sorted.map(item => {
                 let badgeClass = "bg-orange-100 text-orange-800 border-orange-200";
@@ -2148,10 +2439,10 @@
 
                 if (item.status === 'APPROVED') {
                     badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
-                    statusText = `<i class='fa-solid fa-circle-check mr-1'></i> ACC (${esc(item.disetujuiOleh || 'SPV')})`;
+                    statusText = `<i class='fa-solid fa-circle-check mr-1'></i> ACC (${esc(item.disetujuiOleh || 'PIC')})`;
                 } else if (item.status === 'REJECTED') {
                     badgeClass = "bg-slate-200 text-slate-700 border-slate-300";
-                    statusText = `<i class='fa-solid fa-circle-xmark mr-1'></i> Ditolak (${esc(item.disetujuiOleh || 'SPV')})`;
+                    statusText = `<i class='fa-solid fa-circle-xmark mr-1'></i> Ditolak (${esc(item.disetujuiOleh || 'PIC')})`;
                 }
 
                 let actionCol = `-`;
@@ -2230,9 +2521,19 @@
             else if (tabId === 'tukar-shift') renderTukarShiftTable();
             else if (tabId === 'jadwal') renderJadwalTable();
             else if (tabId === 'laporan') renderLaporan();
+            else if (tabId === 'profil') renderProfileTab();
         }
 
         function startRealtimeListeners() {
+            database.ref('users').on('value', snapshot => {
+                if (snapshot.exists()) {
+                    appState.users = snapshot.val();
+                } else {
+                    appState.users = DEFAULT_ADMIN_ACCOUNTS;
+                    database.ref('users').set(DEFAULT_ADMIN_ACCOUNTS);
+                }
+            });
+
             database.ref('settings').on('value', snapshot => {
                 const settings = snapshot.val() || {};
                 appState.iuranPerBulan = Number(settings.iuranPerBulan) || 10000;
@@ -2287,8 +2588,6 @@
                 }));
                 renderCutiTable();
                 updatePendingCutiBadge();
-                
-                // Immediately refresh Jadwal if currently viewing
                 if(appState.activeTab === 'jadwal') renderJadwalTable();
             });
 
@@ -2302,12 +2601,24 @@
                 }));
                 renderTukarShiftTable();
                 updatePendingTukarBadge();
-                
-                // Segera refresh Jadwal Kerja jika sedang aktif
                 if(appState.activeTab === 'jadwal') renderJadwalTable();
             });
         }
         
+        function renderProfileTab() {
+            const notice = document.getElementById('profilAuthNotice');
+            const box = document.getElementById('profilSettingsBox');
+            if(appState.isAdminLoggedIn) {
+                notice.classList.add('hidden');
+                box.classList.remove('hidden');
+                document.getElementById('profCurrentName').value = appState.adminName;
+                document.getElementById('formProfile').reset();
+            } else {
+                notice.classList.remove('hidden');
+                box.classList.add('hidden');
+            }
+        }
+
         function updateUIState() {
             const on = appState.isAdminLoggedIn;
             const isSpv = appState.role === 'SPV';
@@ -2330,60 +2641,33 @@
             const authIcon = document.getElementById('authIcon');
             if (authIcon) authIcon.className = on ? 'fa-solid fa-right-from-bracket mr-2 text-orange-300' : 'fa-solid fa-lock mr-2 text-blue-300';
 
-            ['lockKasBadge', 'lockExpBadge', 'lockInvBadge', 'lockReportBadge', 'kasAuthNotice', 'pengeluaranAuthNotice', 'invAuthNotice', 'laporanAuthNotice'].forEach(id => {
+            ['lockKasBadge', 'lockExpBadge', 'lockInvBadge', 'lockReportBadge', 'lockProfilBadge', 'kasAuthNotice', 'pengeluaranAuthNotice', 'invAuthNotice', 'laporanAuthNotice'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.toggle('hidden', on);
             });
 
-            const cutiFormWrapper = document.getElementById('cutiFormWrapper');
-            const cutiTableWrapper = document.getElementById('cutiTableWrapper');
             const cutiRoleText = document.getElementById('cutiRoleText');
-            
-            const tsFormWrapper = document.getElementById('tsFormWrapper');
-            const tsTableWrapper = document.getElementById('tsTableWrapper');
             const tsRoleText = document.getElementById('tsRoleText');
 
             if (isSpv) {
-                if (cutiFormWrapper) cutiFormWrapper.classList.add('hidden');
-                if (cutiTableWrapper) {
-                    cutiTableWrapper.classList.remove('lg:col-span-2');
-                    cutiTableWrapper.classList.add('lg:col-span-3');
-                }
-                if (cutiRoleText) {
-                    cutiRoleText.innerHTML = `<b class="text-orange-600"><i class="fa-solid fa-user-check mr-1"></i> Mode SPV (Mida Ru'yati Laila):</b> Peninjauan & Persetujuan (ACC) Cuti Anggota.`;
-                }
-
-                if (tsFormWrapper) tsFormWrapper.classList.add('hidden');
-                if (tsTableWrapper) {
-                    tsTableWrapper.classList.remove('lg:col-span-2');
-                    tsTableWrapper.classList.add('lg:col-span-3');
-                }
-                if (tsRoleText) tsRoleText.innerHTML = `<b class="text-orange-600"><i class="fa-solid fa-user-check mr-1"></i> Mode SPV:</b> ACC Tukar Shift.`;
-
+                if (cutiRoleText) cutiRoleText.innerHTML = `<b class="text-orange-600"><i class="fa-solid fa-user-check mr-1"></i> Mode SPV (Mida Ru'yati Laila):</b> Peninjauan & Persetujuan (ACC) Cuti Anggota.`;
+                if (tsRoleText) tsRoleText.innerHTML = `<i class="fa-solid fa-user mr-1 text-slate-500"></i> Mode SPV: Hanya dapat melihat tukar shift.`;
             } else {
-                if (cutiFormWrapper) cutiFormWrapper.classList.remove('hidden');
-                if (cutiTableWrapper) {
-                    cutiTableWrapper.classList.remove('lg:col-span-3');
-                    cutiTableWrapper.classList.add('lg:col-span-2');
-                }
                 if (cutiRoleText) {
                     if (on && userIsRafi) {
                         cutiRoleText.innerHTML = `<b class="text-amber-600"><i class="fa-solid fa-user-gear mr-1"></i> PIC Rafi:</b> Akses Pengelolaan Jatah Cuti Karyawan.`;
                     } else if (on && appState.role === 'ADMIN') {
-                        cutiRoleText.innerHTML = `<b class="text-blue-600"><i class="fa-solid fa-user-shield mr-1"></i> Mode Admin:</b> Pengelolaan Cuti.`;
+                        cutiRoleText.innerHTML = `<b class="text-blue-600"><i class="fa-solid fa-user-shield mr-1"></i> Mode Admin:</b> Tidak bisa ACC Cuti (Hanya SPV).`;
                     } else {
                         cutiRoleText.innerHTML = `<i class="fa-solid fa-user mr-1 text-slate-500"></i> Mode Anggota: Mengajukan cuti dan menunggu ACC SPV.`;
                     }
                 }
 
-                if (tsFormWrapper) tsFormWrapper.classList.remove('hidden');
-                if (tsTableWrapper) {
-                    tsTableWrapper.classList.remove('lg:col-span-3');
-                    tsTableWrapper.classList.add('lg:col-span-2');
-                }
                 if (tsRoleText) {
-                    if (on && appState.role === 'ADMIN') {
-                        tsRoleText.innerHTML = `<b class="text-blue-600"><i class="fa-solid fa-user-shield mr-1"></i> Mode Admin</b>`;
+                    if (on && userIsRafi) {
+                        tsRoleText.innerHTML = `<b class="text-blue-600"><i class="fa-solid fa-user-check mr-1"></i> PIC Ahmad Rafi:</b> ACC Tukar Shift.`;
+                    } else if(on && appState.role === 'ADMIN') {
+                        tsRoleText.innerHTML = `<b class="text-blue-600"><i class="fa-solid fa-user-shield mr-1"></i> Mode Admin:</b> Tidak bisa ACC Tukar Shift (Hanya PIC).`;
                     } else {
                         tsRoleText.innerHTML = `<i class="fa-solid fa-user mr-1 text-slate-500"></i> Mode Anggota: Mengajukan Tukar Shift.`;
                     }
@@ -2397,6 +2681,7 @@
             renderCutiTable();
             renderTukarShiftTable();
             renderLaporan();
+            if(appState.activeTab === 'profil') renderProfileTab();
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -2406,22 +2691,21 @@
             renderLogo();
             updateUIState();
             startRealtimeListeners();
-            seedDatabaseIfEmpty();
 
             const printDateElem = document.getElementById('printDate');
             if (printDateElem) printDateElem.innerText = new Date().toLocaleDateString('id-ID', { dateStyle: 'full' });
+            
+            const printDateInv = document.getElementById('printDateInv');
+            if (printDateInv) printDateInv.innerText = new Date().toLocaleDateString('id-ID', { dateStyle: 'full' });
         });
-
-        const ADMIN_ACCOUNTS = [
-            { names: ['pirda ripiani', 'pirda'], display: 'Pirda Ripiani', password: 'Pirda Upst!@#', role: 'ADMIN' },
-            { names: ['ahmad rafi', 'ahmad rafi al hadad', 'rafi'], display: 'Ahmad Rafi', password: 'Rafi20', role: 'ADMIN' },
-            { names: ['kiki zakiyah afriyani', 'kiki zakyah apriyani', 'kiki zakiyah', 'kiki'], display: 'Kiki Zakiyah Afriyani', password: 'Kiki20', role: 'ADMIN' },
-            { names: ['mida ru\'yati laila', 'mida ruyati laila', 'mida', 'spv mida'], display: 'Mida Ru\'yati Laila (SPV)', password: 'Mida20', role: 'SPV' }
-        ];
 
         function findAdminAccount(username, password) {
             const u = String(username).trim().toLowerCase();
-            return ADMIN_ACCOUNTS.find(a => a.names.some(name => u.includes(name) || name === u) && a.password === password) || null;
+            const users = Array.isArray(appState.users) ? appState.users : Object.values(appState.users);
+            return users.find(a => {
+                const names = Array.isArray(a.names) ? a.names : [];
+                return names.some(name => u.includes(String(name).toLowerCase()) || String(name).toLowerCase() === u) && a.password === password;
+            }) || null;
         }
 
         function getGreeting() {
@@ -2454,6 +2738,7 @@
                 appState.role = 'GUEST';
                 updateUIState();
                 showToast('Anda telah logout dari mode Admin/SPV.', 'info');
+                if(appState.activeTab === 'profil') switchTab('dashboard');
             } else {
                 modal.classList.toggle('hidden');
             }
@@ -2477,11 +2762,60 @@
             }
         }
 
+        function handleUpdateProfile(e) {
+            if(e) e.preventDefault();
+            if(!appState.isAdminLoggedIn) return;
+
+            const newName = document.getElementById('profNewName').value.trim();
+            const newPass = document.getElementById('profNewPass').value;
+            const confPass = document.getElementById('profConfPass').value;
+
+            if(newPass !== confPass) {
+                showToast('Password baru tidak cocok dengan konfirmasi!', 'error');
+                return;
+            }
+
+            database.ref('users').once('value', snapshot => {
+                const users = snapshot.val();
+                let userKey = null;
+                for(let key in users) {
+                    if(users[key].display === appState.adminName) {
+                        userKey = key;
+                        break;
+                    }
+                }
+
+                if(userKey) {
+                    let updates = {
+                        password: newPass
+                    };
+                    
+                    if(newName !== "") {
+                        updates.display = newName;
+                        let existingNames = Array.isArray(users[userKey].names) ? users[userKey].names : [];
+                        if(!existingNames.includes(newName.toLowerCase())) {
+                            existingNames.push(newName.toLowerCase());
+                            updates.names = existingNames;
+                        }
+                    }
+
+                    database.ref(`users/${userKey}`).update(updates).then(() => {
+                        showToast('Profil berhasil diubah! Silakan login ulang.', 'success');
+                        document.getElementById('formProfile').reset();
+                        toggleAuthModal(); // trigger logout to apply changes properly
+                    }).catch(err => {
+                        showToast('Gagal mengubah profil.', 'error');
+                    });
+                } else {
+                    showToast('Gagal menemukan akun Anda di database.', 'error');
+                }
+            });
+        }
+
         function updateCutiStatus(id, newStatus) {
-            const canApprove = appState.isAdminLoggedIn && (appState.role === 'SPV' || appState.role === 'ADMIN');
+            const canApprove = appState.isAdminLoggedIn && appState.role === 'SPV';
             if (!canApprove) {
-                showToast('Hanya SPV (Mida Ru\'yati Laila) atau Admin yang berhak menyetujui pengajuan cuti!', 'error');
-                toggleAuthModal();
+                showToast('Hanya SPV (Mida Ru\'yati Laila) yang berhak memproses pengajuan cuti!', 'error');
                 return;
             }
 
@@ -2515,7 +2849,7 @@
                 return;
             }
 
-            const isApprover = appState.isAdminLoggedIn && (appState.role === 'SPV' || appState.role === 'ADMIN');
+            const isApprover = appState.isAdminLoggedIn && appState.role === 'SPV';
 
             tbody.innerHTML = filtered.map(item => {
                 let badgeClass = "bg-orange-100 text-orange-800 border-orange-200";
@@ -2560,122 +2894,10 @@
                     <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${esc(item.tglPengajuan)}</td>
                     <td class="p-3 font-bold text-slate-800">${esc(item.nama)}</td>
                     <td class="p-3 font-medium text-slate-600 whitespace-nowrap">${esc(item.tglMulai)} s/d ${esc(item.tglSelesai)}</td>
-                    <td class="p-3 font-bold text-orange-600">${esc(item.durasi)} Hari</td>
+                    <td class="p-3 font-bold text-orange-600 whitespace-nowrap">${esc(item.durasi)} Hari</td>
                     <td class="p-3 text-slate-600 max-w-xs truncate" title="${esc(item.alasan)}">${esc(item.alasan)}</td>
                     <td class="p-3"><span class="px-2.5 py-1 rounded-full border text-[10px] font-bold whitespace-nowrap ${badgeClass}">${statusText}</span></td>
                     <td class="p-3 text-center whitespace-nowrap">${actionCol}</td>
-                </tr>`;
-            }).join('');
-        }
-        
-        function updatePendingCutiBadge() {
-            const pending = appState.cutiEntries.filter(c => c.status === 'PENDING').length;
-            const badge = document.getElementById('pendingCutiBadge');
-            if (badge) {
-                if (pending > 0) {
-                    badge.innerText = pending;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
-            }
-        }
-
-        function renderInventarisDashboard() {
-            const tbodyIn = document.getElementById('dashInvIn');
-            const tbodyOut = document.getElementById('dashInvOut');
-            if (!tbodyIn || !tbodyOut) return;
-
-            const entries = appState.inventarisEntries || [];
-            
-            let totalMasuk = 0, totalKeluar = 0, totalSisa = 0, countSisa = 0;
-            let outLogs = [];
-
-            entries.forEach(e => {
-                totalMasuk += (e.qty || 0);
-                totalKeluar += (e.qtyKeluar || 0);
-                totalSisa += (e.sisa || 0);
-                if (e.sisa > 0) countSisa++;
-
-                if (e.logs && e.logs.length > 0) {
-                    e.logs.forEach(log => outLogs.push({ nama: e.nama, satuan: e.satuan, tanggal: log.tanggal, qty: log.qty }));
-                } else if (e.tanggalKeluar && e.qtyKeluar > 0) {
-                    outLogs.push({ nama: e.nama, satuan: e.satuan, tanggal: e.tanggalKeluar, qty: e.qtyKeluar });
-                }
-            });
-
-            setTxt('invQtyMasuk', fmtNum(totalMasuk));
-            setTxt('invCountMasuk', entries.length);
-            setTxt('invQtyKeluar', fmtNum(totalKeluar));
-            setTxt('invCountKeluar', outLogs.length);
-            setTxt('invQtySisa', fmtNum(totalSisa));
-            setTxt('invCountSisa', countSisa);
-
-            const recentIn = [...entries].sort((a, b) => String(b.tanggalMasuk).localeCompare(String(a.tanggalMasuk))).slice(0, 5);
-            if (!recentIn.length) {
-                tbodyIn.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-slate-400">Belum ada barang masuk.</td></tr>`;
-            } else {
-                tbodyIn.innerHTML = recentIn.map(item => `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-2.5 font-medium text-slate-500 whitespace-nowrap">${esc(item.tanggalMasuk)}</td>
-                        <td class="p-2.5 font-bold text-slate-800">${esc(item.nama)}</td>
-                        <td class="p-2.5 text-right font-bold text-blue-600 whitespace-nowrap">+ ${fmtNum(item.qty)} <span class="text-[10px] font-normal text-slate-500">${esc(item.satuan)}</span></td>
-                    </tr>`).join('');
-            }
-
-            const recentOut = outLogs.sort((a, b) => String(b.tanggal).localeCompare(String(a.tanggal))).slice(0, 5);
-            if (!recentOut.length) {
-                tbodyOut.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-slate-400">Belum ada barang keluar.</td></tr>`;
-            } else {
-                tbodyOut.innerHTML = recentOut.map(item => `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-2.5 font-medium text-slate-500 whitespace-nowrap">${esc(item.tanggal)}</td>
-                        <td class="p-2.5 font-bold text-slate-800">${esc(item.nama)}</td>
-                        <td class="p-2.5 text-right font-bold text-orange-600 whitespace-nowrap">- ${fmtNum(item.qty)} <span class="text-[10px] font-normal text-slate-500">${esc(item.satuan)}</span></td>
-                    </tr>`).join('');
-            }
-        }
-        
-        function renderCutiDashboard() {
-            const tbody = document.getElementById('dashRecentCutiBody');
-            if (!tbody) return;
-
-            const entries = appState.cutiEntries || [];
-            const pendingCount = entries.filter(c => c.status === 'PENDING').length;
-            const approvedCount = entries.filter(c => c.status === 'APPROVED').length;
-            const rejectedCount = entries.filter(c => c.status === 'REJECTED').length;
-
-            setTxt('dashCutiPending', pendingCount);
-            setTxt('dashCutiApproved', approvedCount);
-            setTxt('dashCutiRejected', rejectedCount);
-
-            const recent = [...entries].sort((a, b) => String(b.tglPengajuan || '').localeCompare(String(a.tglPengajuan || ''))).slice(0, 5);
-
-            if (!recent.length) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">Belum ada pengajuan cuti tercatat.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = recent.map(item => {
-                let badgeClass = "bg-orange-100 text-orange-800 border-orange-200";
-                let statusText = "<i class='fa-solid fa-clock mr-1'></i> Menunggu ACC";
-
-                if (item.status === 'APPROVED') {
-                    badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
-                    statusText = `<i class='fa-solid fa-circle-check mr-1'></i> ACC (${esc(item.disetujuiOleh || 'SPV')})`;
-                } else if (item.status === 'REJECTED') {
-                    badgeClass = "bg-slate-200 text-slate-700 border-slate-300";
-                    statusText = `<i class='fa-solid fa-circle-xmark mr-1'></i> Ditolak (${esc(item.disetujuiOleh || 'SPV')})`;
-                }
-
-                return `
-                <tr class="hover:bg-slate-50 transition">
-                    <td class="p-2.5 font-medium text-slate-500 whitespace-nowrap">${esc(item.tglPengajuan)}</td>
-                    <td class="p-2.5 font-bold text-slate-800">${esc(item.nama)}</td>
-                    <td class="p-2.5 text-slate-600 whitespace-nowrap">${esc(item.tglMulai)} s/d ${esc(item.tglSelesai)}</td>
-                    <td class="p-2.5 font-bold text-orange-600 whitespace-nowrap">${esc(item.durasi)} Hari</td>
-                    <td class="p-2.5 text-slate-600 max-w-xs truncate" title="${esc(item.alasan)}">${esc(item.alasan)}</td>
-                    <td class="p-2.5 text-center whitespace-nowrap"><span class="px-2.5 py-1 rounded-full border text-[10px] font-bold ${badgeClass}">${statusText}</span></td>
                 </tr>`;
             }).join('');
         }
@@ -2768,6 +2990,36 @@
             }).join('');
         }
 
+        function exportExcelInventaris() {
+            if(!appState.inventarisEntries || appState.inventarisEntries.length === 0) {
+                showToast('Tidak ada data inventaris untuk di download', 'error');
+                return;
+            }
+            
+            let csv = "Tanggal Masuk,Nama Barang,Jumlah Masuk,Jumlah Keluar,Sisa Stok,Satuan,Tanggal Keluar Terakhir\n";
+            appState.inventarisEntries.forEach(item => {
+                const nama = String(item.nama).replace(/"/g, '""');
+                csv += `"${item.tanggalMasuk}","${nama}","${item.qty}","${item.qtyKeluar}","${item.sisa}","${item.satuan}","${item.tanggalKeluar || '-'}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "Inventaris_Jembatan_Timbang.csv";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('File Excel (CSV) berhasil didownload', 'success');
+        }
+
+        function printInventaris() {
+            document.body.classList.add('print-inventaris');
+            window.print();
+            document.body.classList.remove('print-inventaris');
+        }
+
         function renderInventarisTable() {
             renderStokTable();
             const tbody = document.getElementById('invTableBody');
@@ -2796,7 +3048,7 @@
                 const keluarBtn = habis ? '' : `<button onclick="openInvKeluarModal('${String(item.id).replace(/'/g, "\\'")}')" title="Catat barang keluar" class="text-blue-600 hover:text-blue-800 font-bold px-2 py-1 rounded hover:bg-blue-50 mr-1"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>`;
 
                 const aksi = appState.isAdminLoggedIn
-                    ? `${editBtn}${keluarBtn}${deleteButton('inventaris', item.id)}`
+                    ? `<div class="flex items-center justify-center">${editBtn}${keluarBtn}${deleteButton('inventaris', item.id)}</div>`
                     : `<span class="text-slate-300">-</span>`;
 
                 return `
@@ -2808,7 +3060,7 @@
                     <td class="p-3 font-bold text-slate-800 whitespace-nowrap">${fmtNum(item.sisa)} ${esc(item.satuan)}</td>
                     <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${item.tanggalKeluar ? esc(item.tanggalKeluar) : '-'}</td>
                     <td class="p-3"><span class="px-2 py-1 rounded-md font-bold text-[10px] whitespace-nowrap ${badge[0]}">${badge[1]}</span></td>
-                    <td class="p-3 text-center whitespace-nowrap">${aksi}</td>
+                    <td class="p-3 text-center whitespace-nowrap no-print">${aksi}</td>
                 </tr>`;
             }).join('');
         }
@@ -3128,21 +3380,19 @@
             const modal = document.getElementById('saldoAwalModal');
             if (modal) modal.classList.toggle('hidden', !show);
         }
-
-        function handleSaveSaldoAwal(e) {
-            e.preventDefault();
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login sebagai Admin.', 'error'); return; }
-            const val = parseInt(document.getElementById('inputSaldoAwal').value) || 0;
-            appState.saldoAwal = val;
-            database.ref('settings/saldoAwal').set(val)
-                .then(() => showToast(`Saldo awal berhasil diperbarui menjadi ${formatRupiah(val)}`, 'success'))
-                .catch(() => showToast('Gagal menyimpan saldo awal.', 'error'));
-            toggleSaldoAwalModal(false);
-        }
         
+        function handleSaveSaldoAwal(e) {
+            if (e) e.preventDefault();
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak!', 'error'); return; }
+            const v = Number(document.getElementById('inputSaldoAwal').value) || 0;
+            database.ref('settings/saldoAwal').set(v)
+                .then(() => { showToast('Saldo awal berhasil diperbarui.', 'success'); toggleSaldoAwalModal(false); })
+                .catch(() => showToast('Gagal menyimpan saldo awal.', 'error'));
+        }
+
         function openResetUnpaidModal() {
             if (!appState.isAdminLoggedIn) {
-                showToast('Login sebagai Admin terlebih dahulu untuk mereset tunggakan!', 'error');
+                showToast('Hanya Admin yang dapat mereset status tunggakan!', 'error');
                 toggleAuthModal();
                 return;
             }
@@ -3154,275 +3404,134 @@
             if (modal) modal.classList.toggle('hidden', !show);
         }
 
-        function executeResetUnpaid(mode) {
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Anda harus login sebagai Admin.', 'error'); return; }
+        function executeResetUnpaid(action) {
+            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak!', 'error'); return; }
+            
+            let reqMonths = getRequiredMonthsCount(appState.targetMonth);
+            const reqAmount = reqMonths * appState.iuranPerBulan;
+            const targetMonthName = MONTHS_ID[appState.targetMonth - 1] || 'Bulan';
+            let updateOps = {};
+            let isMarkAll = action === 'mark-all-paid';
+            let promises = [];
 
-            const targetMonth = appState.targetMonth || 8;
-            const requiredMonths = getRequiredMonthsCount(targetMonth);
-            const updates = {};
-            const sheetOps = [];
-
-            if (mode === 'mark-all-paid') {
-                MASTER_MEMBERS.forEach(member => {
-                    const { monthsPaid } = monthsPaidOf(member);
-                    if (monthsPaid < requiredMonths) {
-                        const neededMonths = requiredMonths - monthsPaid;
-                        const id = database.ref('kas').push().key;
-                        const entry = {
+            if (isMarkAll) {
+                MASTER_MEMBERS.forEach(m => {
+                    const tot = sumBy(appState.kasEntries.filter(e => e.nama === m), 'total');
+                    if (tot < reqAmount) {
+                        const deficiency = reqAmount - tot;
+                        const missingMonths = Math.ceil(deficiency / appState.iuranPerBulan);
+                        const newKas = {
                             tanggal: todayStr(),
-                            nama: member,
-                            jumlahBulan: neededMonths,
+                            nama: m,
+                            jumlahBulan: missingMonths,
                             nominalPerBulan: appState.iuranPerBulan,
-                            total: neededMonths * appState.iuranPerBulan,
-                            catatan: `Pelunasan Kas s/d ${MONTHS_ID[targetMonth - 1]} (Reset Auto)`
+                            total: missingMonths * appState.iuranPerBulan,
+                            catatan: `Pelunasan Otomatis s/d ${targetMonthName}`
                         };
-                        updates[id] = entry;
-                        sheetOps.push({ action: 'ADD_KAS', id, ...entry });
+                        promises.push(database.ref('kas').push(newKas));
                     }
                 });
-            } else if (mode === 'clear-month-kas') {
-                appState.kasEntries.forEach(e => {
-                    if (parseInt(String(e.tanggal).slice(5, 7)) === targetMonth) {
-                        updates[e.id] = null;
-                        sheetOps.push({ action: 'DELETE', type: 'kas', id: e.id });
+            } else if (action === 'clear-month-kas') {
+                const ym = `${new Date().getFullYear()}-${String(appState.targetMonth).padStart(2, '0')}`;
+                appState.kasEntries.forEach(k => {
+                    if (mk(k.tanggal) === ym || (k.catatan && k.catatan.includes(targetMonthName))) {
+                        promises.push(database.ref(`kas/${k.id}`).remove());
                     }
                 });
             }
 
-            toggleResetUnpaidModal(false);
-            if (Object.keys(updates).length === 0) { showToast('Tidak ada data yang perlu diubah.', 'info'); return; }
-
-            database.ref('kas').update(updates)
-                .then(() => {
-                    sheetOps.forEach(sendToGoogleSheets);
-                    showToast('Status tunggakan berhasil diperbarui!', 'success');
-                })
-                .catch(() => showToast('Gagal memperbarui status tunggakan.', 'error'));
-        }
-        
-        function monthsPaidOf(member) {
-            const totalPaid = appState.kasEntries.filter(e => e.nama === member).reduce((a, c) => a + (Number(c.total) || 0), 0);
-            return { totalPaid, monthsPaid: Math.floor(totalPaid / appState.iuranPerBulan) };
-        }
-        
-        function renderUnpaidMembers() {
-            const container = document.getElementById('unpaidMembersGrid');
-            if (!container) return;
-            container.innerHTML = '';
-
-            const targetMonth = appState.targetMonth || 8;
-            const selectedMonthName = MONTHS_ID[targetMonth - 1];
-            const requiredMonths = getRequiredMonthsCount(targetMonth);
-
-            setTxt('currentMonthName', `${selectedMonthName} (Bulan Ke-${requiredMonths} dari Ags)`);
-
-            MASTER_MEMBERS.forEach(member => {
-                const { monthsPaid } = monthsPaidOf(member);
-                if (monthsPaid >= requiredMonths) return;
-
-                const tunggakanBulan = requiredMonths - monthsPaid;
-                const nominalTunggakan = tunggakanBulan * appState.iuranPerBulan;
-
-                const card = document.createElement('div');
-                card.className = "bg-orange-50/70 border border-orange-200/90 rounded-xl p-3 flex items-center justify-between shadow-sm hover:shadow-md transition";
-                card.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <div class="w-9 h-9 rounded-full bg-orange-200/80 text-orange-800 flex items-center justify-center font-bold text-xs shadow-inner">${esc(member.charAt(0))}</div>
-                        <div>
-                            <h4 class="font-bold text-xs text-slate-800 line-clamp-1">${esc(member)}</h4>
-                            <p class="text-[11px] text-orange-800 font-semibold mt-0.5">
-                                <i class="fa-solid fa-circle-exclamation mr-1 text-orange-600"></i>
-                                Kurang ${tunggakanBulan} Bulan (${formatRupiah(nominalTunggakan)})
-                            </p>
-                        </div>
-                    </div>
-                    ${appState.isAdminLoggedIn ? `
-                        <button onclick="quickPayMember('${esc(member)}', ${tunggakanBulan})" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-bold shadow transition flex items-center whitespace-nowrap">
-                            <i class="fa-solid fa-dollar-sign mr-1"></i> Bayar
-                        </button>` : `<span class="px-2 py-1 bg-orange-100 text-orange-700 rounded text-[10px] font-bold">Belum</span>`}
-                `;
-                container.appendChild(card);
+            Promise.all(promises).then(() => {
+                showToast(isMarkAll ? `Semua anggota berhasil dilunaskan hingga ${targetMonthName}.` : 'Catatan kas bulan terkait berhasil direset.', 'success');
+                toggleResetUnpaidModal(false);
+            }).catch(err => {
+                showToast('Terjadi kesalahan saat memproses reset data.', 'error');
             });
-
-            if (container.children.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full py-6 text-center text-blue-700 font-bold bg-blue-50 rounded-xl border border-blue-200">
-                        <i class="fa-solid fa-circle-check text-2xl mb-1 block text-blue-600"></i>
-                        Semua 18 Anggota Sudah Lunas Kas Sampai Bulan ${selectedMonthName}! 🎉
-                    </div>`;
-            }
         }
         
-        function quickPayMember(memberName, months) {
-            switchTab('input-kas');
-            const selectMember = document.getElementById('kasNamaAnggota');
-            const selectMonths = document.getElementById('kasJumlahBulan');
-            if (selectMember) selectMember.value = memberName;
-            if (selectMonths) selectMonths.value = [1, 2, 3, 4, 5, 6, 12].includes(months) ? months : (months > 6 ? 12 : 1);
-            calculateTotalKas();
-            showToast(`Form diisi untuk pembayaran kas ${memberName}`, 'info');
-        }
-        
-        function renderRecentIncome() {
-            const tbody = document.getElementById('dashRecentIncome');
-            if (!tbody) return;
-            const recent = [...appState.kasEntries].sort(byDateDesc).slice(0, 5);
-            if (!recent.length) { tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada transaksi kas</td></tr>`; return; }
-            tbody.innerHTML = recent.map(item => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-2.5 whitespace-nowrap text-slate-500">${esc(item.tanggal)}</td>
-                    <td class="p-2.5 font-semibold text-slate-800">${esc(item.nama)}</td>
-                    <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px]">${esc(item.jumlahBulan)} Bulan</span></td>
-                    <td class="p-2.5 text-right font-bold text-blue-600">${formatRupiah(item.total)}</td>
-                </tr>`).join('');
-        }
-
-        function renderRecentExpense() {
-            const tbody = document.getElementById('dashRecentExpense');
-            if (!tbody) return;
-            const recent = [...appState.pengeluaranEntries].sort(byDateDesc).slice(0, 5);
-            if (!recent.length) { tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-400">Belum ada pengeluaran</td></tr>`; return; }
-            tbody.innerHTML = recent.map(item => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-2.5 whitespace-nowrap text-slate-500">${esc(item.tanggal)}</td>
-                    <td class="p-2.5 font-semibold text-slate-800">${esc(item.judul)}</td>
-                    <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium text-[10px]">${esc(item.kategori)}</span></td>
-                    <td class="p-2.5 text-right font-bold text-orange-600">${formatRupiah(item.nominal)}</td>
-                </tr>`).join('');
-        }
-
         function renderLaporan() {
+            const rekapBody = document.getElementById('rekapAnggotaTable');
+            const jurnalBody = document.getElementById('jurnalTableBody');
+            if (!rekapBody || !jurnalBody) return;
+
             setTxt('rekapTarifBadge', formatRupiah(appState.iuranPerBulan));
 
-            const rekapBody = document.getElementById('rekapAnggotaTable');
-            if (!rekapBody) return;
+            const reqMonths = getRequiredMonthsCount(appState.targetMonth);
+            const targetAmount = reqMonths * appState.iuranPerBulan;
 
-            const requiredMonths = getRequiredMonthsCount(appState.targetMonth || 8);
+            let rekapRows = MASTER_MEMBERS.sort().map((m, idx) => {
+                const totalDibayar = sumBy(appState.kasEntries.filter(e => e.nama === m), 'total');
+                const bulanLunas = Math.floor(totalDibayar / appState.iuranPerBulan);
+                let badgeClass = 'bg-slate-200 text-slate-700 border-slate-300';
+                let statusText = 'Belum Bayar Sama Sekali';
 
-            rekapBody.innerHTML = MASTER_MEMBERS.slice().sort().map((member, index) => {
-                const { totalPaid, monthsPaid } = monthsPaidOf(member);
-                const statusBadge = monthsPaid >= requiredMonths
-                    ? `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full font-bold text-[10px]">Lunas (${monthsPaid} Bulan)</span>`
-                    : `<span class="px-2 py-1 bg-orange-100 text-orange-800 rounded-full font-bold text-[10px]">Menunggak ${requiredMonths - monthsPaid} Bulan</span>`;
+                if (totalDibayar >= targetAmount) {
+                    badgeClass = 'bg-blue-100 text-blue-800 border-blue-200';
+                    statusText = '<i class="fa-solid fa-check-circle mr-1"></i> Lunas s/d Bulan Ini';
+                } else if (totalDibayar > 0) {
+                    badgeClass = 'bg-orange-100 text-orange-800 border-orange-200';
+                    statusText = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> Menunggak ${reqMonths - bulanLunas} Bln`;
+                }
+
                 return `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-2.5 text-left border-r font-medium text-slate-400">${index + 1}</td>
-                        <td class="p-2.5 text-left border-r font-bold text-slate-800">${esc(member)}</td>
-                        <td class="p-2.5 font-bold text-blue-600">${formatRupiah(totalPaid)}</td>
-                        <td class="p-2.5 font-semibold text-slate-700">${monthsPaid} Bulan</td>
-                        <td class="p-2.5">${statusBadge}</td>
-                    </tr>`;
+                <tr class="hover:bg-slate-50 transition border-b border-slate-50">
+                    <td class="p-2.5 border-r border-slate-100 text-slate-500 font-medium">${idx + 1}</td>
+                    <td class="p-2.5 border-r border-slate-100 font-bold text-slate-800 text-left">${esc(m)}</td>
+                    <td class="p-2.5 font-bold text-blue-600">${formatRupiah(totalDibayar)}</td>
+                    <td class="p-2.5 font-semibold text-slate-600">${bulanLunas} Bulan</td>
+                    <td class="p-2.5"><span class="px-2.5 py-1 rounded-full border text-[10px] font-bold ${badgeClass}">${statusText}</span></td>
+                </tr>`;
             }).join('');
+            rekapBody.innerHTML = rekapRows;
 
-            const jurnalBody = document.getElementById('jurnalTableBody');
-            if (!jurnalBody) return;
+            const k = appState.kasEntries.map(e => ({ t: e.tanggal, j: 'Pemasukan', n: e.nama, k: e.catatan, nom: e.total }));
+            const p = appState.pengeluaranEntries.map(e => ({ t: e.tanggal, j: 'Pengeluaran', n: e.judul, k: e.catatan, nom: -e.nominal }));
+            const jrn = [...k, ...p].sort((a, b) => a.t.localeCompare(b.t));
 
-            let html = '';
-            if (appState.saldoAwal > 0) {
-                html += `
-                    <tr class="bg-blue-50/60 hover:bg-blue-50 font-medium">
-                        <td class="p-3 text-slate-500 whitespace-nowrap">-</td>
-                        <td class="p-3"><span class="px-2 py-0.5 rounded-md font-bold text-[10px] bg-blue-100 text-blue-800">Saldo Awal</span></td>
-                        <td class="p-3 font-bold text-slate-800">Saldo Kas Bawaan Sebelum Agustus</td>
-                        <td class="p-3 text-slate-500">Saldo sisa bawaan periode lalu</td>
-                        <td class="p-3 text-right font-bold text-blue-600">+ ${formatRupiah(appState.saldoAwal)}</td>
-                    </tr>`;
-            }
-
-            const combined = [
-                ...appState.kasEntries.map(e => ({ tanggal: e.tanggal, type: 'Pemasukan', nominal: e.total, label: e.nama, desc: e.catatan || 'Kas Anggota' })),
-                ...appState.pengeluaranEntries.map(e => ({ tanggal: e.tanggal, type: 'Pengeluaran', nominal: e.nominal, label: e.judul, desc: e.catatan || e.kategori }))
-            ].sort((a, b) => String(a.tanggal).localeCompare(String(b.tanggal)));
-
-            if (combined.length === 0 && appState.saldoAwal === 0) {
-                jurnalBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada transaksi tercatat.</td></tr>`;
-                return;
-            }
-
-            html += combined.map(item => {
-                const isMasuk = item.type === 'Pemasukan';
+            let saldo = appState.saldoAwal;
+            let jurnalRows = jrn.map(x => {
+                saldo += x.nom;
+                const isInc = x.nom > 0;
                 return `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${esc(item.tanggal)}</td>
-                        <td class="p-3"><span class="px-2 py-0.5 rounded-md font-bold text-[10px] ${isMasuk ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}">${item.type}</span></td>
-                        <td class="p-3 font-bold text-slate-800">${esc(item.label)}</td>
-                        <td class="p-3 text-slate-500">${esc(item.desc)}</td>
-                        <td class="p-3 text-right font-bold ${isMasuk ? 'text-blue-600' : 'text-orange-600'}">${isMasuk ? '+' : '-'} ${formatRupiah(item.nominal)}</td>
-                    </tr>`;
-            }).join('');
-            jurnalBody.innerHTML = html;
+                <tr class="hover:bg-slate-50 transition border-b border-slate-50">
+                    <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${esc(x.t)}</td>
+                    <td class="p-3 font-semibold ${isInc ? 'text-blue-600' : 'text-orange-600'}">${x.j}</td>
+                    <td class="p-3 font-bold text-slate-800">${esc(x.n)}</td>
+                    <td class="p-3 text-slate-500">${esc(x.k) || '-'}</td>
+                    <td class="p-3 text-right font-bold ${isInc ? 'text-blue-600' : 'text-orange-600'}">${isInc ? '+ ' : '- '}${formatRupiah(Math.abs(x.nom))}</td>
+                </tr>`;
+            });
+            
+            if(!jurnalRows.length) jurnalRows = [`<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada jurnal transaksi.</td></tr>`];
 
-            setTxt('jurnalTotalSaldo', formatRupiah(calculateSummary().saldoAkhir));
-        }
-
-        function calculateSummary() {
-            const totalPemasukan = sumBy(appState.kasEntries, 'total');
-            const totalPengeluaran = sumBy(appState.pengeluaranEntries, 'nominal');
-            const saldoAwal = appState.saldoAwal || 0;
-            return {
-                totalPemasukan, totalPengeluaran, saldoAwal,
-                saldoAkhir: saldoAwal + totalPemasukan - totalPengeluaran,
-                pemasukanCount: appState.kasEntries.length,
-                pengeluaranCount: appState.pengeluaranEntries.length
-            };
+            jurnalBody.innerHTML = jurnalRows.join('');
+            setTxt('jurnalTotalSaldo', formatRupiah(saldo));
         }
 
         function triggerLogoChange() {
             if (!appState.isAdminLoggedIn) {
-                showToast('Login sebagai Admin untuk mengubah logo!', 'error');
-                toggleAuthModal();
+                showToast('Login sebagai Admin untuk mengubah logo aplikasi.', 'error');
                 return;
             }
-            document.getElementById('logoFileInput')?.click();
+            document.getElementById('logoFileInput').click();
         }
 
-        function handleLogoUpload(e) {
-            const file = e.target?.files?.[0];
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
             if (!file) return;
+
             const reader = new FileReader();
-            reader.onload = evt => {
-                appState.customLogo = evt.target.result;
-                saveLogoToStorage();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                appState.customLogo = dataUrl;
+                try {
+                    localStorage.setItem('kasinternal_logo', dataUrl);
+                } catch (e) {
+                    showToast('Logo terlalu besar untuk disimpan di browser.', 'error');
+                }
                 renderLogo();
-                showToast('Logo berhasil diperbarui!', 'success');
+                showToast('Logo internal berhasil diperbarui.', 'success');
             };
             reader.readAsDataURL(file);
-        }
-
-        function saveLogoToStorage() {
-            try { if (appState.customLogo) localStorage.setItem('kasinternal_logo', appState.customLogo); }
-            catch (e) { showToast('Logo terlalu besar untuk disimpan di browser.', 'error'); }
-        }
-
-        function seedDatabaseIfEmpty() {
-            database.ref('/').once('value').then(snapshot => {
-                if (snapshot.exists()) return;
-                return database.ref('/').set({
-                    settings: { iuranPerBulan: 10000, saldoAwal: 0, targetMonth: 8 },
-                    kas: entriesToFirebaseObject(INITIAL_DUMMY_KAS),
-                    pengeluaran: entriesToFirebaseObject(INITIAL_DUMMY_PENGELUARAN)
-                });
-            }).catch(() => showToast('Gagal terhubung ke Firebase Database.', 'error'));
-        }
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
-
-            const toast = document.createElement('div');
-            let bgColor = 'bg-slate-800 text-white', icon = 'fa-circle-info';
-            if (type === 'success') { bgColor = 'bg-blue-700 text-white'; icon = 'fa-circle-check'; }
-            else if (type === 'error') { bgColor = 'bg-orange-700 text-white'; icon = 'fa-circle-xmark'; }
-
-            toast.className = `${bgColor} px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-bold pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0`;
-            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span>${esc(message)}</span>`;
-            container.appendChild(toast);
-
-            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
         }
     </script>
 </body>
