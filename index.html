@@ -9,7 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/jpeg" href="JT.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         const firebaseConfig = {
@@ -73,7 +72,6 @@
             .bg-red-600 { background-color: #dc2626 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .bg-yellow-400 { background-color: #facc15 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .bg-blue-600 { background-color: #2563eb !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            
             body.print-inventaris header, body.print-inventaris #toastContainer { display: none !important; }
             body.print-inventaris section:not(#content-inventaris) { display: none !important; }
             body.print-inventaris #content-inventaris { display: block !important; }
@@ -87,8 +85,8 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div onclick="triggerLogoChange()" title="Klik untuk mengunggah logo baru" class="relative group cursor-pointer w-11 h-11 rounded-2xl bg-gradient-to-tr from-orange-400 to-blue-500 flex items-center justify-center text-white shadow-lg overflow-hidden border border-blue-300/30">
-                        <img id="customLogoImg" src="logo_RDF1.png" alt="Logo Jembatan Timbang" class="w-full h-full object-cover" onerror="this.classList.add('hidden'); document.getElementById('defaultLogoIcon').classList.remove('hidden');">
-                        <i id="defaultLogoIcon" class="fa-solid fa-scale-balanced text-xl hidden"></i>
+                        <img id="customLogoImg" src="https://placehold.co/100x100/ea580c/ffffff?text=JT" alt="Logo Jembatan Timbang" class="w-full h-full object-cover hidden" onerror="this.classList.add('hidden'); document.getElementById('defaultLogoIcon').classList.remove('hidden');">
+                        <i id="defaultLogoIcon" class="fa-solid fa-scale-balanced text-xl"></i>
                         <input type="file" id="logoFileInput" accept="image/*" onchange="handleLogoUpload(event)" class="hidden">
                         <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[9px] text-white font-bold transition">Ubah Logo</div>
                     </div>
@@ -139,14 +137,25 @@
                 <button onclick="switchTab('jadwal')" id="tab-jadwal" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-white/80 hover:bg-white/10">
                     <i class="fa-solid fa-calendar-alt mr-2"></i> Jadwal Kerja
                 </button>
-                <button onclick="switchTab('laporan')" id="tab-laporan" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-white/80 hover:bg-white/10">
-                    <i class="fa-solid fa-file-invoice-dollar mr-2"></i> Laporan Keuangan
-                    <span id="lockReportBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-blue-950/60 text-orange-300 border border-orange-500/20"><i class="fa-solid fa-lock text-[9px]"></i></span>
-                </button>
-                <button onclick="switchTab('profil')" id="tab-profil" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-white/80 hover:bg-white/10">
-                    <i class="fa-solid fa-user-cog mr-2"></i> Profil
-                    <span id="lockProfilBadge" class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-blue-950/60 text-orange-300 border border-orange-500/20"><i class="fa-solid fa-lock text-[9px]"></i></span>
-                </button>
+                
+                <!-- DROPDOWN LAINNYA -->
+                <div class="relative group" id="dropdownContainer">
+                    <button id="tab-lainnya" onclick="toggleDropdown('lainnyaDropdown')" class="tab-btn px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 flex items-center text-white/80 hover:bg-white/10 focus:outline-none">
+                        <i class="fa-solid fa-ellipsis mr-2"></i> Lainnya
+                        <i class="fa-solid fa-chevron-down ml-1.5 text-[10px] transition-transform duration-200" id="lainnyaChevron"></i>
+                    </button>
+                    <!-- Isi Dropdown -->
+                    <div id="lainnyaDropdown" class="absolute right-0 sm:left-0 sm:right-auto mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200 hidden z-50 overflow-hidden transform opacity-0 scale-95 transition-all duration-200 origin-top-right sm:origin-top-left">
+                        <button onclick="switchTab('laporan'); toggleDropdown('lainnyaDropdown')" id="tab-laporan" class="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition flex items-center">
+                            <i class="fa-solid fa-file-invoice-dollar mr-2 w-4 text-center"></i> Laporan Keuangan
+                            <span id="lockReportBadge" class="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 border border-slate-200"><i class="fa-solid fa-lock text-[9px]"></i></span>
+                        </button>
+                        <button onclick="switchTab('profil'); toggleDropdown('lainnyaDropdown')" id="tab-profil" class="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition flex items-center border-t border-slate-100">
+                            <i class="fa-solid fa-user-cog mr-2 w-4 text-center"></i> Profil
+                            <span id="lockProfilBadge" class="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 border border-slate-200"><i class="fa-solid fa-lock text-[9px]"></i></span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -156,7 +165,6 @@
 
         <!-- DASHBOARD -->
         <section id="content-dashboard" class="tab-content space-y-6">
-
             <div id="greetingBanner" class="hidden glass-card rounded-2xl px-5 py-4 border border-white/60 flex items-center gap-3">
                 <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-lg"><i id="greetIcon" class="fa-solid fa-sun"></i></div>
                 <div>
@@ -415,6 +423,25 @@
                         </thead>
                         <tbody id="dashRecentTukarBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- JADWAL SERAGAM -->
+            <div class="glass-card rounded-2xl border border-indigo-200/80 p-5 sm:p-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-400 to-pink-500"></div>
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-base flex items-center">
+                            <i class="fa-solid fa-shirt text-indigo-600 mr-2"></i> Jadwal Seragam Kerja
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Panduan pakaian dinas harian (PDH) & lapangan (PDL) per hari.</p>
+                    </div>
+                    <button id="btnEditSeragam" onclick="openEditSeragamModal()" class="hidden px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 shadow-sm transition flex items-center">
+                        <i class="fa-solid fa-pen-to-square mr-1.5"></i> Custom Seragam
+                    </button>
+                </div>
+                <div id="seragamGrid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                    <!-- Data jadwal seragam per hari akan di-render di sini oleh JavaScript -->
                 </div>
             </div>
 
@@ -788,7 +815,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="glass-card p-6 rounded-2xl border border-white/60">
                 <div class="mb-4">
                     <h2 class="font-bold text-slate-800 text-base"><i class="fa-solid fa-warehouse text-blue-600 mr-2"></i>Stok Barang Saat Ini</h2>
@@ -1029,7 +1056,7 @@
                             <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Shift / Piket Anda <span class="text-orange-500">*</span></label>
                             <input type="date" id="tsTglPemohon" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
-                        
+
                         <div class="py-2 flex items-center justify-center">
                             <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-400 flex items-center justify-center">
                                 <i class="fa-solid fa-arrow-down"></i>
@@ -1046,7 +1073,7 @@
                             <label class="block text-xs font-bold text-slate-700 mb-1">Tgl Shift Pengganti <span class="text-slate-400 font-medium">(Opsional)</span></label>
                             <input type="date" id="tsTglPengganti" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" title="Isi jika ini adalah pertukaran hari">
                         </div>
-                        
+
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Alasan Tukar Shift / Piket <span class="text-orange-500">*</span></label>
                             <textarea id="tsAlasan" rows="2" required placeholder="Contoh: Tukar jadwal piket Sabtu / keperluan mendadak..." class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
@@ -1306,6 +1333,28 @@
         </div>
     </div>
 
+    <!-- MODAL EDIT SERAGAM -->
+    <div id="editSeragamModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-100 sticky top-0 bg-white z-10 pt-2">
+                <div class="flex items-center space-x-2">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center"><i class="fa-solid fa-shirt text-base"></i></div>
+                    <h3 class="font-extrabold text-slate-800 text-lg">Custom Jadwal Seragam Kerja</h3>
+                </div>
+                <button type="button" onclick="toggleEditSeragamModal(false)" class="text-slate-400 hover:text-slate-600 text-lg font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="handleSaveSeragam(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="seragamFormInputs">
+                    <!-- Inputs generated by JS -->
+                </div>
+                <div class="flex items-center justify-end space-x-2 pt-4 border-t border-slate-100 sticky bottom-0 bg-white pb-2">
+                    <button type="button" onclick="toggleEditSeragamModal(false)" class="px-4 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-200">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 shadow">Simpan Jadwal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL LOGIN ADMIN & SPV -->
     <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
@@ -1502,7 +1551,7 @@
             "Tiara Adelia Agustin", "Vitri Khardiyanti", "Nia Sumarni", "Rizka",
             "Putri Parliah", "Shopwatul Musfiqoh"
         ];
-        
+
         const ORDERED_JADWAL_MEMBERS = [
             "Ahmad Rafi Al Hadad", "Kiki Zakyah Apriyani", "Vitri Khardiyanti", "Shopwatul Musfiqoh", "Lisnawati Dewi",
             "Opan", "Diva Kirana Ramadhani", "Makiyatul Husna", "Nia Sumarni",
@@ -1540,9 +1589,30 @@
             inventarisEntries: [],
             cutiEntries: [],
             tukarShiftEntries: [],
+            seragamData: null,
             customCutiQuota: {},
             customLogo: null,
             users: []
+        };
+
+        const HARI_KEYS = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu', 'libur'];
+        const DEFAULT_SERAGAM = {
+            senin: { hari: 'Senin', baju: 'Kemeja Putih / PDH', ket: 'Bawahan Hitam/Navy', icon: 'fa-user-tie', color: 'blue' },
+            selasa: { hari: 'Selasa', baju: 'Kemeja Putih / PDH', ket: 'Bawahan Hitam/Navy', icon: 'fa-user-tie', color: 'blue' },
+            rabu: { hari: 'Rabu', baju: 'Wearpack / PDL', ket: 'Safety Shoes Wajib', icon: 'fa-vest', color: 'orange' },
+            kamis: { hari: 'Kamis', baju: 'Wearpack / PDL', ket: 'Safety Shoes Wajib', icon: 'fa-vest', color: 'orange' },
+            jumat: { hari: 'Jumat', baju: 'Batik / Bebas Rapi', ket: 'Celana Bahan Panjang', icon: 'fa-shirt', color: 'emerald' },
+            sabtu: { hari: 'Sabtu', baju: 'Polo / Kaos', ket: 'Celana Panjang/Jeans', icon: 'fa-tshirt', color: 'purple' },
+            minggu: { hari: 'Minggu', baju: 'Polo / Kaos', ket: 'Celana Panjang/Jeans', icon: 'fa-tshirt', color: 'purple' },
+            libur: { hari: 'Libur Nasional', baju: 'Polo / Kaos', ket: 'Celana Panjang/Jeans', icon: 'fa-tshirt', color: 'rose' }
+        };
+
+        const SERAGAM_COLORS = {
+            'blue': { bg: 'bg-blue-100', text: 'text-blue-600' },
+            'orange': { bg: 'bg-orange-100', text: 'text-orange-600' },
+            'emerald': { bg: 'bg-emerald-100', text: 'text-emerald-600' },
+            'purple': { bg: 'bg-purple-100', text: 'text-purple-600' },
+            'rose': { bg: 'bg-rose-100', text: 'text-rose-600' }
         };
 
         const DEFAULT_ADMIN_ACCOUNTS = [
@@ -1673,7 +1743,7 @@
                 img.classList.remove('hidden');
                 icon.classList.add('hidden');
             } else {
-                img.src = "logo_RDF1.png";
+                img.src = "https://placehold.co/100x100/ea580c/ffffff?text=JT";
                 img.classList.remove('hidden');
             }
         }
@@ -1731,10 +1801,10 @@
             invData.forEach(item => {
                 totalMasuk += item.qty;
                 countMasuk++;
-                
+
                 totalKeluar += item.qtyKeluar;
                 if(item.qtyKeluar > 0) countKeluar += item.logs ? item.logs.length : (item.tanggalKeluar ? 1 : 0);
-                
+
                 sisaQty += item.sisa;
                 if(item.sisa > 0) countSisa++;
             });
@@ -1827,9 +1897,84 @@
             renderInventarisDashboard();
             renderCutiDashboard();
             renderTukarShiftDashboard();
+            renderSeragam();
             renderUnpaidMembers();
             renderRecentIncome();
             renderRecentExpense();
+        }
+
+        function renderSeragam() {
+            const container = document.getElementById('seragamGrid');
+            if (!container) return;
+            const data = appState.seragamData || DEFAULT_SERAGAM;
+
+            container.innerHTML = HARI_KEYS.map(key => {
+                const item = data[key] || DEFAULT_SERAGAM[key];
+                const c = SERAGAM_COLORS[item.color] || SERAGAM_COLORS['blue'];
+                return `
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center flex flex-col items-center justify-center transition hover:shadow-md hover:-translate-y-0.5 duration-200">
+                    <p class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">${esc(item.hari)}</p>
+                    <div class="w-10 h-10 ${c.bg} ${c.text} rounded-2xl flex items-center justify-center mb-2 shadow-sm">
+                        <i class="fa-solid ${esc(item.icon)} text-lg"></i>
+                    </div>
+                    <p class="text-[11px] font-bold text-slate-800 leading-tight">${esc(item.baju)}</p>
+                    <p class="text-[9px] text-slate-500 mt-1 line-clamp-2">${esc(item.ket)}</p>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function openEditSeragamModal() {
+            const container = document.getElementById('seragamFormInputs');
+            const data = appState.seragamData || DEFAULT_SERAGAM;
+            
+            container.innerHTML = HARI_KEYS.map(key => {
+                const item = data[key] || DEFAULT_SERAGAM[key];
+                return `
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                    <p class="text-xs font-bold text-slate-700 uppercase border-b border-slate-200 pb-1 mb-2">${esc(item.hari)}</p>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-1">Pakaian / Baju</label>
+                        <input type="text" id="edit_srgm_baju_${key}" value="${esc(item.baju)}" required class="w-full text-xs border border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-1">Bawahan / Ket Tambahan</label>
+                        <input type="text" id="edit_srgm_ket_${key}" value="${esc(item.ket)}" class="w-full text-xs border border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                    </div>
+                </div>
+                `;
+            }).join('');
+            
+            toggleEditSeragamModal(true);
+        }
+
+        function toggleEditSeragamModal(show=true) {
+            document.getElementById('editSeragamModal').classList.toggle('hidden', !show);
+        }
+
+        function handleSaveSeragam(e) {
+            e.preventDefault();
+            if (!appState.isAdminLoggedIn) return showToast('Akses ditolak', 'error');
+
+            let newData = {};
+            const oldData = appState.seragamData || DEFAULT_SERAGAM;
+
+            HARI_KEYS.forEach(key => {
+                newData[key] = {
+                    hari: oldData[key].hari,
+                    icon: oldData[key].icon,
+                    color: oldData[key].color,
+                    baju: document.getElementById(`edit_srgm_baju_${key}`).value,
+                    ket: document.getElementById(`edit_srgm_ket_${key}`).value
+                };
+            });
+
+            database.ref('seragam').set(newData).then(() => {
+                showToast('Jadwal seragam berhasil diperbarui!', 'success');
+                toggleEditSeragamModal(false);
+            }).catch(() => {
+                showToast('Gagal menyimpan jadwal seragam.', 'error');
+            });
         }
 
         function renderTukarShiftDashboard() {
@@ -2060,7 +2205,7 @@
                 const [y, m, d] = targetDateString.split('-').map(Number);
                 const targetDate = new Date(y, m-1, d);
                 const dayOfWeek = targetDate.getDay(); 
-                
+
                 if (dayOfWeek >= 1 && dayOfWeek <= 5) return 'P';
                 if (dayOfWeek === 0) return 'X';
                 if (dayOfWeek === 6) {
@@ -2077,7 +2222,7 @@
             let diffDays = getDaysDiffUTC(SHIFT_ANCHOR_DATE, targetDateString);
             let index = (offset + diffDays) % 8;
             if (index < 0) index += 8; 
-            
+
             return SHIFT_CYCLE[index];
         }
 
@@ -2089,10 +2234,10 @@
             if (cuti) return { val: 'C', type: 'cuti' };
 
             const approvedSwaps = (appState.tukarShiftEntries || []).filter(ts => ts.status === 'APPROVED');
-            
+
             for (const ts of approvedSwaps) {
                 const isSameDaySwap = ts.tglShiftPengganti === '-';
-                
+
                 if (isSameDaySwap) {
                     if (targetDateString === ts.tglShiftPemohon) {
                         if (memberName === ts.pemohon) return { val: getBaseShift(ts.pengganti, targetDateString), type: 'swap' };
@@ -2132,7 +2277,7 @@
             const bulanSelect = document.getElementById('jadwalBulan');
             const tahunSelect = document.getElementById('jadwalTahun');
             if (!bulanSelect || !tahunSelect) return;
-            
+
             const year = parseInt(tahunSelect.value);
             const month = parseInt(bulanSelect.value);
             const daysInMonth = new Date(year, month, 0).getDate();
@@ -2157,15 +2302,15 @@
                 tbody += `<tr class="hover:bg-slate-100 transition-colors">
                     <td class="p-1.5 border border-slate-300 text-center text-slate-500 font-medium">${i+1}</td>
                     <td class="p-1.5 border border-slate-300 font-semibold text-slate-800 whitespace-nowrap px-2">${esc(member)}</td>`;
-                
+
                 for(let d=1; d<=daysInMonth; d++) {
                     const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                     const shiftData = getShift(member, dateStr);
                     const shift = shiftData.val;
-                    
+
                     let bg = 'bg-white';
                     let text = 'text-slate-800';
-                    
+
                     if (shiftData.type === 'swap') { 
                         bg = 'bg-blue-600'; text = 'text-white'; 
                     } else if (shiftData.type === 'cuti') { 
@@ -2175,7 +2320,7 @@
                     } else if (shift === 'Pk') { 
                         bg = 'bg-slate-200'; text = 'text-slate-900'; 
                     }
-                    
+
                     tbody += `<td class="p-1 border border-slate-300 text-center text-[11px] font-bold ${bg} ${text}">${shift}</td>`;
                 }
                 tbody += `</tr>`;
@@ -2208,7 +2353,7 @@
 
         function getMemberLeaveStats(memberName) {
             if (!memberName) return { totalQuota: DEFAULT_LEAVE_QUOTA, usedDays: 0, remainingDays: DEFAULT_LEAVE_QUOTA };
-            
+
             const totalQuota = appState.customCutiQuota[memberName] !== undefined 
                 ? Number(appState.customCutiQuota[memberName]) 
                 : DEFAULT_LEAVE_QUOTA;
@@ -2542,21 +2687,73 @@
             }
         }
 
+        function toggleDropdown(id) {
+            const drop = document.getElementById(id);
+            const chev = document.getElementById('lainnyaChevron');
+            if (drop.classList.contains('hidden')) {
+                drop.classList.remove('hidden');
+                setTimeout(() => {
+                    drop.classList.remove('opacity-0', 'scale-95');
+                    drop.classList.add('opacity-100', 'scale-100');
+                    if(chev) chev.classList.add('rotate-180');
+                }, 10);
+            } else {
+                drop.classList.remove('opacity-100', 'scale-100');
+                drop.classList.add('opacity-0', 'scale-95');
+                if(chev) chev.classList.remove('rotate-180');
+                setTimeout(() => drop.classList.add('hidden'), 200);
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('#dropdownContainer')) {
+                const drop = document.getElementById('lainnyaDropdown');
+                const chev = document.getElementById('lainnyaChevron');
+                if (drop && !drop.classList.contains('hidden')) {
+                    drop.classList.remove('opacity-100', 'scale-100');
+                    drop.classList.add('opacity-0', 'scale-95');
+                    if(chev) chev.classList.remove('rotate-180');
+                    setTimeout(() => drop.classList.add('hidden'), 200);
+                }
+            }
+        });
+
         function switchTab(tabId) {
             appState.activeTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('bg-white', 'text-orange-600', 'shadow');
                 btn.classList.add('text-white/80', 'hover:bg-white/10');
             });
 
+            document.querySelectorAll('#lainnyaDropdown button').forEach(btn => {
+                btn.classList.remove('bg-orange-50', 'text-orange-600');
+                btn.classList.add('text-slate-700');
+            });
+
             const activeContent = document.getElementById(`content-${tabId}`);
             if (activeContent) activeContent.classList.remove('hidden');
 
-            const activeBtn = document.getElementById(`tab-${tabId}`);
-            if (activeBtn) {
-                activeBtn.classList.remove('text-white/80', 'hover:bg-white/10');
-                activeBtn.classList.add('bg-white', 'text-orange-600', 'shadow');
+            const isDropdownTab = ['laporan', 'profil'].includes(tabId);
+            
+            if (isDropdownTab) {
+                const parentBtn = document.getElementById('tab-lainnya');
+                if (parentBtn) {
+                    parentBtn.classList.remove('text-white/80', 'hover:bg-white/10');
+                    parentBtn.classList.add('bg-white', 'text-orange-600', 'shadow');
+                }
+                const activeItem = document.getElementById(`tab-${tabId}`);
+                if (activeItem) {
+                    activeItem.classList.remove('text-slate-700');
+                    activeItem.classList.add('bg-orange-50', 'text-orange-600');
+                }
+            } else {
+                const activeBtn = document.getElementById(`tab-${tabId}`);
+                if (activeBtn) {
+                    activeBtn.classList.remove('text-white/80', 'hover:bg-white/10');
+                    activeBtn.classList.add('bg-white', 'text-orange-600', 'shadow');
+                }
             }
 
             if (tabId === 'dashboard') renderDashboard();
@@ -2578,6 +2775,11 @@
                     appState.users = DEFAULT_ADMIN_ACCOUNTS;
                     database.ref('users').set(DEFAULT_ADMIN_ACCOUNTS);
                 }
+            });
+
+            database.ref('seragam').on('value', snapshot => {
+                appState.seragamData = snapshot.val() || null;
+                renderSeragam();
             });
 
             database.ref('settings').on('value', snapshot => {
@@ -2650,7 +2852,7 @@
                 if(appState.activeTab === 'jadwal') renderJadwalTable();
             });
         }
-        
+
         function renderProfileTab() {
             const notice = document.getElementById('profilAuthNotice');
             const box = document.getElementById('profilSettingsBox');
@@ -2676,6 +2878,12 @@
             if (btnRafi) {
                 if (userIsRafi) btnRafi.classList.remove('hidden');
                 else btnRafi.classList.add('hidden');
+            }
+
+            const btnSeragam = document.getElementById('btnEditSeragam');
+            if (btnSeragam) {
+                if (on) btnSeragam.classList.remove('hidden');
+                else btnSeragam.classList.add('hidden');
             }
 
             const statusDot = document.getElementById('statusDot');
@@ -2740,7 +2948,7 @@
 
             const printDateElem = document.getElementById('printDate');
             if (printDateElem) printDateElem.innerText = new Date().toLocaleDateString('id-ID', { dateStyle: 'full' });
-            
+
             const printDateInv = document.getElementById('printDateInv');
             if (printDateInv) printDateInv.innerText = new Date().toLocaleDateString('id-ID', { dateStyle: 'full' });
         });
@@ -2835,7 +3043,7 @@
                     let updates = {
                         password: newPass
                     };
-                    
+
                     if(newName !== "") {
                         updates.display = newName;
                         let existingNames = Array.isArray(users[userKey].names) ? users[userKey].names : [];
@@ -2947,12 +3155,12 @@
                 </tr>`;
             }).join('');
         }
-        
+
         function deleteButton(type, id) {
             if (!appState.isAdminLoggedIn) return `<span class="text-slate-300">-</span>`;
-            return `<button onclick="promptDeleteTransaction('${type}', '${String(id).replace(/'/g, "\\'")}')" class="text-orange-500 hover:text-orange-700 font-bold px-2 py-1 rounded hover:bg-orange-50"><i class="fa-solid fa-trash"></i></button>`;
+            return `<button onclick="promptDeleteTransaction('${type}', '${String(id).replace(/'/g, "\\'")}')" class="text-orange-500 hover:text-orange-700 font-bold px-2 py-1 rounded hover:bg-orange-50" title="Hapus"><i class="fa-solid fa-trash"></i></button>`;
         }
-        
+
         function renderKasTable() {
             const tbody = document.getElementById('kasTableBody');
             if (!tbody) return;
@@ -2981,7 +3189,7 @@
                     <td class="p-3 text-center whitespace-nowrap">${deleteButton('kas', item.id)}</td>
                 </tr>`).join('');
         }
-        
+
         function renderPengeluaranTable() {
             const tbody = document.getElementById('expTableBody');
             if (!tbody) return;
@@ -3010,7 +3218,7 @@
                     <td class="p-3 text-center whitespace-nowrap">${deleteButton('pengeluaran', item.id)}</td>
                 </tr>`).join('');
         }
-        
+
         function renderStokTable() {
             const tbody = document.getElementById('invStokBody');
             if (!tbody) return;
@@ -3041,7 +3249,7 @@
                 showToast('Tidak ada data inventaris untuk di download', 'error');
                 return;
             }
-            
+
             let csv = "Tanggal Masuk,Nama Barang,Jumlah Masuk,Jumlah Keluar,Sisa Stok,Satuan,Tanggal Keluar Terakhir\n";
             appState.inventarisEntries.forEach(item => {
                 const nama = String(item.nama).replace(/"/g, '""');
@@ -3089,387 +3297,322 @@
                 const habis = item.sisa === 0;
                 const sebagian = !habis && item.qtyKeluar > 0;
                 const badge = habis ? ['bg-orange-100 text-orange-800', 'Sudah Keluar'] : sebagian ? ['bg-slate-200 text-slate-700', 'Sebagian Keluar'] : ['bg-blue-100 text-blue-800', 'Masih Ada'];
-                
-                const editBtn = `<button onclick="openInvEditModal('${String(item.id).replace(/'/g, "\\'")}')" title="Edit Data Barang" class="text-amber-600 hover:text-amber-800 font-bold px-2 py-1 rounded hover:bg-amber-50 mr-1"><i class="fa-solid fa-pen-to-square"></i></button>`;
-                const keluarBtn = habis ? '' : `<button onclick="openInvKeluarModal('${String(item.id).replace(/'/g, "\\'")}')" title="Catat barang keluar" class="text-blue-600 hover:text-blue-800 font-bold px-2 py-1 rounded hover:bg-blue-50 mr-1"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>`;
 
-                const aksi = appState.isAdminLoggedIn
-                    ? `<div class="flex items-center justify-center">${editBtn}${keluarBtn}${deleteButton('inventaris', item.id)}</div>`
-                    : `<span class="text-slate-300">-</span>`;
+                const editBtn = `<button onclick="openInvEditModal('${String(item.id).replace(/'/g, "\\'")}')" class="text-blue-500 hover:text-blue-700 font-bold px-2 py-1 rounded hover:bg-blue-50" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>`;
+                const outBtn = !habis ? `<button onclick="openInvKeluarModal('${String(item.id).replace(/'/g, "\\'")}')" class="text-orange-500 hover:text-orange-700 font-bold px-2 py-1 rounded hover:bg-orange-50" title="Catat Keluar"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>` : `<span class="text-slate-300 px-2 py-1"><i class="fa-solid fa-arrow-up-from-bracket"></i></span>`;
+
+                let actions = '-';
+                if (appState.isAdminLoggedIn) {
+                    actions = `<div class="flex items-center justify-center space-x-1">${outBtn}${editBtn}${deleteButton('inventaris', item.id)}</div>`;
+                }
 
                 return `
                 <tr class="hover:bg-slate-50 transition">
                     <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${esc(item.tanggalMasuk)}</td>
                     <td class="p-3 font-bold text-slate-800">${esc(item.nama)}</td>
-                    <td class="p-3 font-bold text-blue-600 whitespace-nowrap">${fmtNum(item.qty)} ${esc(item.satuan)}</td>
-                    <td class="p-3 font-bold text-orange-600 whitespace-nowrap">${fmtNum(item.qtyKeluar)}</td>
-                    <td class="p-3 font-bold text-slate-800 whitespace-nowrap">${fmtNum(item.sisa)} ${esc(item.satuan)}</td>
-                    <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${item.tanggalKeluar ? esc(item.tanggalKeluar) : '-'}</td>
-                    <td class="p-3"><span class="px-2 py-1 rounded-md font-bold text-[10px] whitespace-nowrap ${badge[0]}">${badge[1]}</span></td>
-                    <td class="p-3 text-center whitespace-nowrap no-print">${aksi}</td>
+                    <td class="p-3 font-bold text-blue-600">${fmtNum(item.qty)} ${esc(item.satuan)}</td>
+                    <td class="p-3 font-bold text-orange-600">${fmtNum(item.qtyKeluar)} ${esc(item.satuan)}</td>
+                    <td class="p-3 font-extrabold ${habis ? 'text-slate-400' : 'text-slate-800'}">${fmtNum(item.sisa)} ${esc(item.satuan)}</td>
+                    <td class="p-3 text-slate-500 whitespace-nowrap">${item.tanggalKeluar ? esc(item.tanggalKeluar) : '-'}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold whitespace-nowrap ${badge[0]}">${badge[1]}</span></td>
+                    <td class="p-3 text-center whitespace-nowrap no-print">${actions}</td>
                 </tr>`;
             }).join('');
         }
 
+        // ================= CONTROLLERS =================
+
+        function calculateTotalKas() {
+            const b = parseInt(document.getElementById('kasJumlahBulan')?.value) || 1;
+            const n = parseInt(document.getElementById('kasNominalPerBulan')?.value) || 10000;
+            setTxt('kasTotalCalculated', formatRupiah(b * n));
+        }
+
         function handleSaveKas(e) {
-            if (e) e.preventDefault();
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
-
-            const tanggal = document.getElementById('kasTanggal').value;
-            const nama = document.getElementById('kasNamaAnggota').value;
-            const jumlahBulan = Number(document.getElementById('kasJumlahBulan').value) || 1;
-            const nominalPerBulan = Number(document.getElementById('kasNominalPerBulan').value) || appState.iuranPerBulan;
-            const catatan = document.getElementById('kasCatatan').value;
-
-            if (!nama) { showToast('Pilih nama anggota!', 'error'); return; }
-
-            const newKas = {
-                tanggal, nama, jumlahBulan, nominalPerBulan,
-                total: jumlahBulan * nominalPerBulan,
-                catatan: catatan || `Kas ${jumlahBulan} Bulan`
+            e.preventDefault();
+            if(!appState.isAdminLoggedIn) return showToast('Akses ditolak', 'error');
+            const p = {
+                tanggal: document.getElementById('kasTanggal').value,
+                nama: document.getElementById('kasNamaAnggota').value,
+                jumlahBulan: parseInt(document.getElementById('kasJumlahBulan').value),
+                nominalPerBulan: parseInt(document.getElementById('kasNominalPerBulan').value),
+                catatan: document.getElementById('kasCatatan').value,
             };
-
-            const ref = database.ref('kas').push();
-            ref.set(newKas).then(() => {
-                sendToGoogleSheets({ action: 'ADD_KAS', id: ref.key, ...newKas });
-                showToast('Pembayaran kas berhasil disimpan.', 'success');
+            p.total = p.jumlahBulan * p.nominalPerBulan;
+            database.ref('kas').push(p).then(() => {
+                showToast('Kas berhasil disimpan', 'success');
                 document.getElementById('formInputKas').reset();
                 setDefaultDates();
+                sendToGoogleSheets({...p, type: 'KAS'});
             });
         }
 
-        function calculateTotalKas() {
-            const numMonths = Number(document.getElementById('kasJumlahBulan')?.value) || 1;
-            const perMonth = Number(document.getElementById('kasNominalPerBulan')?.value) || appState.iuranPerBulan;
-            setTxt('kasTotalCalculated', formatRupiah(numMonths * perMonth));
-        }
-
-        function updateIuranSetting(val) {
-            appState.iuranPerBulan = Number(val) || 10000;
-            database.ref('settings/iuranPerBulan').set(appState.iuranPerBulan);
-        }
-
-        function changeTargetMonth(val) {
-            appState.targetMonth = Number(val) || 8;
-            database.ref('settings/targetMonth').set(appState.targetMonth);
-        }
-
         function handleSavePengeluaran(e) {
-            if (e) e.preventDefault();
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
-
-            const tanggal = document.getElementById('expTanggal').value;
-            const judul = document.getElementById('expJudul').value;
-            const kategori = document.getElementById('expKategori').value;
-            const nominal = Number(document.getElementById('expNominal').value) || 0;
-            const catatan = document.getElementById('expCatatan').value;
-
-            if (!judul || !nominal) { showToast('Isi nama pengeluaran dan nominal!', 'error'); return; }
-
-            const newExp = { tanggal, judul, kategori, nominal, catatan };
-
-            const ref = database.ref('pengeluaran').push();
-            ref.set(newExp).then(() => {
-                sendToGoogleSheets({ action: 'ADD_PENGELUARAN', id: ref.key, ...newExp });
-                showToast('Pengeluaran berhasil disimpan.', 'success');
+            e.preventDefault();
+            if(!appState.isAdminLoggedIn) return showToast('Akses ditolak', 'error');
+            const p = {
+                tanggal: document.getElementById('expTanggal').value,
+                judul: document.getElementById('expJudul').value,
+                kategori: document.getElementById('expKategori').value,
+                nominal: parseInt(document.getElementById('expNominal').value),
+                catatan: document.getElementById('expCatatan').value,
+            };
+            database.ref('pengeluaran').push(p).then(() => {
+                showToast('Pengeluaran berhasil disimpan', 'success');
                 document.getElementById('formInputPengeluaran').reset();
                 setDefaultDates();
+                sendToGoogleSheets({...p, type: 'PENGELUARAN'});
             });
         }
 
         function handleSaveInventaris(e) {
-            if (e) e.preventDefault();
-            if (!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
-
-            const tanggalMasuk = document.getElementById('invTglMasuk').value;
-            const nama = document.getElementById('invNama').value;
-            const qty = Number(document.getElementById('invQty').value) || 0;
-            const satuan = document.getElementById('invSatuan').value;
-            const tanggalKeluar = document.getElementById('invTglKeluar').value;
-
-            if (!nama || !qty) { showToast('Isi nama barang dan quantity!', 'error'); return; }
-
-            const logs = tanggalKeluar ? [{ tanggal: tanggalKeluar, qty: qty }] : [];
-            const newInv = { tanggalMasuk, nama, qty, satuan, tanggalKeluar: tanggalKeluar || '', qtyKeluar: logs.length ? qty : 0, logs };
-
-            database.ref('inventaris').push(newInv).then(() => {
-                showToast('Inventaris berhasil disimpan.', 'success');
+            e.preventDefault();
+            if(!appState.isAdminLoggedIn) return showToast('Akses ditolak', 'error');
+            const p = {
+                tanggalMasuk: document.getElementById('invTglMasuk').value,
+                nama: document.getElementById('invNama').value,
+                qty: parseInt(document.getElementById('invQty').value),
+                satuan: document.getElementById('invSatuan').value,
+                tanggalKeluar: document.getElementById('invTglKeluar').value || '',
+                qtyKeluar: 0,
+                logs: []
+            };
+            database.ref('inventaris').push(p).then(() => {
+                showToast('Inventaris berhasil disimpan', 'success');
                 document.getElementById('formInputInventaris').reset();
                 setDefaultDates();
             });
         }
 
-        let currentDeleteInfo = null;
-        function promptDeleteTransaction(type, id) {
-            if (!appState.isAdminLoggedIn) return;
-            currentDeleteInfo = { type, id };
-            const confirmModal = document.getElementById('confirmModal');
-            const confirmBtn = document.getElementById('btnActionConfirm');
-            if (confirmModal && confirmBtn) {
-                confirmBtn.onclick = executeDeleteTransaction;
-                confirmModal.classList.remove('hidden');
-            }
-        }
-
-        function closeConfirmModal() {
-            document.getElementById('confirmModal')?.classList.add('hidden');
-            currentDeleteInfo = null;
-        }
-
-        function executeDeleteTransaction() {
-            if (!currentDeleteInfo) return;
-            const { type, id } = currentDeleteInfo;
-            database.ref(`${type}/${id}`).remove().then(() => {
-                showToast('Data berhasil dihapus.', 'success');
-                closeConfirmModal();
-            }).catch(err => {
-                console.error(err);
-                showToast('Gagal menghapus data.', 'error');
-                closeConfirmModal();
-            });
-        }
-
-        let selectedInvId = null;
-        function openInvKeluarModal(id) {
-            if (!appState.isAdminLoggedIn) return;
-            selectedInvId = id;
-            const item = appState.inventarisEntries.find(i => i.id === id);
-            if (!item) return;
-
-            setTxt('invKeluarNama', item.nama);
-            setTxt('invKeluarInfo', `Tersedia: ${fmtNum(item.sisa)} ${item.satuan}`);
-            setTxt('invKeluarSatuan', `(${item.satuan})`);
-            
-            const qtyInput = document.getElementById('invKeluarQty');
-            if(qtyInput) {
-                qtyInput.max = item.sisa;
-                qtyInput.value = item.sisa;
-            }
-            const dateInput = document.getElementById('invKeluarTanggal');
-            if(dateInput) dateInput.value = todayStr();
-
-            toggleInvKeluarModal(true);
-        }
-
-        function toggleInvKeluarModal(show = true) {
-            const modal = document.getElementById('invKeluarModal');
-            if(modal) modal.classList.toggle('hidden', !show);
-        }
-
-        function handleSaveInvKeluar(e) {
-            if(e) e.preventDefault();
-            if(!selectedInvId) return;
-
-            const qty = Number(document.getElementById('invKeluarQty').value) || 0;
-            const tanggal = document.getElementById('invKeluarTanggal').value;
-            const item = appState.inventarisEntries.find(i => i.id === selectedInvId);
-
-            if(!item || qty <= 0 || qty > item.sisa) {
-                showToast('Jumlah tidak valid / melebihi stok tersisa!', 'error');
-                return;
-            }
-
-            const logs = item.logs ? [...item.logs] : [];
-            logs.push({ tanggal, qty });
-            const totalKeluar = sumBy(logs, 'qty');
-
-            database.ref(`inventaris/${selectedInvId}`).update({
-                qtyKeluar: totalKeluar,
-                tanggalKeluar: tanggal,
-                logs: logs
-            }).then(() => {
-                showToast('Pencatatan barang keluar berhasil disimpan.', 'success');
-                toggleInvKeluarModal(false);
-            });
-        }
-
         function openInvEditModal(id) {
-            if (!appState.isAdminLoggedIn) return;
             const item = appState.inventarisEntries.find(i => i.id === id);
-            if (!item) return;
-
-            document.getElementById('editInvId').value = item.id;
-            document.getElementById('editInvTglMasuk').value = item.tanggalMasuk || todayStr();
+            if(!item) return;
+            document.getElementById('editInvId').value = id;
+            document.getElementById('editInvTglMasuk').value = item.tanggalMasuk;
             document.getElementById('editInvNama').value = item.nama;
             document.getElementById('editInvQty').value = item.qty;
-            document.getElementById('editInvSatuan').value = item.satuan || 'pcs';
+            document.getElementById('editInvSatuan').value = item.satuan;
             document.getElementById('editInvTglKeluar').value = item.tanggalKeluar || '';
-
             toggleInvEditModal(true);
         }
 
-        function toggleInvEditModal(show = true) {
-            const modal = document.getElementById('invEditModal');
-            if(modal) modal.classList.toggle('hidden', !show);
+        function toggleInvEditModal(show=true) {
+            document.getElementById('invEditModal').classList.toggle('hidden', !show);
         }
 
         function handleUpdateInventaris(e) {
-            if (e) e.preventDefault();
-            if (!appState.isAdminLoggedIn) return;
-
+            e.preventDefault();
             const id = document.getElementById('editInvId').value;
-            const item = appState.inventarisEntries.find(i => i.id === id);
-            if (!item) return;
-
-            const tanggalMasuk = document.getElementById('editInvTglMasuk').value;
-            const nama = document.getElementById('editInvNama').value;
-            const qty = Number(document.getElementById('editInvQty').value) || 0;
-            const satuan = document.getElementById('editInvSatuan').value;
-            const tanggalKeluar = document.getElementById('editInvTglKeluar').value;
-
-            if (qty < item.qtyKeluar) {
-                showToast(`Total quantity tidak boleh lebih kecil dari barang yang sudah keluar (${item.qtyKeluar})!`, 'error');
-                return;
-            }
-
-            database.ref(`inventaris/${id}`).update({
-                tanggalMasuk, nama, qty, satuan,
-                tanggalKeluar: tanggalKeluar || item.tanggalKeluar || ''
-            }).then(() => {
-                showToast('Data inventaris berhasil diperbarui.', 'success');
+            const p = {
+                tanggalMasuk: document.getElementById('editInvTglMasuk').value,
+                nama: document.getElementById('editInvNama').value,
+                qty: parseInt(document.getElementById('editInvQty').value),
+                satuan: document.getElementById('editInvSatuan').value,
+                tanggalKeluar: document.getElementById('editInvTglKeluar').value || '',
+            };
+            database.ref(`inventaris/${id}`).update(p).then(() => {
+                showToast('Inventaris diupdate', 'success');
                 toggleInvEditModal(false);
             });
         }
 
+        let currentInvKeluarId = null;
+        function openInvKeluarModal(id) {
+            const item = appState.inventarisEntries.find(i => i.id === id);
+            if(!item) return;
+            currentInvKeluarId = id;
+            setTxt('invKeluarNama', item.nama);
+            setTxt('invKeluarInfo', `Sisa Stok: ${item.sisa} ${item.satuan}`);
+            setTxt('invKeluarSatuan', `(${item.satuan})`);
+            document.getElementById('invKeluarQty').max = item.sisa;
+            document.getElementById('invKeluarQty').value = 1;
+            document.getElementById('invKeluarTanggal').value = todayStr();
+            toggleInvKeluarModal(true);
+        }
+
+        function toggleInvKeluarModal(show=true) {
+            document.getElementById('invKeluarModal').classList.toggle('hidden', !show);
+        }
+
+        function handleSaveInvKeluar(e) {
+            e.preventDefault();
+            if(!currentInvKeluarId) return;
+            const qty = parseInt(document.getElementById('invKeluarQty').value);
+            const tgl = document.getElementById('invKeluarTanggal').value;
+            const item = appState.inventarisEntries.find(i => i.id === currentInvKeluarId);
+            
+            if(qty > item.sisa) return showToast('Qty melebihi sisa stok', 'error');
+
+            const newLogs = [...(item.logs || []), {tanggal: tgl, qty}];
+            const totalKeluar = item.qtyKeluar + qty;
+
+            database.ref(`inventaris/${currentInvKeluarId}`).update({
+                logs: newLogs,
+                qtyKeluar: totalKeluar,
+                tanggalKeluar: tgl
+            }).then(() => {
+                showToast('Barang keluar dicatat', 'success');
+                toggleInvKeluarModal(false);
+            });
+        }
+
         function openSaldoAwalModal() {
-            if(!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
+            if(!appState.isAdminLoggedIn) return showToast('Akses ditolak', 'error');
             document.getElementById('inputSaldoAwal').value = appState.saldoAwal;
             toggleSaldoAwalModal(true);
         }
 
-        function toggleSaldoAwalModal(show = true) {
-            const modal = document.getElementById('saldoAwalModal');
-            if(modal) modal.classList.toggle('hidden', !show);
+        function toggleSaldoAwalModal(show=true) {
+            document.getElementById('saldoAwalModal').classList.toggle('hidden', !show);
         }
 
         function handleSaveSaldoAwal(e) {
-            if(e) e.preventDefault();
-            const val = Number(document.getElementById('inputSaldoAwal').value) || 0;
-            database.ref('settings/saldoAwal').set(val).then(() => {
-                showToast('Saldo awal berhasil disesuaikan.', 'success');
+            e.preventDefault();
+            const s = parseInt(document.getElementById('inputSaldoAwal').value) || 0;
+            database.ref('settings/saldoAwal').set(s).then(() => {
+                showToast('Saldo awal tersimpan', 'success');
                 toggleSaldoAwalModal(false);
             });
         }
 
-        function toggleResetModal(show = true) {
-            if(!appState.isAdminLoggedIn && show) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
-            const modal = document.getElementById('resetModal');
-            if(modal) modal.classList.toggle('hidden', !show);
+        function updateIuranSetting(val) {
+            if(!appState.isAdminLoggedIn) return showToast('Akses ditolak', 'error');
+            database.ref('settings/iuranPerBulan').set(parseInt(val));
         }
 
-        function executeResetData(mode) {
-            if(!appState.isAdminLoggedIn) return;
-            if (mode === 'empty') {
+        function changeTargetMonth(val) {
+            if(!appState.isAdminLoggedIn) {
+                appState.targetMonth = parseInt(val);
+                renderUnpaidMembers(); 
+                return;
+            }
+            database.ref('settings/targetMonth').set(parseInt(val));
+        }
+
+        function toggleResetModal(show=true) { document.getElementById('resetModal').classList.toggle('hidden', !show); }
+
+        function executeResetData(type) {
+            if(type === 'empty') {
                 database.ref('kas').remove();
                 database.ref('pengeluaran').remove();
                 database.ref('settings/saldoAwal').set(0);
-                showToast('Seluruh data transaksi kas berhasil dikosongkan.', 'info');
-            } else if (mode === 'demo') {
-                database.ref('kas').remove();
-                database.ref('pengeluaran').remove();
-                database.ref('settings/saldoAwal').set(500000);
-                showToast('Data telah dikembalikan ke mode demo.', 'success');
+            } else if(type === 'demo') {
+                database.ref('settings/saldoAwal').set(50000);
+                database.ref('kas').set({
+                    demo1: { tanggal: "2026-08-01", nama: "Ahmad Rafi Al Hadad", jumlahBulan: 1, nominalPerBulan: 10000, total: 10000, catatan: "" },
+                    demo2: { tanggal: "2026-08-05", nama: "Pirda Ripiani", jumlahBulan: 2, nominalPerBulan: 10000, total: 20000, catatan: "Ags-Sep" }
+                });
+                database.ref('pengeluaran').set({
+                    demo1: { tanggal: "2026-08-10", judul: "Beli Sapu", kategori: "Peralatan / Perlengkapan", nominal: 15000, catatan: "" }
+                });
             }
             toggleResetModal(false);
+            showToast('Data berhasil di-reset', 'success');
         }
 
-        function openResetUnpaidModal() {
-            if(!appState.isAdminLoggedIn) { showToast('Akses ditolak. Silakan login admin.', 'error'); return; }
-            toggleResetUnpaidModal(true);
-        }
+        function toggleResetUnpaidModal(show=true) { document.getElementById('resetUnpaidModal').classList.toggle('hidden', !show); }
 
-        function toggleResetUnpaidModal(show = true) {
-            const modal = document.getElementById('resetUnpaidModal');
-            if(modal) modal.classList.toggle('hidden', !show);
-        }
-
-        function executeResetUnpaid(mode) {
-            if(!appState.isAdminLoggedIn) return;
-            const targetMonth = appState.targetMonth;
-            const reqMonths = getRequiredMonthsCount(targetMonth);
-            const reqAmount = reqMonths * appState.iuranPerBulan;
-
-            if (mode === 'mark-all-paid') {
-                const updates = {};
+        function executeResetUnpaid(type) {
+            if(type === 'mark-all-paid') {
+                const reqMonths = getRequiredMonthsCount(appState.targetMonth);
+                const reqAmount = reqMonths * appState.iuranPerBulan;
+                
                 MASTER_MEMBERS.forEach(m => {
-                    const paid = sumBy(appState.kasEntries.filter(e => e.nama === m), 'total');
-                    const diff = reqAmount - paid;
-                    if (diff > 0) {
-                        const newKey = database.ref('kas').push().key;
-                        updates[`kas/${newKey}`] = {
+                    const tot = sumBy(appState.kasEntries.filter(e => e.nama === m), 'total');
+                    const diff = reqAmount - tot;
+                    if(diff > 0) {
+                        const b = Math.ceil(diff / appState.iuranPerBulan);
+                        database.ref('kas').push({
                             tanggal: todayStr(),
                             nama: m,
-                            jumlahBulan: Math.ceil(diff / appState.iuranPerBulan),
+                            jumlahBulan: b,
                             nominalPerBulan: appState.iuranPerBulan,
                             total: diff,
-                            catatan: `Pelunasan Otomatis s/d ${MONTHS_ID[targetMonth - 1]}`
-                        };
+                            catatan: "Pelunasan Otomatis"
+                        });
                     }
                 });
-                if (Object.keys(updates).length) {
-                    database.ref().update(updates).then(() => showToast('Seluruh anggota berhasil ditandai lunas.', 'success'));
-                } else {
-                    showToast('Semua anggota sudah lunas!', 'info');
-                }
-            } else if (mode === 'clear-month-kas') {
-                const ym = `${new Date().getFullYear()}-${String(targetMonth).padStart(2, '0')}`;
-                const toRemove = appState.kasEntries.filter(e => mk(e.tanggal) === ym);
-                const updates = {};
-                toRemove.forEach(e => updates[`kas/${e.id}`] = null);
-                if (Object.keys(updates).length) {
-                    database.ref().update(updates).then(() => showToast(`Catatan kas bulan ${MONTHS_ID[targetMonth - 1]} dihapus.`, 'info'));
-                } else {
-                    showToast('Tidak ada transaksi di bulan ini.', 'info');
-                }
+                showToast('Semua anggota telah dilunasi', 'success');
+            } else if(type === 'clear-month-kas') {
+                showToast('Fitur ini sedang dalam pengembangan', 'info');
             }
             toggleResetUnpaidModal(false);
         }
 
+        let deleteTarget = null;
+        function promptDeleteTransaction(type, id) {
+            deleteTarget = { type, id };
+            setTxt('confirmTitle', `Hapus ${type === 'kas' ? 'Pemasukan' : type === 'pengeluaran' ? 'Pengeluaran' : type === 'inventaris' ? 'Inventaris' : type === 'cuti' ? 'Cuti' : 'Tukar Shift'}?`);
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+        function closeConfirmModal() {
+            deleteTarget = null;
+            document.getElementById('confirmModal').classList.add('hidden');
+        }
+        
+        document.getElementById('btnActionConfirm')?.addEventListener('click', () => {
+            if(deleteTarget) {
+                database.ref(`${deleteTarget.type}/${deleteTarget.id}`).remove().then(() => {
+                    showToast('Data dihapus', 'success');
+                    closeConfirmModal();
+                });
+            }
+        });
+
         function renderLaporan() {
-            const rekapBody = document.getElementById('rekapAnggotaTable');
-            const jurnalBody = document.getElementById('jurnalTableBody');
-            if (!rekapBody || !jurnalBody) return;
-
-            setTxt('rekapTarifBadge', formatRupiah(appState.iuranPerBulan));
-            const reqMonths = getRequiredMonthsCount(appState.targetMonth);
-            const reqAmount = reqMonths * appState.iuranPerBulan;
-
-            let rekapRows = MASTER_MEMBERS.map((m, idx) => {
-                const total = sumBy(appState.kasEntries.filter(e => e.nama === m), 'total');
-                const bulanLunasCount = Math.floor(total / appState.iuranPerBulan);
-                const isLunas = total >= reqAmount;
-
-                return `
-                <tr class="hover:bg-slate-50 border-b border-slate-100">
-                    <td class="p-2.5 text-left border-r font-medium text-slate-500">${idx + 1}</td>
-                    <td class="p-2.5 text-left border-r font-bold text-slate-800">${esc(m)}</td>
-                    <td class="p-2.5 font-bold text-blue-600">${formatRupiah(total)}</td>
-                    <td class="p-2.5 font-semibold text-slate-700">${bulanLunasCount} Bulan</td>
-                    <td class="p-2.5"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${isLunas ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}">${isLunas ? 'LUNAS' : 'MENUNGGAK'}</span></td>
-                </tr>`;
-            }).join('');
-            rekapBody.innerHTML = rekapRows;
-
-            const allTx = [
-                ...appState.kasEntries.map(e => ({ type: 'MASUK', date: e.tanggal, title: e.nama, note: e.catatan, amount: e.total })),
-                ...appState.pengeluaranEntries.map(e => ({ type: 'KELUAR', date: e.tanggal, title: e.judul, note: `[${e.kategori}] ${e.catatan || ''}`, amount: e.nominal }))
-            ].sort((a, b) => b.date.localeCompare(a.date));
-
-            if (!allTx.length) {
-                jurnalBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada transaksi recorded.</td></tr>`;
-            } else {
-                jurnalBody.innerHTML = allTx.map(t => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-3 font-medium text-slate-500">${t.date}</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.type === 'MASUK' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}">${t.type}</span></td>
-                    <td class="p-3 font-bold text-slate-800">${esc(t.title)}</td>
-                    <td class="p-3 text-slate-500">${esc(t.note)}</td>
-                    <td class="p-3 text-right font-bold ${t.type === 'MASUK' ? 'text-blue-600' : 'text-orange-600'}">${t.type === 'MASUK' ? '+' : '-'} ${formatRupiah(t.amount)}</td>
-                </tr>`).join('');
+            const tbody1 = document.getElementById('rekapAnggotaTable');
+            if(tbody1) {
+                const reqMonths = getRequiredMonthsCount(appState.targetMonth);
+                const reqAmount = reqMonths * appState.iuranPerBulan;
+                
+                let rowsHtml = '';
+                MASTER_MEMBERS.forEach((m, i) => {
+                    const tot = sumBy(appState.kasEntries.filter(e => e.nama === m), 'total');
+                    const lunasBulan = Math.floor(tot / appState.iuranPerBulan);
+                    const status = tot >= reqAmount ? '<span class="text-emerald-600 font-bold"><i class="fa-solid fa-check mr-1"></i>Lunas</span>' 
+                                                    : `<span class="text-rose-600 font-bold">Kurang ${formatRupiah(reqAmount - tot)}</span>`;
+                    rowsHtml += `<tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="p-2.5 border-r">${i+1}</td>
+                        <td class="p-2.5 border-r font-bold text-left">${esc(m)}</td>
+                        <td class="p-2.5 text-blue-600 font-bold">${formatRupiah(tot)}</td>
+                        <td class="p-2.5">${lunasBulan} Bln</td>
+                        <td class="p-2.5">${status}</td>
+                    </tr>`;
+                });
+                tbody1.innerHTML = rowsHtml;
+                setTxt('rekapTarifBadge', formatRupiah(appState.iuranPerBulan));
             }
 
-            const s = calculateSummary();
-            setTxt('jurnalTotalSaldo', formatRupiah(s.saldoAkhir));
+            const tbody2 = document.getElementById('jurnalTableBody');
+            if(tbody2) {
+                let jurnal = [];
+                appState.kasEntries.forEach(k => jurnal.push({t: k.tanggal, type: 'IN', text: `Kas: ${k.nama}`, cat: k.catatan, nom: k.total}));
+                appState.pengeluaranEntries.forEach(p => jurnal.push({t: p.tanggal, type: 'OUT', text: `Exp: ${p.judul}`, cat: p.kategori, nom: p.nominal}));
+                
+                jurnal.sort((a,b) => a.t.localeCompare(b.t) || (a.type === 'IN' ? -1 : 1));
+                
+                let runBal = appState.saldoAwal;
+                if(appState.saldoAwal > 0) {
+                    tbody2.innerHTML = `<tr><td class="p-3 font-medium text-slate-500">-</td><td class="p-3 font-bold text-blue-600">IN (Saldo)</td><td class="p-3 font-bold text-slate-800">Saldo Awal</td><td class="p-3 text-slate-500">-</td><td class="p-3 text-right font-bold text-blue-600">${formatRupiah(appState.saldoAwal)}</td></tr>`;
+                } else {
+                    tbody2.innerHTML = '';
+                }
+
+                tbody2.innerHTML += jurnal.map(j => {
+                    if(j.type === 'IN') runBal += j.nom;
+                    else runBal -= j.nom;
+                    const isOut = j.type === 'OUT';
+                    return `<tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="p-3 font-medium text-slate-500 whitespace-nowrap">${j.t}</td>
+                        <td class="p-3 font-bold ${isOut ? 'text-orange-600' : 'text-blue-600'}">${isOut ? 'OUT' : 'IN'}</td>
+                        <td class="p-3 font-bold text-slate-800">${esc(j.text)}</td>
+                        <td class="p-3 text-slate-500">${esc(j.cat) || '-'}</td>
+                        <td class="p-3 text-right font-bold ${isOut ? 'text-orange-600' : 'text-blue-600'}">${isOut ? '- ' : '+ '}${formatRupiah(j.nom)}</td>
+                    </tr>`;
+                }).join('');
+                
+                setTxt('jurnalTotalSaldo', formatRupiah(runBal));
+            }
         }
     </script>
 </body>
