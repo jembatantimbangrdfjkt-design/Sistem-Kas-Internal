@@ -130,6 +130,15 @@
             body.print-inventaris section:not(#content-inventaris) { display: none !important; }
             body.print-inventaris #content-inventaris { display: block !important; }
         }
+
+        .net-mood { display:inline-flex; align-items:center; justify-content:center; font-size:1.65rem; line-height:1; transform-origin:center; }
+        .mood-happy { animation: moodHappy 1.05s ease-in-out infinite; }
+        .mood-sad { animation: moodSad 1.6s ease-in-out infinite; }
+        .mood-neutral { animation: moodNeutral 2s ease-in-out infinite; }
+        @keyframes moodHappy { 0%,100% { transform:translateY(0) rotate(0) scale(1); } 25% { transform:translateY(-5px) rotate(-9deg) scale(1.12); } 50% { transform:translateY(0) rotate(0) scale(1); } 75% { transform:translateY(-3px) rotate(9deg) scale(1.08); } }
+        @keyframes moodSad { 0%,100% { transform:translateY(0) rotate(0); } 50% { transform:translateY(3px) rotate(-8deg); } }
+        @keyframes moodNeutral { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-2px); } }
+        @media (prefers-reduced-motion: reduce) { .mood-happy, .mood-sad, .mood-neutral { animation:none !important; } }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen antialiased relative">
@@ -320,8 +329,11 @@
                         </div>
                         <div class="rounded-xl p-4 bg-slate-50 border border-slate-200">
                             <p class="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Selisih Bulan Ini</p>
-                            <p id="mNet" class="text-xl font-extrabold text-slate-800 mt-1">Rp 0</p>
-                            <p class="text-[11px] text-slate-500">Masuk - Keluar</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span id="mNetEmoji" class="net-mood" role="img" aria-label="Selisih seimbang">😐</span>
+                                <p id="mNet" class="text-xl font-extrabold text-slate-800">Rp 0</p>
+                            </div>
+                            <p id="mNetStatus" class="text-[11px] text-slate-500">Pemasukan dan pengeluaran seimbang</p>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
@@ -343,6 +355,7 @@
                     </div>
                     <div class="bar-track"><div id="fbBar" class="bar-fill bg-blue-500" style="width:0.5%"></div></div>
                     <p class="text-xs mt-2 font-semibold"><span id="fbPct">0%</span> terpakai</p>
+                    <p class="text-[10px] text-slate-500 mt-1">Estimasi seluruh node aplikasi; angka aktual dan billing tetap mengacu Firebase Console.</p>
                     <dl class="mt-4 space-y-2 text-xs text-slate-600">
                         <div class="flex justify-between"><dt>Total record</dt><dd id="fbRecords" class="font-bold text-slate-800">0</dd></div>
                         <div class="flex justify-between"><dt>Rata-rata per record</dt><dd id="fbAvg" class="font-bold text-slate-800">0 B</dd></div>
@@ -2217,9 +2230,22 @@
             setTxt('mIn', formatRupiah(i)); setTxt('mInCount', inM.length);
             setTxt('mOut', formatRupiah(o)); setTxt('mOutCount', outM.length);
             const netEl = document.getElementById('mNet');
+            const moodEl = document.getElementById('mNetEmoji');
+            const moodStatusEl = document.getElementById('mNetStatus');
             if (netEl) {
                 netEl.innerText = (net > 0 ? '+ ' : net < 0 ? '- ' : '') + formatRupiah(Math.abs(net));
-                netEl.className = 'text-xl font-extrabold mt-1 ' + (net >= 0 ? 'text-blue-700' : 'text-orange-700');
+                netEl.className = 'text-xl font-extrabold ' + (net > 0 ? 'text-emerald-600' : net < 0 ? 'text-orange-600' : 'text-slate-600');
+            }
+            if (moodEl) {
+                moodEl.textContent = net > 0 ? '😊' : net < 0 ? '😢' : '😐';
+                moodEl.setAttribute('aria-label', net > 0 ? 'Kas surplus' : net < 0 ? 'Kas defisit' : 'Kas seimbang');
+                moodEl.classList.remove('mood-happy', 'mood-sad', 'mood-neutral');
+                void moodEl.offsetWidth;
+                moodEl.classList.add(net > 0 ? 'mood-happy' : net < 0 ? 'mood-sad' : 'mood-neutral');
+            }
+            if (moodStatusEl) {
+                moodStatusEl.textContent = net > 0 ? 'Kas surplus, pemasukan lebih besar' : net < 0 ? 'Kas defisit, pengeluaran lebih besar' : 'Pemasukan dan pengeluaran seimbang';
+                moodStatusEl.className = 'text-[11px] ' + (net > 0 ? 'text-emerald-600' : net < 0 ? 'text-orange-600' : 'text-slate-500');
             }
 
             let max = 1;
@@ -2247,21 +2273,40 @@
 
         function renderStorage() {
             if (!document.getElementById('fbUsed')) return;
-            const pack = arr => Object.fromEntries(arr.map(({ id, ...v }) => [id, v]));
-            const json = JSON.stringify({
-                settings: { iuranPerBulan: appState.iuranPerBulan, saldoAwal: appState.saldoAwal, targetMonth: appState.targetMonth },
+
+            // Estimasi seluruh node yang dipakai aplikasi. ID Firebase adalah key,
+            // bukan bagian dari value record, sehingga dikeluarkan dari JSON.
+            const pack = arr => Object.fromEntries((arr || []).map(({ id, ...value }) => [id, value]));
+            const users = Array.isArray(appState.users)
+                ? Object.fromEntries(appState.users.map((user, index) => [user.id || String(index), (() => { const { id, ...value } = user; return value; })()]))
+                : (appState.users || {});
+            const databaseData = {
+                users,
+                seragam: appState.seragamData || {},
+                settings: {
+                    iuranPerBulan: appState.iuranPerBulan,
+                    saldoAwal: appState.saldoAwal,
+                    targetMonth: appState.targetMonth
+                },
+                customCutiQuota: appState.customCutiQuota || {},
                 kas: pack(appState.kasEntries),
                 pengeluaran: pack(appState.pengeluaranEntries),
-                inventaris: Object.fromEntries(appState.inventarisEntries.map(({ id, logs, qtyKeluar, sisa, ...v }) => [id, v]))
-            });
-            const bytes = new TextEncoder().encode(json).length;
-            const n = appState.kasEntries.length + appState.pengeluaranEntries.length + appState.inventarisEntries.length;
-            const avg = n ? bytes / n : 0;
+                inventaris: pack(appState.inventarisEntries),
+                cuti: pack(appState.cutiEntries),
+                tukar_shift: pack(appState.tukarShiftEntries)
+            };
+
+            // Ukuran UTF-8 dari JSON: estimasi, bukan angka billing resmi Firebase.
+            const bytes = new TextEncoder().encode(JSON.stringify(databaseData)).length;
+            const records = Object.values(databaseData).reduce((total, node) => {
+                return total + (node && typeof node === 'object' ? Object.keys(node).length : 1);
+            }, 0);
+            const avg = records ? bytes / records : 0;
             const pct = bytes / FB_LIMIT_BYTES * 100;
 
             setTxt('fbUsed', fmtBytes(bytes));
             setTxt('fbPct', (pct < 0.01 ? '< 0,01' : pct.toFixed(2).replace('.', ',')) + '%');
-            setTxt('fbRecords', n.toLocaleString('id-ID'));
+            setTxt('fbRecords', records.toLocaleString('id-ID'));
             setTxt('fbAvg', fmtBytes(Math.round(avg)));
             setTxt('fbLeft', avg ? '± ' + Math.floor((FB_LIMIT_BYTES - bytes) / avg).toLocaleString('id-ID') + ' record' : '-');
 
@@ -2881,6 +2926,7 @@
             database.ref('users').on('value', snapshot => {
                 if (snapshot.exists()) {
                     appState.users = snapshot.val();
+                    renderStorage();
                 } else {
                     appState.users = DEFAULT_ADMIN_ACCOUNTS;
                     database.ref('users').set(DEFAULT_ADMIN_ACCOUNTS);
@@ -2891,6 +2937,7 @@
             database.ref('seragam').on('value', snapshot => {
                 appState.seragamData = snapshot.val() || null;
                 renderSeragam();
+                renderStorage();
             });
 
             database.ref('settings').on('value', snapshot => {
@@ -2911,6 +2958,7 @@
             database.ref('customCutiQuota').on('value', snapshot => {
                 appState.customCutiQuota = snapshot.val() || {};
                 renderRekapCutiGrid();
+                renderStorage();
                 onCutiMemberChange();
             });
 
