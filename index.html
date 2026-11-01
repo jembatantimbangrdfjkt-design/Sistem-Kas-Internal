@@ -934,6 +934,53 @@
                     </button>
                 </form>
             </div>
+
+            <!-- MANAJEMEN AKUN KHUSUS AHMAD RAFI -->
+            <div id="accountManagementBox" class="hidden glass-card rounded-2xl p-6 border border-white/60 space-y-5">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center"><i class="fa-solid fa-users-gear"></i></div>
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-lg">Manajemen Akun</h2>
+                        <p class="text-xs text-slate-500">Khusus Ahmad Rafi: buat, nonaktifkan, aktifkan kembali, atau hapus akun.</p>
+                    </div>
+                </div>
+                <form id="formCreateAccount" onsubmit="handleCreateAccount(event)" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nama tampilan</label>
+                        <input id="newAccountDisplay" required maxlength="60" placeholder="Nama pengguna" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Username untuk login</label>
+                        <input id="newAccountUsername" required maxlength="40" placeholder="username" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Password awal</label>
+                        <input id="newAccountPassword" type="password" required minlength="6" maxlength="80" autocomplete="new-password" placeholder="Minimal 6 karakter" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Hak akses</label>
+                        <select id="newAccountRole" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 bg-white outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="SPV">SPV</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2 xl:col-span-4 flex justify-end">
+                        <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow"><i class="fa-solid fa-user-plus mr-2"></i>Buat Akun</button>
+                    </div>
+                </form>
+                <div class="border-t border-slate-100 pt-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <h3 class="font-bold text-slate-800 text-sm">Daftar Akun Pengguna</h3>
+                        <span class="text-[11px] text-slate-500">Akun nonaktif tidak dapat login.</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs min-w-[650px]">
+                            <thead class="bg-slate-100 text-slate-600 uppercase"><tr><th class="p-3">Nama</th><th class="p-3">Username</th><th class="p-3">Hak akses</th><th class="p-3">Status</th><th class="p-3 text-center">Tindakan</th></tr></thead>
+                            <tbody id="accountManagementBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- CUTI -->
@@ -2838,6 +2885,7 @@
                     appState.users = DEFAULT_ADMIN_ACCOUNTS;
                     database.ref('users').set(DEFAULT_ADMIN_ACCOUNTS);
                 }
+                if (appState.activeTab === 'profil' && isUserRafi()) renderAccountManagement();
             });
 
             database.ref('seragam').on('value', snapshot => {
@@ -2930,14 +2978,22 @@
         function renderProfileTab() {
             const notice = document.getElementById('profilAuthNotice');
             const box = document.getElementById('profilSettingsBox');
+            const accountBox = document.getElementById('accountManagementBox');
             if(appState.isAdminLoggedIn) {
                 notice.classList.add('hidden');
                 box.classList.remove('hidden');
                 document.getElementById('profCurrentName').value = appState.adminName;
                 document.getElementById('formProfile').reset();
+                if (isUserRafi()) {
+                    accountBox?.classList.remove('hidden');
+                    renderAccountManagement();
+                } else {
+                    accountBox?.classList.add('hidden');
+                }
             } else {
                 notice.classList.remove('hidden');
                 box.classList.add('hidden');
+                accountBox?.classList.add('hidden');
             }
         }
 
@@ -3031,9 +3087,95 @@
             const u = String(username).trim().toLowerCase();
             const users = Array.isArray(appState.users) ? appState.users : Object.values(appState.users);
             return users.find(a => {
+                if (!a || a.active === false) return false;
                 const names = Array.isArray(a.names) ? a.names : [];
-                return names.some(name => u.includes(String(name).toLowerCase()) || String(name).toLowerCase() === u) && a.password === password;
+                return names.some(name => u === String(name).toLowerCase().trim()) && a.password === password;
             }) || null;
+        }
+
+        function getManagedUserEntries() {
+            const raw = appState.users || [];
+            if (Array.isArray(raw)) return raw.map((account, index) => ({ key: String(index), account }));
+            return Object.entries(raw).map(([key, account]) => ({ key, account }));
+        }
+
+        function renderAccountManagement() {
+            const tbody = document.getElementById('accountManagementBody');
+            if (!tbody || !isUserRafi() || !appState.isAdminLoggedIn) return;
+            const entries = getManagedUserEntries().filter(x => x.account);
+            if (!entries.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada akun.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = entries.map(({ key, account }) => {
+                const display = esc(account.display || 'Tanpa nama');
+                const aliases = Array.isArray(account.names) ? account.names : [];
+                const username = esc(aliases[0] || '-');
+                const role = esc(account.role || 'ADMIN');
+                const active = account.active !== false;
+                const isSelf = String(account.display || '').toLowerCase().includes('ahmad rafi');
+                const status = active
+                    ? '<span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 font-bold">Aktif</span>'
+                    : '<span class="px-2 py-1 rounded-full bg-slate-200 text-slate-600 font-bold">Nonaktif</span>';
+                let actions = '<span class="text-slate-400">Akun utama</span>';
+                if (!isSelf) {
+                    actions = active
+                        ? `<button onclick="setManagedAccountActive('${esc(key)}', false)" class="px-2.5 py-1.5 rounded-lg bg-amber-100 text-amber-800 font-bold hover:bg-amber-200">Nonaktifkan</button>`
+                        : `<button onclick="setManagedAccountActive('${esc(key)}', true)" class="px-2.5 py-1.5 rounded-lg bg-emerald-100 text-emerald-800 font-bold hover:bg-emerald-200">Aktifkan</button>`;
+                    actions += ` <button onclick="deleteManagedAccount('${esc(key)}')" class="px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-700 font-bold hover:bg-rose-200">Hapus</button>`;
+                }
+                return `<tr><td class="p-3 font-semibold">${display}</td><td class="p-3">${username}</td><td class="p-3">${role}</td><td class="p-3">${status}</td><td class="p-3 text-center whitespace-nowrap">${actions}</td></tr>`;
+            }).join('');
+        }
+
+        function handleCreateAccount(e) {
+            if (e) e.preventDefault();
+            if (!isUserRafi()) { showToast('Hanya Ahmad Rafi yang dapat membuat akun.', 'error'); return; }
+            const display = document.getElementById('newAccountDisplay').value.trim();
+            const username = document.getElementById('newAccountUsername').value.trim().toLowerCase();
+            const password = document.getElementById('newAccountPassword').value;
+            const role = document.getElementById('newAccountRole').value;
+            if (!display || !username || password.length < 6) { showToast('Lengkapi data akun. Password minimal 6 karakter.', 'error'); return; }
+            const all = getManagedUserEntries();
+            const duplicate = all.some(({account}) => {
+                if (!account) return false;
+                const names = Array.isArray(account.names) ? account.names : [];
+                return names.some(n => String(n).toLowerCase() === username) || String(account.display || '').toLowerCase() === display.toLowerCase();
+            });
+            if (duplicate) { showToast('Username atau nama tampilan sudah digunakan.', 'error'); return; }
+            const newAccount = { names: [username, display.toLowerCase()], display, password, role, active: true, createdAt: new Date().toISOString(), createdBy: appState.adminName };
+            database.ref('users').push(newAccount).then(() => {
+                document.getElementById('formCreateAccount').reset();
+                showToast(`Akun ${display} berhasil dibuat.`, 'success');
+                renderAccountManagement();
+            }).catch(err => { console.error(err); showToast('Gagal membuat akun. Periksa koneksi dan izin Firebase.', 'error'); });
+        }
+
+        function setManagedAccountActive(key, active) {
+            if (!isUserRafi()) { showToast('Akses ditolak. Hanya Ahmad Rafi.', 'error'); return; }
+            const entry = getManagedUserEntries().find(x => x.key === String(key));
+            if (!entry || String(entry.account.display || '').toLowerCase().includes('ahmad rafi')) {
+                showToast('Akun utama Ahmad Rafi tidak dapat dinonaktifkan.', 'error'); return;
+            }
+            const action = active ? 'mengaktifkan' : 'menonaktifkan';
+            if (!confirm(`Yakin ${action} akun ${entry.account.display || 'ini'}?`)) return;
+            database.ref(`users/${key}`).update({ active: !!active }).then(() => {
+                showToast(`Akun berhasil ${active ? 'diaktifkan' : 'dinonaktifkan'}.`, 'success');
+                renderAccountManagement();
+            }).catch(err => { console.error(err); showToast('Gagal mengubah status akun.', 'error'); });
+        }
+
+        function deleteManagedAccount(key) {
+            if (!isUserRafi()) { showToast('Akses ditolak. Hanya Ahmad Rafi.', 'error'); return; }
+            const entry = getManagedUserEntries().find(x => x.key === String(key));
+            if (!entry || String(entry.account.display || '').toLowerCase().includes('ahmad rafi')) {
+                showToast('Akun utama Ahmad Rafi tidak dapat dihapus.', 'error'); return;
+            }
+            if (!confirm(`Hapus akun ${entry.account.display || 'ini'} secara permanen? Tindakan ini tidak dapat dibatalkan.`)) return;
+            database.ref(`users/${key}`).remove().then(() => {
+                showToast('Akun berhasil dihapus.', 'success');
+                renderAccountManagement();
+            }).catch(err => { console.error(err); showToast('Gagal menghapus akun.', 'error'); });
         }
 
         function getGreeting() {
