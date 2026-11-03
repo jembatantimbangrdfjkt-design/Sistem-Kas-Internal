@@ -2648,15 +2648,36 @@
         function getMemberLeaveStats(memberName) {
             if (!memberName) return { totalQuota: DEFAULT_LEAVE_QUOTA, usedDays: 0, remainingDays: DEFAULT_LEAVE_QUOTA };
 
-            const totalQuota = appState.customCutiQuota[memberName] !== undefined 
-                ? Number(appState.customCutiQuota[memberName]) 
+            const totalQuota = appState.customCutiQuota[memberName] !== undefined
+                ? Number(appState.customCutiQuota[memberName])
                 : DEFAULT_LEAVE_QUOTA;
 
-            const memberCutis = appState.cutiEntries.filter(c => c.nama === memberName && (c.status === 'APPROVED' || c.status === 'PENDING'));
-            const usedDays = memberCutis.reduce((acc, curr) => acc + (Number(curr.durasi) || 0), 0);
+            // Penggunaan cuti yang sudah disetujui dihitung dari arsip permanen,
+            // bukan dari riwayat pengajuan yang dapat dihapus.
+            const arsipCuti = appState.jadwalCutiEntries || [];
+            const arsipIds = new Set(arsipCuti.map(item => item.id).filter(Boolean));
+            const usedApprovedDays = arsipCuti
+                .filter(item => item.nama === memberName)
+                .reduce((total, item) => total + (Number(item.durasi) || calculateDateRangeDays(item.tglMulai, item.tglSelesai)), 0);
+
+            // Pengajuan PENDING tetap mengurangi sisa cuti sementara.
+            // Jika sudah memiliki arsip (misalnya status di-reset), jangan dihitung dua kali.
+            const pendingDays = (appState.cutiEntries || [])
+                .filter(item => item.nama === memberName && item.status === 'PENDING' && !arsipIds.has(item.id))
+                .reduce((total, item) => total + (Number(item.durasi) || 0), 0);
+
+            const usedDays = usedApprovedDays + pendingDays;
             const remainingDays = Math.max(0, totalQuota - usedDays);
 
             return { totalQuota, usedDays, remainingDays };
+        }
+
+        function calculateDateRangeDays(start, end) {
+            if (!start || !end) return 0;
+            const startDate = new Date(`${start}T00:00:00`);
+            const endDate = new Date(`${end}T00:00:00`);
+            if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || endDate < startDate) return 0;
+            return Math.floor((endDate - startDate) / 86400000) + 1;
         }
 
         function onCutiMemberChange() {
