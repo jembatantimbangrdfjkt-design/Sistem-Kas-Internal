@@ -117,6 +117,130 @@
             #sidebarBrandLogo { max-height: 38px; object-fit: contain; }
         }
 
+        /* Tabel pada setiap tab dibuat menyesuaikan lebar konten, tanpa geser horizontal.
+           Tabel jadwal bulanan tetap dapat digeser karena jumlah kolom tanggal memang dinamis. */
+        .tab-content .overflow-x-auto:not(:has(.table-jadwal)) {
+            overflow-x: visible !important;
+            max-width: 100%;
+        }
+        .tab-content table:not(.table-jadwal) {
+            width: 100%;
+            max-width: 100%;
+            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .tab-content table:not(.table-jadwal) th,
+        .tab-content table:not(.table-jadwal) td {
+            padding: .45rem .4rem !important;
+            font-size: 11px;
+            line-height: 1.35;
+            vertical-align: middle;
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
+        .tab-content table:not(.table-jadwal) td .whitespace-nowrap,
+        .tab-content table:not(.table-jadwal) td button {
+            white-space: nowrap;
+        }
+
+        /* Form cuti ditaruh di atas dan tabel pengajuan memakai lebar penuh. */
+        #cutiGridContainer {
+            grid-template-columns: minmax(0, 1fr) !important;
+        }
+        #cutiFormWrapper {
+            width: 100%;
+            max-width: 680px;
+            margin-inline: auto;
+        }
+        #cutiTableWrapper {
+            width: 100%;
+            min-width: 0;
+        }
+        #cutiTableWrapper .overflow-x-auto {
+            overflow: visible !important;
+        }
+        #cutiTableWrapper table {
+            table-layout: fixed;
+            width: 100%;
+        }
+        #cutiTableWrapper th,
+        #cutiTableWrapper td {
+            padding: .5rem .4rem !important;
+            font-size: 10.5px;
+        }
+        #cutiTableWrapper td:last-child {
+            text-align: center;
+            white-space: nowrap;
+        }
+        #cutiTableWrapper td:last-child button {
+            padding: .3rem .45rem !important;
+            margin: 1px !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #cutiTableWrapper td:nth-child(5) {
+            overflow-wrap: anywhere;
+        }
+
+        /* Tabel pengeluaran: kolom kategori diberi ruang agar badge tidak terpotong. */
+        #content-pengeluaran .overflow-x-auto {
+            overflow-x: auto !important;
+            overflow-y: visible;
+            max-width: 100%;
+        }
+        #content-pengeluaran table {
+            table-layout: auto !important;
+            min-width: 650px;
+            width: 100%;
+        }
+        #content-pengeluaran th:nth-child(3),
+        #content-pengeluaran td:nth-child(3) {
+            min-width: 145px;
+            width: 145px;
+        }
+        #content-pengeluaran td:nth-child(3) span {
+            display: inline-block;
+            box-sizing: border-box;
+            max-width: 100%;
+            width: max-content;
+            white-space: normal;
+            overflow-wrap: normal;
+            word-break: normal;
+            text-align: center;
+            line-height: 1.35;
+        }
+
+        #cutiTableWrapper td:nth-child(6) > span:first-child {
+            display: inline-flex;
+            max-width: 100%;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+        #cutiTableWrapper td:nth-child(7) {
+            overflow: visible;
+        }
+
+        /* Label status inventaris tidak boleh terpotong menjadi dua baris. */
+        #content-inventaris #invTableBody td:nth-child(7) {
+            white-space: nowrap;
+        }
+        #content-inventaris #invTableBody td:nth-child(7) span {
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+            width: max-content;
+            max-width: none;
+        }
+
+        @media (max-width: 760px) {
+            #cutiTableWrapper { padding: 12px !important; }
+            #cutiTableWrapper th,
+            #cutiTableWrapper td { padding: .35rem .25rem !important; font-size: 9px; }
+            #cutiTableWrapper td:last-child button { padding: .25rem .3rem !important; }
+        }
+
         @media print {
             .no-print { display: none !important; }
             .print-only { display: block !important; }
@@ -1105,8 +1229,9 @@
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto flex-grow">
-                        <table class="w-full text-left text-xs">
+                    <div class="flex-grow w-full min-w-0">
+                        <table class="w-full table-fixed text-left text-xs">
+                            <colgroup><col style="width:12%"><col style="width:14%"><col style="width:17%"><col style="width:7%"><col style="width:18%"><col style="width:18%"><col style="width:14%"></colgroup>
                             <thead class="bg-slate-100 text-slate-600 uppercase font-semibold">
                                 <tr>
                                     <th class="p-3 rounded-l-lg">Tgl Pengajuan</th>
@@ -2652,6 +2777,10 @@
 
         function handleSaveCuti(e) {
             if (e) e.preventDefault();
+            if (appState.isAdminLoggedIn && appState.role === 'SPV') {
+                showToast('Akun SPV hanya dapat menyetujui atau menolak pengajuan cuti anggota.', 'error');
+                return;
+            }
 
             const nama = document.getElementById('cutiNamaAnggota')?.value;
             const tglMulai = document.getElementById('cutiTglMulai')?.value;
@@ -2816,7 +2945,11 @@
                         ${item.tglShiftPengganti !== '-' ? `<div class="text-[10px] text-orange-600 bg-orange-50 inline-block px-1.5 py-0.5 rounded mt-1 border border-orange-200">Shift Asli: ${esc(item.tglShiftPengganti)}</div>` : ''}
                     </td>
                     <td class="p-3 text-slate-600 max-w-xs truncate" title="${esc(item.alasan)}">${esc(item.alasan)}</td>
-                    <td class="p-3"><span class="px-2.5 py-1 rounded-full border text-[10px] font-bold whitespace-nowrap ${badgeClass}">${statusText}</span></td>
+                    <td class="p-3 min-w-0">
+                        <span class="inline-flex max-w-full px-2.5 py-1 rounded-full border text-[10px] leading-tight font-bold whitespace-normal break-words ${badgeClass}">${statusText}</span>
+                        ${['APPROVED','REJECTED'].includes(item.status) ? `<div class="mt-1 text-[10px] leading-snug text-slate-500 whitespace-normal">oleh ${esc(item.disetujuiOleh || 'SPV')}</div>` : ''}
+                        ${item.status === 'REJECTED' && item.alasanDitolak ? `<div class="mt-1.5 text-[10px] leading-snug text-rose-700 whitespace-normal break-words"><b>Alasan ditolak:</b> ${esc(item.alasanDitolak)}</div>` : ''}
+                    </td>
                     <td class="p-3 text-center whitespace-nowrap">${actionCol}</td>
                 </tr>`;
             }).join('');
@@ -3080,9 +3213,11 @@
 
             const cutiRoleText = document.getElementById('cutiRoleText');
             const tsRoleText = document.getElementById('tsRoleText');
+            const cutiFormWrapper = document.getElementById('cutiFormWrapper');
+            if (cutiFormWrapper) cutiFormWrapper.classList.toggle('hidden', isSpv);
 
             if (isSpv) {
-                if (cutiRoleText) cutiRoleText.innerHTML = `<b class="text-orange-600"><i class="fa-solid fa-user-check mr-1"></i> Mode SPV (Mida Ru'yati Laila):</b> Peninjauan & Persetujuan (ACC) Cuti Anggota.`;
+                if (cutiRoleText) cutiRoleText.innerHTML = `<b class="text-orange-600"><i class="fa-solid fa-user-check mr-1"></i> Mode SPV:</b> Hanya memproses ACC atau penolakan pengajuan anggota.`;
                 if (tsRoleText) tsRoleText.innerHTML = `<i class="fa-solid fa-user mr-1 text-slate-500"></i> Mode SPV: Hanya dapat melihat tukar shift.`;
             } else {
                 if (cutiRoleText) {
@@ -3337,13 +3472,30 @@
                 return;
             }
 
+            let alasanDitolak = '';
+            if (newStatus === 'REJECTED') {
+                alasanDitolak = window.prompt('Masukkan alasan penolakan cuti (wajib diisi):', '')?.trim() || '';
+                if (!alasanDitolak) {
+                    showToast('Alasan penolakan wajib diisi. Pengajuan belum diproses.', 'error');
+                    return;
+                }
+            }
+
             const approverName = appState.adminName || "Mida Ru'yati Laila (SPV)";
-            database.ref(`cuti/${id}`).update({
+            const updates = {
                 status: newStatus,
                 disetujuiOleh: approverName,
-                tglProses: todayStr()
-            }).then(() => {
-                showToast(`Pengajuan cuti berhasil ${newStatus === 'APPROVED' ? 'DISETUJUI (ACC)' : 'DITOLAK'} oleh ${approverName}`, newStatus === 'APPROVED' ? 'success' : 'info');
+                tglProses: newStatus === 'PENDING' ? '' : todayStr(),
+                alasanDitolak: newStatus === 'REJECTED' ? alasanDitolak : ''
+            };
+
+            database.ref(`cuti/${id}`).update(updates).then(() => {
+                showToast(
+                    newStatus === 'APPROVED' ? 'Pengajuan cuti berhasil disetujui (ACC).' :
+                    newStatus === 'REJECTED' ? 'Pengajuan cuti ditolak. Alasan penolakan tersimpan.' :
+                    'Status pengajuan dikembalikan menjadi menunggu.',
+                    newStatus === 'APPROVED' ? 'success' : 'info'
+                );
                 renderCutiTable();
             }).catch(() => showToast('Gagal memproses status cuti.', 'error'));
         }
@@ -3541,7 +3693,7 @@
                         <td class="p-3 font-bold ${item.sisa > 0 ? 'text-emerald-600' : 'text-slate-400'}">${item.sisa} ${esc(item.satuan)}</td>
                         <td class="p-3 text-slate-500 whitespace-nowrap">${item.tanggalKeluar || '-'}</td>
                         <td class="p-3">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${item.sisa > 0 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-slate-200 text-slate-600'}">
+                            <span class="inline-flex whitespace-nowrap px-2 py-0.5 rounded-full text-[10px] font-bold ${item.sisa > 0 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-slate-200 text-slate-600'}">
                                 ${item.sisa > 0 ? 'Masih Ada' : 'Habis'}
                             </span>
                         </td>
@@ -3675,7 +3827,7 @@
 
             const filtered = appState.cutiEntries.filter(item => 
                 (!st || item.status === st) &&
-                ((item.nama || '').toLowerCase().includes(q) || (item.alasan || '').toLowerCase().includes(q))
+                ((item.nama || '').toLowerCase().includes(q) || (item.alasan || '').toLowerCase().includes(q) || (item.alasanDitolak || '').toLowerCase().includes(q))
             ).sort((a, b) => String(b.tglPengajuan || '').localeCompare(String(a.tglPengajuan || '')));
 
             renderRekapCutiGrid();
@@ -3693,33 +3845,26 @@
 
                 if (item.status === 'APPROVED') {
                     badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
-                    statusText = `<i class='fa-solid fa-circle-check mr-1'></i> Disetujui (${esc(item.disetujuiOleh || 'SPV')})`;
+                    statusText = `<i class='fa-solid fa-circle-check mr-1'></i> Disetujui`;
                 } else if (item.status === 'REJECTED') {
                     badgeClass = "bg-slate-200 text-slate-700 border-slate-300";
-                    statusText = `<i class='fa-solid fa-circle-xmark mr-1'></i> Ditolak (${esc(item.disetujuiOleh || 'SPV')})`;
+                    statusText = `<i class='fa-solid fa-circle-xmark mr-1'></i> Ditolak`;
                 }
 
                 let actionCol = `-`;
                 if (isApprover) {
                     if (item.status === 'PENDING') {
                         actionCol = `
-                            <div class="flex items-center justify-center space-x-1.5">
-                                <button onclick="updateCutiStatus('${item.id}', 'APPROVED')" title="ACC / Setujui Cuti" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow transition flex items-center">
+                            <div class="flex items-center justify-center gap-1 flex-wrap">
+                                <button onclick="updateCutiStatus('${item.id}', 'APPROVED')" title="ACC / Setujui Cuti" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow transition inline-flex items-center">
                                     <i class="fa-solid fa-check mr-1"></i> ACC
                                 </button>
-                                <button onclick="updateCutiStatus('${item.id}', 'REJECTED')" title="Tolak Cuti" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-xs shadow transition flex items-center">
+                                <button onclick="updateCutiStatus('${item.id}', 'REJECTED')" title="Tolak Cuti" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-xs shadow transition inline-flex items-center">
                                     <i class="fa-solid fa-xmark mr-1"></i> Tolak
                                 </button>
-                                ${deleteButton('cuti', item.id)}
                             </div>`;
                     } else {
-                        actionCol = `
-                            <div class="flex items-center justify-center space-x-1">
-                                <button onclick="updateCutiStatus('${item.id}', 'PENDING')" title="Ubah kembali ke Menunggu" class="px-2 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded text-[10px] font-bold mr-1 flex items-center">
-                                    <i class="fa-solid fa-rotate-left mr-1"></i> Reset
-                                </button>
-                                ${deleteButton('cuti', item.id)}
-                            </div>`;
+                        actionCol = `<span class="text-slate-400 text-[10px]">-</span>`;
                     }
                 } else if (appState.isAdminLoggedIn) {
                     actionCol = deleteButton('cuti', item.id);
