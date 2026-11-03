@@ -2518,15 +2518,27 @@
         }
 
         function getShift(memberName, targetDateString) {
-            // Arsip jadwal cuti terpisah dari riwayat pengajuan.
-            // Menghapus/reset riwayat pengajuan tidak menghapus penanda cuti pada jadwal.
+            // Periksa arsip jadwal cuti yang masih aktif.
             const arsipCuti = appState.jadwalCutiEntries || [];
-            const cuti = arsipCuti.find(c =>
+            const cutiAktif = arsipCuti.find(c =>
                 c.nama === memberName &&
                 targetDateString >= c.tglMulai &&
                 targetDateString <= c.tglSelesai
             );
-            if (cuti) return { val: 'C', type: 'cuti' };
+            if (cutiAktif) return { val: 'C', type: 'cuti' };
+
+            // Periksa rekap bulanan agar warna cuti bulan yang sudah lewat
+            // tetap terlihat meskipun detail jadwalnya telah dibersihkan.
+            const rekapCuti = appState.rekapCutiEntries || [];
+            const cutiTerekap = rekapCuti.find(item => {
+                if (item.nama !== memberName || !item.rentangTanggal) return false;
+                const range = String(item.rentangTanggal).split(' s/d ');
+                if (range.length !== 2) return false;
+                const mulai = range[0].trim();
+                const selesai = range[1].trim();
+                return targetDateString >= mulai && targetDateString <= selesai;
+            });
+            if (cutiTerekap) return { val: 'C', type: 'cuti' };
 
             const approvedSwaps = (appState.tukarShiftEntries || []).filter(ts => ts.status === 'APPROVED');
 
@@ -3170,6 +3182,7 @@
                 });
                 renderRekapCutiGrid();
                 if (appState.activeTab === 'cuti') onCutiMemberChange();
+                if (appState.activeTab === 'jadwal') renderJadwalTable();
             });
 
             database.ref('jadwal_cuti').on('value', snapshot => {
