@@ -1836,6 +1836,7 @@
             inventarisEntries: [],
             cutiEntries: [],
             jadwalCutiEntries: [],
+            rekapCutiEntries: [],
             tukarShiftEntries: [],
             seragamData: null,
             customCutiQuota: {},
@@ -2656,7 +2657,10 @@
             // bukan dari riwayat pengajuan yang dapat dihapus.
             const arsipCuti = appState.jadwalCutiEntries || [];
             const arsipIds = new Set(arsipCuti.map(item => item.id).filter(Boolean));
-            const usedApprovedDays = arsipCuti
+            const usedHistoricalDays = (appState.rekapCutiEntries || [])
+                .filter(item => item.nama === memberName)
+                .reduce((total, item) => total + (Number(item.totalHari) || 0), 0);
+            const usedActiveDays = arsipCuti
                 .filter(item => item.nama === memberName)
                 .reduce((total, item) => total + (Number(item.durasi) || calculateDateRangeDays(item.tglMulai, item.tglSelesai)), 0);
 
@@ -2666,7 +2670,7 @@
                 .filter(item => item.nama === memberName && item.status === 'PENDING' && !arsipIds.has(item.id))
                 .reduce((total, item) => total + (Number(item.durasi) || 0), 0);
 
-            const usedDays = usedApprovedDays + pendingDays;
+            const usedDays = usedHistoricalDays + usedActiveDays + pendingDays;
             const remainingDays = Math.max(0, totalQuota - usedDays);
 
             return { totalQuota, usedDays, remainingDays };
@@ -3156,6 +3160,18 @@
                 renderInventarisTable();
             });
 
+            database.ref('rekap_cuti').on('value', snapshot => {
+                const data = snapshot.val() || {};
+                appState.rekapCutiEntries = [];
+                Object.entries(data).forEach(([bulan, records]) => {
+                    Object.entries(records || {}).forEach(([id, item]) => {
+                        appState.rekapCutiEntries.push({ id, bulan, ...item });
+                    });
+                });
+                renderRekapCutiGrid();
+                if (appState.activeTab === 'cuti') onCutiMemberChange();
+            });
+
             database.ref('jadwal_cuti').on('value', snapshot => {
                 const data = snapshot.val() || {};
                 appState.jadwalCutiEntries = Object.entries(data).map(([id, item]) => ({
@@ -3165,6 +3181,9 @@
                     tglMulai: normalizeDateOnly(item.tglMulai),
                     tglSelesai: normalizeDateOnly(item.tglSelesai)
                 }));
+                // Simpan rekap per bulan, lalu bersihkan detail jadwal yang seluruh tanggalnya
+                // sudah lewat. Rekap bulanan dan total pemakaian tetap dipertahankan.
+                archiveAndPruneExpiredCuti(data);
                 if (appState.activeTab === 'jadwal') renderJadwalTable();
             });
 
@@ -3533,6 +3552,68 @@
                 } else {
                     showToast('Gagal menemukan akun Anda di database.', 'error');
                 }
+            });
+        }
+
+        function monthKeyFromDate(dateString) {
+            return String(dateString || '').slice(0, 7);
+        }
+
+        function shiftMonthKey(monthKey, offset) {
+            const parts = monthKey.split('-').map(Number);
+            const date = new Date(parts[0], parts[1] - 1 + offset, 1);
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        function monthBounds(monthKey) {
+            const [year, month] = monthKey.split('-').map(Number);
+            return {
+                start: `${monthKey}-01`,
+                end: `${year}-${String(month).padStart(2, '0')}-${String(new Date(year, month, 0).getDate()).padStart(2, '0')}`
+            };
+        }
+
+        function archiveAndPruneExpiredCuti(rawData) {
+            if (!appState.isAdminLoggedIn) return;
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const firstDayCurrentMonth = `${currentMonth}-01`;
+
+            Object.entries(rawData || {}).forEach(([id, item]) => {
+                const nama = item.nama || '';
+                const start = normalizeDateOnly(item.tglMulai);
+                const end = normalizeDateOnly(item.tglSelesai);
+                if (!nama || !start || !end || end >= firstDayCurrentMonth) return;
+
+                const firstMonth = monthKeyFromDate(start);
+                const lastMonth = monthKeyFromDate(end);
+                let month = firstMonth;
+                const writes = [];
+
+                while (month <= lastMonth) {
+                    const bounds = monthBounds(month);
+                    const overlapStart = start > bounds.start ? start : bounds.start;
+                    const overlapEnd = end < bounds.end ? end : bounds.end;
+                    const days = calculateDateRangeDays(overlapStart, overlapEnd);
+                    if (days > 0) {
+                        const record = {
+                            nama,
+                            totalHari: days,
+                            rentangTanggal: `${overlapStart} s/d ${overlapEnd}`,
+                            sumberId: id,
+                            disetujuiOleh: item.disetujuiOleh || 'SPV',
+                            tglDisetujui: item.tglProses || item.tglDisetujui || ''
+                        };
+                        writes.push(database.ref(`rekap_cuti/${month}/${id}`).update(record));
+                    }
+                    month = shiftMonthKey(month, 1);
+                }
+
+                Promise.all(writes).then(() => {
+                    return database.ref(`jadwal_cuti/${id}`).remove();
+                }).catch(error => {
+                    console.error('Gagal mengarsipkan/membersihkan jadwal cuti:', id, error);
+                });
             });
         }
 
