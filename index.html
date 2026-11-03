@@ -1835,6 +1835,7 @@
             pengeluaranEntries: [],
             inventarisEntries: [],
             cutiEntries: [],
+            jadwalCutiEntries: [],
             tukarShiftEntries: [],
             seragamData: null,
             customCutiQuota: {},
@@ -2088,17 +2089,29 @@
                 else tbody.innerHTML = recent.map(item => {
                     const namaCuti = item.nama || item.namaAnggota || item.pemohon || 'Nama tidak tersedia';
                     let badgeClass = "bg-orange-100 text-orange-800 border-orange-200";
-                    let statusText = "<i class='fa-solid fa-clock'></i>";
-                    if (item.status === 'APPROVED') { badgeClass = "bg-blue-100 text-blue-800 border-blue-200"; statusText = "<i class='fa-solid fa-check'></i>"; } 
-                    else if (item.status === 'REJECTED') { badgeClass = "bg-slate-200 text-slate-700 border-slate-300"; statusText = "<i class='fa-solid fa-xmark'></i>"; }
+                    let statusText = "<i class='fa-solid fa-clock mr-1'></i> Menunggu ACC";
+                    let rejectionNote = "";
+                    if (item.status === 'APPROVED') {
+                        badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
+                        statusText = "<i class='fa-solid fa-check mr-1'></i> Disetujui";
+                    } else if (item.status === 'REJECTED') {
+                        badgeClass = "bg-rose-100 text-rose-800 border-rose-200";
+                        statusText = "<i class='fa-solid fa-xmark mr-1'></i> Ditolak";
+                        rejectionNote = item.alasanDitolak
+                            ? `<div class="mt-1.5 text-[10px] leading-snug text-rose-700 whitespace-normal break-words text-left"><b>Alasan SPV:</b> ${esc(item.alasanDitolak)}</div>`
+                            : `<div class="mt-1 text-[10px] text-slate-400 text-left">Alasan penolakan belum tercatat.</div>`;
+                    }
                     return `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-2.5 font-medium text-slate-500 whitespace-nowrap">${item.tglPengajuan}</td>
+                        <td class="p-2.5 font-medium text-slate-500 whitespace-nowrap">${esc(item.tglPengajuan || '-')}</td>
                         <td class="p-2.5 font-bold text-slate-800">${esc(namaCuti)}</td>
-                        <td class="p-2.5 font-medium text-slate-600 whitespace-nowrap">${item.tglMulai} s/d ${item.tglSelesai}</td>
-                        <td class="p-2.5 font-bold text-orange-600 whitespace-nowrap">${item.durasi} Hari</td>
-                        <td class="p-2.5 text-slate-600 truncate max-w-[100px]" title="${esc(item.alasan)}">${esc(item.alasan)}</td>
-                        <td class="p-2.5 text-center"><span class="px-2 py-1 rounded-full border text-[10px] font-bold ${badgeClass}">${statusText}</span></td>
+                        <td class="p-2.5 font-medium text-slate-600 whitespace-nowrap">${esc(item.tglMulai || '-')} s/d ${esc(item.tglSelesai || '-')}</td>
+                        <td class="p-2.5 font-bold text-orange-600 whitespace-nowrap">${esc(item.durasi ?? '-')} Hari</td>
+                        <td class="p-2.5 text-slate-600 break-words">${esc(item.alasan || '-')}</td>
+                        <td class="p-2.5 text-center align-top">
+                            <span class="inline-flex px-2 py-1 rounded-full border text-[10px] font-bold whitespace-nowrap ${badgeClass}">${statusText}</span>
+                            ${rejectionNote}
+                        </td>
                     </tr>`;
                 }).join('');
             }
@@ -2504,9 +2517,13 @@
         }
 
         function getShift(memberName, targetDateString) {
-            const cuti = appState.cutiEntries.find(c =>
-                c.nama === memberName && c.status === 'APPROVED' &&
-                targetDateString >= c.tglMulai && targetDateString <= c.tglSelesai
+            // Arsip jadwal cuti terpisah dari riwayat pengajuan.
+            // Menghapus/reset riwayat pengajuan tidak menghapus penanda cuti pada jadwal.
+            const arsipCuti = appState.jadwalCutiEntries || [];
+            const cuti = arsipCuti.find(c =>
+                c.nama === memberName &&
+                targetDateString >= c.tglMulai &&
+                targetDateString <= c.tglSelesai
             );
             if (cuti) return { val: 'C', type: 'cuti' };
 
@@ -3118,6 +3135,18 @@
                 renderInventarisTable();
             });
 
+            database.ref('jadwal_cuti').on('value', snapshot => {
+                const data = snapshot.val() || {};
+                appState.jadwalCutiEntries = Object.entries(data).map(([id, item]) => ({
+                    id,
+                    ...item,
+                    nama: item.nama || '',
+                    tglMulai: normalizeDateOnly(item.tglMulai),
+                    tglSelesai: normalizeDateOnly(item.tglSelesai)
+                }));
+                if (appState.activeTab === 'jadwal') renderJadwalTable();
+            });
+
             database.ref('cuti').on('value', snapshot => {
                 const data = snapshot.val() || {};
                 appState.cutiEntries = Object.entries(data).map(([id, item]) => ({
@@ -3129,6 +3158,27 @@
                     tglSelesai: normalizeDateOnly(item.tglSelesai || item.selesai),
                     status: String(item.status || 'PENDING').toUpperCase()
                 }));
+
+                // Migrasi otomatis: salin semua cuti yang sudah ACC ke arsip jadwal.
+                // Arsip memakai ID yang sama, tetapi berada di node Firebase terpisah.
+                const arsipUpdates = {};
+                appState.cutiEntries
+                    .filter(item => item.status === 'APPROVED' && item.nama && item.tglMulai && item.tglSelesai)
+                    .forEach(item => {
+                        arsipUpdates[item.id] = {
+                            nama: item.nama,
+                            tglMulai: item.tglMulai,
+                            tglSelesai: item.tglSelesai,
+                            durasi: item.durasi || '',
+                            tglDisetujui: item.tglProses || todayStr(),
+                            disetujuiOleh: item.disetujuiOleh || 'SPV'
+                        };
+                    });
+                if (Object.keys(arsipUpdates).length) {
+                    database.ref('jadwal_cuti').update(arsipUpdates)
+                        .catch(() => console.warn('Arsip jadwal cuti belum berhasil disinkronkan.'));
+                }
+
                 renderCutiTable();
                 renderCutiDashboard();
                 updatePendingCutiBadge();
@@ -3489,15 +3539,31 @@
                 alasanDitolak: newStatus === 'REJECTED' ? alasanDitolak : ''
             };
 
+            const cutiItem = (appState.cutiEntries || []).find(item => item.id === id);
             database.ref(`cuti/${id}`).update(updates).then(() => {
+                if (newStatus === 'APPROVED' && cutiItem) {
+                    const arsip = {
+                        nama: cutiItem.nama,
+                        tglMulai: cutiItem.tglMulai,
+                        tglSelesai: cutiItem.tglSelesai,
+                        durasi: cutiItem.durasi || '',
+                        tglDisetujui: todayStr(),
+                        disetujuiOleh: approverName
+                    };
+                    return database.ref(`jadwal_cuti/${id}`).set(arsip).then(() => {
+                        showToast('Cuti disetujui. Arsip jadwal tersimpan terpisah dari riwayat pengajuan.', 'success');
+                        renderCutiTable();
+                        if (appState.activeTab === 'jadwal') renderJadwalTable();
+                    });
+                }
+
                 showToast(
-                    newStatus === 'APPROVED' ? 'Pengajuan cuti berhasil disetujui (ACC).' :
                     newStatus === 'REJECTED' ? 'Pengajuan cuti ditolak. Alasan penolakan tersimpan.' :
-                    'Status pengajuan dikembalikan menjadi menunggu.',
-                    newStatus === 'APPROVED' ? 'success' : 'info'
+                    'Status pengajuan dikembalikan menjadi menunggu. Arsip jadwal yang sudah tercatat tetap dipertahankan.',
+                    'info'
                 );
                 renderCutiTable();
-            }).catch(() => showToast('Gagal memproses status cuti.', 'error'));
+            }).catch(() => showToast('Gagal memproses cuti atau menyimpan arsip jadwal.', 'error'));
         }
 
         function deleteButton(path, id) {
